@@ -23,6 +23,7 @@ export default {
         muted: "#686868",
         backdrop: "#E2E2E2",
         back: "rgba(239, 239, 239, 0.3)",
+        drop: "rgba(239, 239, 239, 0.7)",
       },
     },
   },
