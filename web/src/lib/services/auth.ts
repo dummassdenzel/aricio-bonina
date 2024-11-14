@@ -1,6 +1,6 @@
-const API_BASE_URL = "http://localhost/ADBRELMS/server/api";
+const API_BASE_URL = "http://localhost/aricio-bonina/api";
 
-// Function for GET requests
+// GET REQUESTS
 export async function apiGet(endpoint: any) {
   try {
     const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
@@ -18,7 +18,7 @@ export async function apiGet(endpoint: any) {
   }
 }
 
-// Function for POST requests
+// POST REQUESTS
 export async function apiPost(endpoint: any, payload: any) {
   try {
     const response = await fetch(`${API_BASE_URL}/${endpoint}`, {

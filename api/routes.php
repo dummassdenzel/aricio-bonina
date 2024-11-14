@@ -10,9 +10,10 @@ require_once "./modules/post.php";
 require_once "./modules/delete.php";
 require_once "./config/database.php";
 require_once "./vendor/autoload.php";
-// require_once "./src/Jwt.php";
+require_once "./src/Jwt.php";
+require_once "./src/AuthMiddleware.php";
 
-// Initialize Get and Post objects
+// INITIALIZE ESSENTIAL OBJECTS
 $con = new Connection();
 $pdo = $con->connect();
 $get = new Get($pdo);
@@ -30,17 +31,17 @@ if (isset($_REQUEST['request'])) {
     http_response_code(404);
 }
 
-// Handle requests based on HTTP method
+// THIS IS THE MAIN SWITCH STATEMENT
 switch ($_SERVER['REQUEST_METHOD']) {
-    // Handle GET requests
     case 'OPTIONS':
-        // Respond to preflight requests
         http_response_code(200);
         exit();
 
     case 'GET':
         switch ($request[0]) {
             case 'users':
+                // ENDPOINT PROTECTION
+                $user = $auth->authenticateRequest();
                 if (count($request) > 1) {
                     echo json_encode($get->get_users($request[1]));
                 } else {
@@ -49,6 +50,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 break;
 
             default:
+                // RESPONSE FOR UNSUPPORTED REQUESTS
                 echo "No Such Request";
                 http_response_code(403);
                 break;
@@ -57,27 +59,20 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
 
     case 'POST':
-        // Retrieves JSON-decoded data from php://input using file_get_contents
+        // RETRIEVE AND DECODE DATA FROM THE BODY
         $data = json_decode(file_get_contents("php://input"));
         switch ($request[0]) {
 
-            case 'emailcheck':
-                // Return JSON-encoded data for adding users
-                echo json_encode($post->doesEmailExist($data->email));
+            case 'adduser':
+                echo json_encode($post->addUser($data));
                 break;
 
             case 'login':
-
-                $data = json_decode(file_get_contents('php://input'), true);
-                if (!isset($data['email']) || !isset($data['password'])) {
-                    throw new Exception("Missing login credentials", 400);
-                }
-                $user = $get->getByEmail($data['email']);
-                $post->userLogin($data, $user);
+                echo json_encode($post->userLogin($data));
                 break;
 
             default:
-                // Return a 403 response for unsupported requests
+                // RESPONSE FOR UNSUPPORTED REQUESTS
                 echo "No Such Request";
                 http_response_code(403);
                 break;

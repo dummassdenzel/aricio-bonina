@@ -1,9 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { apiGet } from "$lib/services/auth";
+  import { apiGet, apiPost } from "$lib/services/auth";
 
   let userData: any;
-  let error: any;
+
+  let error: string | null = null;
+  let success: string | null = null;
+
+  let formData = {
+    email: "",
+    password: "",
+  };
 
   onMount(async () => {
     try {
@@ -17,49 +24,64 @@
       error = err.message;
     }
   });
+
+  async function handleSubmit(event: SubmitEvent) {
+    event.preventDefault();
+    error = null;
+    success = null;
+
+    // if (something_wrong_happens) {
+    //   error = "Passwords do not match";
+    //   return;
+    // }
+
+    try {
+      const res = await apiPost("login", formData);
+      if (res.status.remarks === "success") {
+        success = res.status.message;
+      } else {
+        throw new Error(res.status.message);
+      }
+    } catch (err: any) {
+      error = err.message;
+    }
+  }
 </script>
 
 <section>
-  {#if error}
-    <p style="color: red">Error: {error}</p>
-  {:else if userData}
-    <ul>
-      <li><strong>ID:</strong> {userData.id}</li>
-      <li><strong>First Name:</strong> {userData.first_name}</li>
-      <li><strong>Last Name:</strong> {userData.last_name}</li>
-      <li><strong>Email:</strong> {userData.email}</li>
-      <li><strong>Role:</strong> {userData.role}</li>
-      <li>
-        <strong>Activation Status:</strong>
-        {userData.activation ? "Active" : "Inactive"}
-      </li>
-      <li><strong>Created At:</strong> {userData.created_at}</li>
-    </ul>
-  {:else}
-    <p>Loading...</p>
-  {/if}
-</section>
+  <h1>Register</h1>
 
-<section>
-  <h1>Login</h1>
-  <form>
+  {#if error}
+    <p class="text-red-500">{error}</p>
+  {/if}
+
+  {#if success}
+    <p class="text-green-500">{success}</p>
+  {/if}
+
+  <form on:submit={handleSubmit}>
     <div>
-      <label for="name">Email:</label>
+      <label for="email">Email:</label>
       <input
         type="email"
         id="email"
+        bind:value={formData.email}
         required
-        class=" rounded border px-2 text-black"
+        class="rounded border px-2 text-black"
       />
     </div>
+
     <div>
-      <label for="email">Password:</label>
+      <label for="password">Password:</label>
       <input
         type="password"
         id="password"
+        bind:value={formData.password}
         required
-        class=" rounded border px-2 text-black"
+        class="rounded border px-2 text-black"
       />
     </div>
+
+    <button type="submit">Register</button>
   </form>
 </section>
