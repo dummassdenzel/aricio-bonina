@@ -11,7 +11,7 @@
 
   <!-- navigation bar -->
   <nav class="flex items-center gap-10">
-    <a href="" class="font-semibold text-slate text-xs hover:text-midnight">Home</a>
+    <a href="/" class="font-semibold text-slate text-xs hover:text-midnight">Home</a>
     <a href="" class="font-semibold text-slate text-xs hover:text-midnight">About</a>
     <a href="" class="font-semibold text-slate text-xs hover:text-midnight">Features</a>
     <a href="" class="font-semibold text-slate text-xs hover:text-midnight">Contact</a>
