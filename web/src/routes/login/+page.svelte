@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { apiGet, apiPost } from "$lib/services/auth";
-
-  let userData: any;
+  import { goto } from "$app/navigation";
+  import { api } from "$lib/services/api";
+  import { auth } from "$lib/stores/auth";
 
   let error: string | null = null;
   let success: string | null = null;
@@ -12,35 +12,20 @@
     password: "",
   };
 
-  onMount(async () => {
-    try {
-      const response = await apiGet("users");
-      if (response.status.remarks === "success") {
-        userData = response.payload[0];
-      } else {
-        throw new Error(response.status.message);
-      }
-    } catch (err: any) {
-      error = err.message;
-    }
-  });
-
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     error = null;
     success = null;
 
-    // if (something_wrong_happens) {
-    //   error = "Passwords do not match";
-    //   return;
-    // }
-
     try {
-      const res = await apiPost("login", formData);
-      if (res.status.remarks === "success") {
-        success = res.status.message;
+      const response = await api.post("login", formData);
+      
+      if (response.status.remarks === "success") {
+        auth.login(response.payload.token, response.payload.user);
+        success = response.status.message;
+        goto("/web/manager/dashboard");
       } else {
-        throw new Error(res.status.message);
+        error = response.status.message;
       }
     } catch (err: any) {
       error = err.message;
@@ -49,8 +34,6 @@
 </script>
 
 <section>
-  <h1>Register</h1>
-
   {#if error}
     <p class="text-red-500">{error}</p>
   {/if}
@@ -82,6 +65,6 @@
       />
     </div>
 
-    <button type="submit">Register</button>
+    <button type="submit">Login</button>
   </form>
 </section>

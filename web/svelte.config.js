@@ -19,8 +19,14 @@ const config = {
       strict: true,
     }),
     paths: {
-      base: "/ADB-Real-Estate-Leasing-MS",
+      base: "/web",
     },
+    // routes: {
+    //   // Protected routes will be under the (protected) directory
+    //   "/(protected)/*": {
+    //     prerender: false,
+    //   },
+    // },
   },
 };
 

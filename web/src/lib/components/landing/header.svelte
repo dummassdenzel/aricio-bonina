@@ -1,9 +1,5 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-
-  function navigateToLogin() {
-    goto("/ADB-Real-Estate-Leasing-MS/login"); // for login button
-  }
 </script>
 
 <header class="flex justify-between">
@@ -36,7 +32,7 @@
     class="text-xs text-slate font-semibold border-2 border-slate p-2 w-32 rounded-full text-center flex justify-center cursor-pointer hover:bg-slate hover:text-white hover:font-medium"
   >
     <button
-      on:click={navigateToLogin}
+      on:click={() => goto("/web/login")}
       class="animation"
       style="transition: all 0.5s ease-in-out;">Get Started</button
     >
