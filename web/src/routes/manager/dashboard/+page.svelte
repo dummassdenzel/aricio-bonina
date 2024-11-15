@@ -2,5 +2,5 @@
 </script>
 
 <section>
-  <p class="text-red">Dashboard</p>
+  <p class="flex text-center text-muted py-5 font-medium align-middle justify-center bg-back rounded-full mt-10">dashboard test!</p>
 </section>

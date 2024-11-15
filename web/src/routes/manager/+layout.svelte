@@ -2,18 +2,18 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { auth } from "$lib/stores/auth";
-  import Navigation from "$lib/components/manager/Navigation.svelte";
+  import ManagerHeader from "$lib/components/manager/manager-header.svelte";
 
   onMount(() => {
     auth.initialize();
 
     if (!$auth.isAuthenticated) {
-      goto("/login");
+      goto("/web/login");
     }
   });
 </script>
 
 {#if $auth.isAuthenticated}
-  <Navigation />
+  <ManagerHeader />
   <slot />
 {/if}
