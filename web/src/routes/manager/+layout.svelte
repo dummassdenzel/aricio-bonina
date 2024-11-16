@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { auth } from "$lib/stores/auth";
-  import Navigation from "$lib/components/manager/Navigation.svelte";
+  import Navbar from "$lib/components/manager/navbar.svelte";
 
   onMount(() => {
     auth.initialize();
@@ -14,6 +14,6 @@
 </script>
 
 {#if $auth.isAuthenticated}
-  <Navigation />
+  <Navbar />
   <slot />
 {/if}
