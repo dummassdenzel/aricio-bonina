@@ -6,7 +6,7 @@ class AuthMiddleware
 
     public function __construct()
     {
-        $this->jwt = new Jwt($_ENV['JWT_SECRET_KEY']);
+        $this->jwt = new Jwt('test-env-key101932');
     }
 
     public function authenticateRequest()
