@@ -18,11 +18,13 @@ export default {
         midnight: "#1B2A41", // background color
         slate: "#495F76", // supporting elements
         teal: "#314A60", // for light theme text
+        lightteal: "rgba(73, 95, 118, 0.4)",
 
         // added extras
         muted: "#686868",
         backdrop: "#E2E2E2",
         back: "rgba(239, 239, 239, 0.3)",
+        drop: "rgba(239, 239, 239, 0.7)",
       },
     },
   },

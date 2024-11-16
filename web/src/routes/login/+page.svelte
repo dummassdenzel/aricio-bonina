@@ -12,6 +12,10 @@
     password: "",
   };
 
+  let isFormFilled = false;
+  $: isFormFilled = formData.email.trim().length > 0 && formData.password.trim().length > 0;
+  
+
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     error = null;
@@ -33,38 +37,38 @@
   }
 </script>
 
-<section>
-  {#if error}
-    <p class="text-red-500">{error}</p>
+<!-- logo of aricio bonina real estate leasing -->
+<div class="flex items-center gap-2.5">
+  <div class="w-3 h-9 bg-teal rounded-full"></div>
+  <h1 class="font-semibold text-midnight text-xs flex flex-col">aricio<span class="text-teal">real estate</span></h1>
+</div>
+
+<div class="flex flex-col justify-center items-center mt-60">
+  <!-- login title -->
+  <h1 class="font-black text-4xl font-inter text-teal mb-1 text-center">bonjour!</h1>
+
+  {#if error} <!-- error message -->
+  <p class="text-red-500 text-sm mt-3 bg-red-100 px-4 py-2 w-60 text-center rounded">{error}</p>
   {/if}
 
-  {#if success}
-    <p class="text-green-500">{success}</p>
-  {/if}
+  {#if success} <!-- success message -->
+    <p class="text-green-500 text-sm bg-green-100 px-4 py-2 w-60 text-center rounded">{success}</p>
+  {/if} 
 
-  <form on:submit={handleSubmit}>
-    <div>
-      <label for="email">Email:</label>
-      <input
-        type="email"
-        id="email"
-        bind:value={formData.email}
-        required
-        class="rounded border px-2 text-black"
-      />
+  <form class="flex flex-col w-80 p-6" on:submit={handleSubmit}>
+    <!-- input field -->
+    <div class="flex flex-col space-y-2">
+      <!-- email -->
+      <input type="email" id="email" bind:value={formData.email} required placeholder="your@email.com" class="rounded-xl text-xs border-2 px-4 py-3 text-midnight placeholder:text-sm focus:outline-none focus:ring-0 focus:border-slate"/>
+      <!-- password -->
+      <input type="password" id="password" bind:value={formData.password} required placeholder="password" class="rounded-xl text-xs border-2 px-4 py-3 placeholder:text-sm focus:outline-none focus:ring-0 focus:border-slate"/>
     </div>
 
-    <div>
-      <label for="password">Password:</label>
-      <input
-        type="password"
-        id="password"
-        bind:value={formData.password}
-        required
-        class="rounded border px-2 text-black"
-      />
-    </div>
+    <!-- login button -->
+    <button type="submit" class="mt-4 font-medium px-4 py-3 text-sm rounded-xl bg-midnight text-white disabled:bg-drop disabled:text-muted" disabled={!isFormFilled}>Continue →</button>
 
-    <button type="submit">Login</button>
+    <!-- back to home -->
+    <a href="/" class="text-sm text-teal font-medium mt-4 text-center">Back to Home</a> 
   </form>
-</section>
+</div> 
+

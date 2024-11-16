@@ -1,6 +1,10 @@
 <script lang="ts">
 </script>
 
-<section class="p-5">
-  <p class="text-red">(Units Content)</p>
+<section>
+  <p
+    class="flex text-center text-muted py-5 font-medium align-middle justify-center bg-back rounded-full mt-10"
+  >
+    room test!
+  </p>
 </section>
