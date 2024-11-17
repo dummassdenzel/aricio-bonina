@@ -7,11 +7,15 @@
   import Footer from "$lib/components/landing/footer.svelte";
 </script>
 
-<section class="flex flex-col gap-40">
+<section>
+  <div class="flex flex-col gap-40">
     <Header />
     <Hero />
     <About />
     <Features />
     <Contact />
+  </div>
+  <div class="mt-20">
     <Footer />
+  </div>
 </section>

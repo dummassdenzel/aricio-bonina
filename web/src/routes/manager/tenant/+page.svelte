@@ -40,9 +40,10 @@
   }
 </script>
 
+<h1 class="text-3xl font-bold text-teal">Tenant Management</h1>
 <section>
   <div
-    class="flex text-center text-muted py-5 font-medium align-middle justify-center bg-back rounded-full mt-10"
+    class="flex text-center text-muted py-5 font-medium align-middle justify-center bg-back rounded-full mt-5"
   >
     <!-- OPEN NEW TENANT FORM -->
     <button on:click={openModal} class="bg-muted text-white py-2 px-4 rounded">

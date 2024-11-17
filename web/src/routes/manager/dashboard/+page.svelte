@@ -1,10 +1,7 @@
 <script lang="ts">
 </script>
 
-<section>
-  <p
-    class="flex text-center text-muted py-5 font-medium align-middle justify-center bg-back rounded-full mt-10"
-  >
-    dashboard test!
-  </p>
+<h1 class="text-3xl font-bold text-teal mb-3">Dashboard</h1>
+<section class="bg-back">
+  <p>test</p>
 </section>

@@ -67,7 +67,7 @@
     <!-- form -->
     <form class="flex flex-col w-full p-12" on:submit={handleSubmit}>
       <!-- login title -->
-      <h1 class="font-black text-4xl font-inter text-teal mb-10 text-center">bonjour!</h1>
+      <h1 class="font-black text-3xl font-inter text-teal mb-6 text-center">access account</h1>
       
       <!-- input fields -->
       <div class="flex flex-col space-y-2">

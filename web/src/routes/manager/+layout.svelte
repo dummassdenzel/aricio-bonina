@@ -15,5 +15,7 @@
 
 {#if $auth.isAuthenticated}
   <ManagerHeader />
-  <slot />
+  <div class="mt-10">
+    <slot />
+  </div>
 {/if}
