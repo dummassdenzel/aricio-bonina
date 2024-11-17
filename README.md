@@ -14,7 +14,6 @@ Built using Svelte, TypeScript, and TailwindCSS, the site showcases our dedicati
 | Roles                             | Name                |                                                                                                                             
 | --------------------------------- | ------------------- |
 | Project Manager                   | Mr. Denzel Manz     |
-| Project Analyst                   | Mr. Denzel Manz     |
 | Product Design                    | Ms. Lee Parker      |
 | UI/UX Design                      | Ms. Lee Parker      |
 | Frontend Developer                | Ms. Lee Parker      |
