@@ -1,7 +1,7 @@
 <section class="flex flex-col md:flex-row items-center gap-20 p-6 md:p-24 bg-back rounded-2xl">
     <!-- about us -->
     <div class="w-full md:w-1/2 text-center md:text-justify">
-      <h2 class="text-2xl md:text-2xl font-bold text-teal mb-4">About Us</h2>
+      <h2 class="md:text-3xl font-bold text-teal mb-4 font-inter">About Us</h2>
 
       <!-- descriptions -->
       <p class="text-slate leading-relaxed mb-4">Welcome to Aricio Real Estate. We provide comfortable and affordable apartment units in Olongapo City, proudly serving the community for over <span class="font-medium">10</span> years since our founding in <span class="font-medium">2014</span>.</p>
@@ -15,7 +15,7 @@
       <!-- ceo profile -->
       <div class="border-t">
         <div class="flex items-center gap-4 mt-5">
-            <div class="w-12 h-12 rounded-full bg-drop"></div> 
+            <div class="w-10 h-10 rounded-full bg-drop"></div> 
             <div>
               <p class="text-muted text-sm">Founder and CEO, Aricio Bonina Real Estate Leasing</p>
             </div>

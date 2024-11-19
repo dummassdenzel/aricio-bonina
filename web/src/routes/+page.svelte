@@ -8,9 +8,11 @@
 </script>
 
 <section>
-  <div class="flex flex-col gap-40">
+  <div class="flex flex-col gap-20">
     <Header />
-    <Hero />
+    <div class="mt-20">
+      <Hero />
+    </div>
     <About />
     <Features />
     <Contact />
