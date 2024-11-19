@@ -1,4 +1,4 @@
-<section class="flex justify-center gap-20 bg-back rounded-2xl">
+<section id="contact" class="flex justify-center gap-20 bg-back rounded-2xl">
     <!-- left side -->
     <div class="flex gap-2 items-center">
         <!-- call us -->

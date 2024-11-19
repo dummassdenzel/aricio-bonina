@@ -10,7 +10,7 @@
 <section>
   <div class="flex flex-col gap-20">
     <Header />
-    <div class="mt-20">
+    <div class="mt-20 mb-20">
       <Hero />
     </div>
     <About />

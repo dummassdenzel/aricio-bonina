@@ -1,4 +1,4 @@
-<section class="flex flex-col md:flex-row items-center gap-20 p-6 md:p-24 bg-back rounded-2xl">
+<section id="about" class="flex flex-col md:flex-row items-center gap-20 p-6 md:p-24 bg-back rounded-2xl">
     <!-- about us -->
     <div class="w-full md:w-1/2 text-center md:text-justify">
       <h2 class="md:text-3xl font-bold text-teal mb-4 font-inter">About Us</h2>

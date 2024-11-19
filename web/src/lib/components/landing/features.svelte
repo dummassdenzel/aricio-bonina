@@ -1,4 +1,4 @@
-<section>
+<section id="features" class="p-10">
     <h1 class="text-center font-bold text-3xl text-teal font-inter">Features</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-20">
         <!-- basic features -->
