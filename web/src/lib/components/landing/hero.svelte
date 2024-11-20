@@ -25,7 +25,7 @@
 <div class="flex flex-col gap-5 justify-center items-center align-middle">
     <!-- hero text -->
     <div class="text-center flex flex-col gap-7">
-        <h1 class="font-black font-inter text-6xl text-midnight">Aricio Bonina<br>Real Estate Leasing</h1>
+        <h1 class="font-black font-inter text-6xl text-midnight">Aricion Bonina<br>Real Estate Leasing</h1>
         <p class="text-muted">Explore our available units and find the perfect space to call home.</p>
     </div>
 
