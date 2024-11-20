@@ -66,6 +66,34 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 }
                 break;
 
+            case 'units':
+                // ENDPOINT PROTECTION
+                // $user = $auth->authenticateRequest();
+                if (count($request) > 1) {
+                    echo json_encode($get->get_units($request[1]));
+                } else {
+                    echo json_encode($get->get_units());
+                }
+                break;
+            case 'tenants':
+                // ENDPOINT PROTECTION
+                // $user = $auth->authenticateRequest();
+                if (count($request) > 1) {
+                    echo json_encode($get->get_tenants($request[1]));
+                } else {
+                    echo json_encode($get->get_tenants());
+                }
+                break;
+            case 'billings':
+                // ENDPOINT PROTECTION
+                // $user = $auth->authenticateRequest();
+                if (count($request) > 1) {
+                    echo json_encode($get->get_billings($request[1]));
+                } else {
+                    echo json_encode($get->get_billings());
+                }
+                break;
+
             default:
                 // RESPONSE FOR UNSUPPORTED REQUESTS
                 echo "No Such Request";

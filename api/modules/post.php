@@ -74,26 +74,38 @@ class Post extends GlobalMethods
     {
         try {
             $this->pdo->beginTransaction();
-            // NOTE TO SELF: IN THE FUTURE, REPLACE unit_number WITH unit_id
+
+            // First, get the unit_id from units table
+            $sql = "SELECT id FROM units WHERE unit_number = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$data->unit_number]);
+            $unit = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$unit) {
+                return $this->sendPayload(null, "failed", "Unit not found.", 400);
+            }
+
+            // Insert tenant using the found unit_id
             $sql = "INSERT INTO tenants (first_name, last_name, unit_id, move_in_date) 
                 VALUES (?, ?, ?, ?)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 $data->first_name,
                 $data->last_name,
-                $data->unit_number,
+                $unit['id'], // Use the found unit_id instead of unit_number
                 $data->move_in_date
             ]);
 
-            // GET LAST INSERTED ID 
+            // Get last inserted tenant ID
             $tenantId = $this->pdo->lastInsertId();
 
+            // Insert lease using the same unit_id
             $sql = "INSERT INTO leases (tenant_id, unit_id, start_date, end_date, rent_amount) 
                 VALUES (?, ?, ?, ?, ?)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 $tenantId,
-                $data->unit_number,
+                $unit['id'], // Use the found unit_id instead of unit_number
                 $data->start_date,
                 $data->end_date,
                 $data->rent_amount

@@ -1,8 +1,28 @@
 <script lang="ts">
   import { api } from "$lib/services/api";
+  import { onMount } from "svelte";
+  import { load } from "../+layout";
+
+  let tenants: any[] = [];
+
   let error: string | null = null;
   let success: string | null = null;
 
+  // GET ALL TENANTS
+  async function loadTenants() {
+    try {
+      const response = await api.get("tenants");
+      tenants = response.payload;
+    } catch (err: any) {
+      error = err.message;
+    }
+  }
+
+  onMount(async () => {
+    loadTenants();
+  });
+
+  // MODAL CONTROLS
   let showModal = false;
   function openModal() {
     showModal = true;
@@ -24,13 +44,13 @@
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
 
-    console.log(formData);
     try {
       const response = await api.post("addtenant", formData);
 
       if (response.status.remarks === "success") {
         success = response.status.message;
         closeModal();
+        await loadTenants();
       } else {
         error = response.status.message;
       }
@@ -197,4 +217,26 @@
       </div>
     {/if}
   </div>
+
+  <!-- TENANTS LIST-->
+  <section>
+    <h2 class="text-xl font-bold text-emerald-500 mt-10">
+      (Hi Lee, ikaw na bahala magdesign nito, fetched data at iterated na sya)
+    </h2>
+    <h2 class="text-xl font-bold mb-4">Tenants List</h2>
+    {#if error}
+      <p class="text-red-500">{error}</p>
+    {:else if tenants.length === 0}
+      <p>No tenants found.</p>
+    {:else}
+      <ul>
+        {#each tenants as tenant}
+          <li>
+            {tenant.first_name}
+            {tenant.last_name}
+          </li>
+        {/each}
+      </ul>
+    {/if}
+  </section>
 </section>

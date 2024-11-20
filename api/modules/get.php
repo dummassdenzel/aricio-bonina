@@ -92,4 +92,54 @@ class Get extends GlobalMethods
         return $this->get_records('users', $condition);
     }
 
+    public function get_units($id = null)
+    {
+        $columns = "units.*, 
+                GROUP_CONCAT(tenants.id) as id,
+                GROUP_CONCAT(tenants.first_name) as first_name,
+                GROUP_CONCAT(tenants.last_name) as last_name,
+                GROUP_CONCAT(tenants.unit_id) as unit_id,
+                GROUP_CONCAT(tenants.move_in_date) as move_in_date,
+                GROUP_CONCAT(leases.start_date) as start_date,
+                GROUP_CONCAT(leases.end_date) as end_date,
+                GROUP_CONCAT(leases.date_renewed) as date_renewed";
+
+
+        $customSqlStr = "SELECT $columns 
+                     FROM units 
+                     LEFT JOIN tenants ON units.id = tenants.unit_id
+                     LEFT JOIN leases ON tenants.id = leases.tenant_id";
+
+        if ($id != null) {
+            $customSqlStr .= " WHERE units.id = :id";
+            $params = ['id' => $id];
+        } else {
+            $params = [];
+        }
+
+        $customSqlStr .= " GROUP BY units.id";
+
+        return $this->get_records(null, null, null, $customSqlStr, $params);
+    }
+
+
+    //NOTE TO SELF, INCLUDE LEASE INFO OF EACH TENANT WITH JOIN QUERY
+    public function get_tenants($id = null)
+    {
+        $condition = null;
+        if ($id != null) {
+            $condition = "id=$id";
+        }
+        return $this->get_records('tenants', $condition);
+    }
+
+    public function get_billings($id = null)
+    {
+        $condition = null;
+        if ($id != null) {
+            $condition = "id=$id";
+        }
+        return $this->get_records('billings', $condition);
+    }
+
 }
