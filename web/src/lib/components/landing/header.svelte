@@ -18,7 +18,6 @@
   </nav>
 
   <!-- login button -->
-  <div class="text-xs text-slate font-semibold border-2 border-slate p-2 w-32 rounded-full text-center flex justify-center cursor-pointer hover:bg-slate hover:text-white hover:font-medium">
-    <button on:click={() => goto("/web/login")} class="animation" style="transition: all 0.5s ease-in-out;">Get Started</button> <!-- redirect to login -->
-  </div>
+  <button on:click={() => goto("/web/login")} class="text-xs text-slate font-semibold border-2 border-slate p-2 w-32 rounded-full text-center flex justify-center cursor-pointer hover:bg-slate hover:text-white hover:font-medium animation" style="transition: all 0.5s ease-in-out;">Log In</button>
+
 </header>

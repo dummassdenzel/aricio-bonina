@@ -46,9 +46,7 @@
   </div>
 
   <!-- back to home -->
-    <div class="text-xs text-slate font-semibold border-2 border-slate p-2 w-32 rounded-full text-center flex justify-center cursor-pointer hover:bg-slate hover:text-white hover:font-medium">
-      <button on:click={() => goto("/")} class="animation" style="transition: all 0.5s ease-in-out;">Return Home</button>
-    </div>
+  <button class="text-xs text-slate font-semibold border-2 border-slate p-2 w-32 rounded-full text-center flex justify-center cursor-pointer hover:bg-slate hover:text-white hover:font-medium animation" style="transition: all 0.5s ease-in-out;" on:click={() => goto("/")}>Return Home</button>
 </div>
 
 <!-- main content -->
@@ -76,7 +74,7 @@
       </div>
 
       <!-- login button -->
-      <button type="submit" class="mt-4 font-medium px-4 py-3 text-sm rounded-xl bg-midnight text-white disabled:bg-drop disabled:text-muted" disabled={!isFormFilled}>Continue →</button>
+      <button type="submit" class="mt-4 font-medium px-4 py-3 text-sm rounded-xl bg-midnight text-white disabled:bg-drop disabled:text-muted w-full" disabled={!isFormFilled}>Continue →</button>
     </form>
   </div>
 </div>
