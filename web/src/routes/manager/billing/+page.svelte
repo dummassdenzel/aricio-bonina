@@ -21,6 +21,7 @@
     });
 </script>
 
+<!-- NOTE TO SELF: CHANGE BILLING INTO LEASE HISTORY -->
 <h1 class="text-3xl font-bold text-teal">Billing</h1>
 <section class="mt-5">
     <div class="bg-back rounded-lg p-6">
