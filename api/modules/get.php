@@ -145,7 +145,7 @@ class Get extends GlobalMethods
     public function get_dashboard_stats()
     {
         $today = date('Y-m-d');
-        $thirtyDaysFromNow = date('Y-m-d', strtotime('+30 days'));
+        $sevenDaysFromNow = date('Y-m-d', strtotime('+7 days'));
 
         $sql = "SELECT 
             units.*,
@@ -182,7 +182,7 @@ class Get extends GlobalMethods
                         'tenant' => $row['first_name'] . ' ' . $row['last_name'],
                         'daysOverdue' => max(0, $row['days_overdue'])
                     ];
-                } else if ($row['end_date'] <= $thirtyDaysFromNow) {
+                } else if ($row['end_date'] <= $sevenDaysFromNow) {
                     $stats['expiringSoon'][] = [
                         'unit' => $row['unit_number'],
                         'issue' => $row['first_name'] . ' ' . $row['last_name'],
