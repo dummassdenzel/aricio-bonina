@@ -3,50 +3,55 @@
   import { api } from "$lib/services/api";
   import { onMount } from "svelte";
 
-  let units: any = [];
+  let isModalOpen: boolean = false;
+  let units: any[] = [];
+  let filteredUnits: any[] = [];
   let error: string | null = null;
+  let selectedFloor: string = "all"; // default (all floor)
 
   onMount(async () => {
-    // GET ALL UNITS
+    // fetching units
     try {
       const response = await api.get("units");
       units = response.payload;
+      filterUnits();
     } catch (err: any) {
       error = err.message;
     }
   });
+
+  // modal
+  const toggleModal = () => {
+    isModalOpen = !isModalOpen;
+  };
+
+  // filter of units
+  const filterUnits = () => {
+    if (selectedFloor === "all") {
+      filteredUnits = units;
+    } else {
+      filteredUnits = units.filter((unit) => unit.floor === parseInt(selectedFloor));
+    }
+  };
+
+  // floor button
+  const handleFloorClick = (floor: string) => {
+    selectedFloor = floor;
+    filterUnits();
+  };
 </script>
 
 <h1 class="text-3xl font-bold text-teal">Unit Management</h1>
-<!-- ignore this -->
 
-<section class=" mt-5">
-  <!-- action buttons container -->
+<section class="mt-5">
   <div class="flex justify-center gap-2 align-middle items-center">
-    <!-- search bar -->
+    <!-- Search Bar -->
     <div class="relative">
-      <!-- search icon -->
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#989898"
-        stroke-width="1"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="absolute left-3 top-1/2 transform -translate-y-1/2"
-      >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2">
         <circle cx="11" cy="11" r="8" />
         <path d="m21 21-4.3-4.3" />
       </svg>
-      <!-- input field: type search, text for now -->
-      <input
-        type="text"
-        placeholder="Search by unit"
-        class="pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
-      />
+      <input type="text" placeholder="Search by unit" class="pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop" />
     </div>
 
     <!-- buttons -->
@@ -54,71 +59,40 @@
       <!-- svelte-ignore a11y_consider_explicit_label -->
       <!-- filter button -->
       <button class="bg-back p-3 rounded-2xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#989898"
-          stroke-width="1"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-blend"
-          ><circle cx="9" cy="9" r="7" /><circle cx="15" cy="15" r="7" /></svg
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-blend"><circle cx="9" cy="9" r="7" /><circle cx="15" cy="15" r="7" /></svg>
       </button>
 
       <!-- svelte-ignore a11y_consider_explicit_label -->
       <!-- sort button -->
       <button class="bg-back p-3 rounded-2xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#989898"
-          stroke-width="1"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-arrow-up-down"
-          ><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path
-            d="m3 8 4-4 4 4"
-          /><path d="M7 4v16" /></svg
-        >
-      </button>
-
-      <!-- svelte-ignore a11y_consider_explicit_label -->
-      <!-- add unit button -->
-      <button class="bg-back p-3 rounded-2xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#989898"
-          stroke-width="1"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-plus"
-          ><path d="M5 12h14" /><path d="M12 5v14" /></svg
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down"><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4"/><path d="M7 4v16" /></svg>
       </button>
     </div>
   </div>
 
-  <!-- cards -->
-  <div
-    class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 overflow-auto max-h-[550px] scrollbar-none"
-  >
+  <!-- floor navigation -->
+  <div class="flex justify-center mt-5 gap-4">
+    <button class="px-4 py-2 text-sm font-semibold text-teal rounded-full transition" class:bg-lightteal="{selectedFloor === 'all'}" on:click={() => handleFloorClick("all")}>All Floor</button>
+
+    {#each [1, 2, 3, 4, 5] as floor}
+      <button
+        class="px-5 py-2 text-sm font-semibold text-teal rounded-full transition"
+        class:bg-lightteal="{selectedFloor === String(floor)}"
+        on:click={() => handleFloorClick(String(floor))}>
+        {floor}
+      </button>
+    {/each}
+    
+  </div>
+
+  <!-- unit cards -->
+  <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 overflow-auto max-h-[490px] scrollbar-none">
     {#if error}
       <p class="text-red-500">{error}</p>
-    {:else if units.length === 0}
+    {:else if filteredUnits.length === 0}
       <p>No units found.</p>
     {:else}
-      {#each units as unit}
+      {#each filteredUnits as unit}
         <UnitCard
           unitNumber={unit.unit_number}
           floor={unit.floor}

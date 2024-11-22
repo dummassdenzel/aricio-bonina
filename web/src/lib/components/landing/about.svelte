@@ -13,14 +13,14 @@
       <p class="text-slate leading-relaxed text-sm mb-5">69 Gallagher Street, East Tapinac, Olongapo City</p>
       
       <!-- ceo profile -->
-      <div class="border-t">
+      <!-- <div class="border-t">
         <div class="flex items-center gap-4 mt-5">
             <div class="w-10 h-10 rounded-full bg-drop"></div> 
             <div>
               <p class="text-muted text-sm">Founder and CEO, Aricio Bonina Real Estate Leasing</p>
             </div>
           </div>
-      </div>
+      </div> -->
     </div>
 
     <!-- image -->
