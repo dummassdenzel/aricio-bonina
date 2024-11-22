@@ -71,12 +71,12 @@
   </div>
 
   <!-- floor navigation -->
-  <div class="flex justify-center mt-5 gap-5">
-    <button class="px-4 py-2 text-sm font-semibold text-teal rounded-xl transition" class:bg-lightteal="{selectedFloor === 'all'}" on:click={() => handleFloorClick("all")}>All Floor</button>
+  <div class="flex justify-center mt-5 gap-4">
+    <button class="px-4 py-2 text-sm font-semibold text-teal rounded-full transition" class:bg-lightteal="{selectedFloor === 'all'}" on:click={() => handleFloorClick("all")}>All Floor</button>
 
-    {#each [1, 2, 3] as floor}
+    {#each [1, 2, 3, 4, 5] as floor}
       <button
-        class="px-4 py-2 text-sm font-semibold text-teal rounded-xl transition"
+        class="px-5 py-2 text-sm font-semibold text-teal rounded-full transition"
         class:bg-lightteal="{selectedFloor === String(floor)}"
         on:click={() => handleFloorClick(String(floor))}>
         {floor}

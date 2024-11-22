@@ -25,6 +25,16 @@ export default {
         backdrop: "#E2E2E2",
         back: "rgba(239, 239, 239, 0.3)",
         drop: "rgba(239, 239, 239, 0.7)",
+
+        green: "#A3C6B2", 
+        orange: "#E78F81", 
+        red: "#B3645C", 
+        blue: "#394867",
+
+        green20: "rgba(163, 198, 178, 0.2)",
+        orange20: "rgb(231, 143, 129, 0.2)", 
+        red20: "rgba(179, 100, 92, 0.2)",
+        blue20: "rgb(57, 72, 103, 0.2)"
       },
     },
   },
