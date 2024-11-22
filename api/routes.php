@@ -94,6 +94,16 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 }
                 break;
 
+            case 'dashboard-stats':
+                // ENDPOINT PROTECTION
+                // $user = $auth->authenticateRequest();
+                if (count($request) > 1) {
+                    echo json_encode($get->get_dashboard_stats());
+                } else {
+                    echo json_encode($get->get_dashboard_stats());
+                }
+                break;
+
             default:
                 // RESPONSE FOR UNSUPPORTED REQUESTS
                 echo "No Such Request";

@@ -142,4 +142,64 @@ class Get extends GlobalMethods
         return $this->get_records('billings', $condition);
     }
 
+    public function get_dashboard_stats()
+    {
+        $today = date('Y-m-d');
+        $thirtyDaysFromNow = date('Y-m-d', strtotime('+30 days'));
+
+        $sql = "SELECT 
+            units.*,
+            tenants.id as tenant_id,
+            tenants.first_name,
+            tenants.last_name,
+            leases.start_date,
+            leases.end_date,
+            DATEDIFF(:today, leases.end_date) as days_overdue
+        FROM units 
+        LEFT JOIN tenants ON units.id = tenants.unit_id
+        LEFT JOIN leases ON tenants.id = leases.tenant_id
+        WHERE tenants.id IS NOT NULL";
+
+        $params = ['today' => $today];
+
+        $result = $this->executeQuery($sql, $params);
+
+        if ($result['code'] == 200) {
+            $stats = [
+                'totalUnits' => 0,
+                'occupiedUnits' => 0,
+                'totalTenants' => 0,
+                'overdueLease' => [],
+                'expiringSoon' => [],
+                'recentPayments' => []
+            ];
+
+            // PROCESS DATA
+            foreach ($result['data'] as $row) {
+                if ($row['end_date'] < $today) {
+                    $stats['overdueLease'][] = [
+                        'unit' => $row['unit_number'],
+                        'tenant' => $row['first_name'] . ' ' . $row['last_name'],
+                        'daysOverdue' => max(0, $row['days_overdue'])
+                    ];
+                } else if ($row['end_date'] <= $thirtyDaysFromNow) {
+                    $stats['expiringSoon'][] = [
+                        'unit' => $row['unit_number'],
+                        'issue' => $row['first_name'] . ' ' . $row['last_name'],
+                        'date' => $row['end_date']
+                    ];
+                }
+            }
+
+            // Count totals
+            $stats['totalUnits'] = count($this->get_units()['payload']);
+            $stats['occupiedUnits'] = count($result['data']);
+            $stats['totalTenants'] = count($result['data']);
+
+            return $this->sendPayload($stats, 'success', "Successfully retrieved dashboard stats.", 200);
+        }
+
+        return $this->sendPayload(null, 'failed', "Failed to retrieve dashboard stats.", $result['code']);
+    }
+
 }
