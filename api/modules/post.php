@@ -75,7 +75,7 @@ class Post extends GlobalMethods
         try {
             $this->pdo->beginTransaction();
 
-            // First, get the unit_id from units table
+            // GET UNIT ID ACCORDING TO UNIT NUMBER
             $sql = "SELECT id FROM units WHERE unit_number = ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$data->unit_number]);
@@ -85,34 +85,34 @@ class Post extends GlobalMethods
                 return $this->sendPayload(null, "failed", "Unit not found.", 400);
             }
 
-            // Insert tenant using the found unit_id
-            $sql = "INSERT INTO tenants (first_name, last_name, unit_id, move_in_date) 
+            // CREATE LEASE
+            $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount) 
                 VALUES (?, ?, ?, ?)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
-                $data->first_name,
-                $data->last_name,
-                $unit['id'], // Use the found unit_id instead of unit_number
-                $data->move_in_date
-            ]);
-
-            // Get last inserted tenant ID
-            $tenantId = $this->pdo->lastInsertId();
-
-            // Insert lease using the same unit_id
-            $sql = "INSERT INTO leases (tenant_id, unit_id, start_date, end_date, rent_amount) 
-                VALUES (?, ?, ?, ?, ?)";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                $tenantId,
-                $unit['id'], // Use the found unit_id instead of unit_number
+                $unit['id'],
                 $data->start_date,
                 $data->end_date,
                 $data->rent_amount
             ]);
 
+            $leaseId = $this->pdo->lastInsertId();
+
+            // CREATE TENANTS
+            foreach ($data->tenants as $tenant) {
+                $sql = "INSERT INTO tenants (first_name, last_name, lease_id, move_in_date) 
+                    VALUES (?, ?, ?, ?)";
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute([
+                    $tenant->first_name,
+                    $tenant->last_name,
+                    $leaseId,
+                    $data->move_in_date
+                ]);
+            }
+
             $this->pdo->commit();
-            return $this->sendPayload(null, "success", "Successfully created a new record", 200);
+            return $this->sendPayload(null, "success", "Successfully created lease with tenants", 200);
         } catch (PDOException $e) {
             $this->pdo->rollBack();
             return $this->sendPayload(null, "failed", $e->getMessage(), 400);
