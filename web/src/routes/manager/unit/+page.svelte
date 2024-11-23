@@ -37,6 +37,7 @@
   let filteredUnits: Unit[] = [];
   let error: string | null = null;
 <<<<<<< HEAD
+<<<<<<< HEAD
   let selectedFloor: string = "all"; // default (all floors)
   let searchQuery: string = ""; // search query state
   let sortAscending: boolean = true; // sort state: true = ascending, false = descending
@@ -44,8 +45,12 @@
   let selectedFloor: string = "all";
   let searchQuery: string = "";
 >>>>>>> e8a7ccf0ba2f9ea08726b7ba008712e8b1525f33
+=======
+  let selectedFloor: string = "all"; // default (all floor)
+>>>>>>> parent of a8b7df5 (unit search and sort (done))
 
   onMount(async () => {
+    // fetching units
     try {
       const response = await api.get("units");
       units = response.payload;
@@ -55,13 +60,14 @@
     }
   });
 
-  // unit modal
+  // modal
   const toggleModal = () => {
     isModalOpen = !isModalOpen;
   };
 
-  // filter units based on floor and search query
+  // filter of units
   const filterUnits = () => {
+<<<<<<< HEAD
 <<<<<<< HEAD
     let filtered = units;
 
@@ -119,13 +125,21 @@
 
 >>>>>>> e8a7ccf0ba2f9ea08726b7ba008712e8b1525f33
     filteredUnits = filtered;
+=======
+    if (selectedFloor === "all") {
+      filteredUnits = units;
+    } else {
+      filteredUnits = units.filter((unit) => unit.floor === parseInt(selectedFloor));
+    }
+>>>>>>> parent of a8b7df5 (unit search and sort (done))
   };
 
-  // for floor button functionality
+  // floor button
   const handleFloorClick = (floor: string) => {
     selectedFloor = floor;
     filterUnits();
   };
+<<<<<<< HEAD
 
 <<<<<<< HEAD
   // for search bar functionality
@@ -146,14 +160,17 @@
     filterUnits();
   };
 >>>>>>> e8a7ccf0ba2f9ea08726b7ba008712e8b1525f33
+=======
+>>>>>>> parent of a8b7df5 (unit search and sort (done))
 </script>
 
 <h1 class="text-3xl font-bold text-teal">Unit Management</h1>
 
 <section class="mt-5">
   <div class="flex justify-center gap-2 align-middle items-center">
-    <!-- search bar -->
+    <!-- Search Bar -->
     <div class="relative">
+<<<<<<< HEAD
 <<<<<<< HEAD
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
       <input type="text" placeholder="Search by unit" class="pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
@@ -182,6 +199,13 @@
         value={searchQuery}
       />
 >>>>>>> e8a7ccf0ba2f9ea08726b7ba008712e8b1525f33
+=======
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+      <input type="text" placeholder="Search by unit" class="pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop" />
+>>>>>>> parent of a8b7df5 (unit search and sort (done))
     </div>
 
     <!-- buttons -->
@@ -204,7 +228,9 @@
         >
       </button>
 
+      <!-- svelte-ignore a11y_consider_explicit_label -->
       <!-- sort button -->
+<<<<<<< HEAD
 <<<<<<< HEAD
       <button class="bg-back p-3 rounded-2xl" on:click={toggleSortOrder}>
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down">
@@ -229,6 +255,10 @@
           /><path d="M7 4v16" /></svg
         >
 >>>>>>> e8a7ccf0ba2f9ea08726b7ba008712e8b1525f33
+=======
+      <button class="bg-back p-3 rounded-2xl">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down"><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4"/><path d="M7 4v16" /></svg>
+>>>>>>> parent of a8b7df5 (unit search and sort (done))
       </button>
     </div>
   </div>
@@ -250,6 +280,7 @@
         {floor}
       </button>
     {/each}
+    
   </div>
 
   <!-- unit cards -->
@@ -259,7 +290,7 @@
     {#if error}
       <p class="text-red-500">{error}</p>
     {:else if filteredUnits.length === 0}
-      <p class="text-xs text-muted font-medium">No units found.</p>
+      <p>No units found.</p>
     {:else}
       {#each filteredUnits as unit}
         <UnitCard

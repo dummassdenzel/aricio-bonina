@@ -207,54 +207,9 @@
 </script>
 
 <h1 class="text-3xl font-bold text-teal">Tenant Management</h1>
-<section class="mt-5">
-  <div class="flex justify-center gap-2 align-middle items-center">
-    <!-- Search Bar -->
-    <div class="relative">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2">
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-      <input type="text" placeholder="Search by unit" class="pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop" />
-    </div>
-
-    <!-- buttons -->
-    <div class="flex gap-2">
-      <!-- svelte-ignore a11y_consider_explicit_label -->
-      <!-- filter button -->
-      <button class="bg-back p-3 rounded-2xl">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-blend"><circle cx="9" cy="9" r="7" /><circle cx="15" cy="15" r="7" /></svg>
-      </button>
-
-      <!-- svelte-ignore a11y_consider_explicit_label -->
-      <!-- sort button -->
-      <button class="bg-back p-3 rounded-2xl">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down"><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4"/><path d="M7 4v16" /></svg>
-      </button>
-
-      <!-- svelte-ignore a11y_consider_explicit_label -->
-      <!-- add unit button -->
-      <button class="bg-back p-3 rounded-2xl">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
-      </button>
-      
-    </div>
-  </div>
-</section>
-
-
-
-
-
-
-
-
-
-
-
-
+<section class="grid grid-cols-2 gap-8 mt-5">
   <!-- LEFT SIDE -->
-  <!-- <div class="bg-back rounded-lg p-6">
+  <div class="bg-back rounded-lg p-6">
     <h2 class="text-xl font-bold mb-4">Tenants List</h2>
     {#if error}
       <p class="text-red-500">{error}</p>
@@ -270,29 +225,29 @@
         {/each}
       </ul>
     {/if}
-  </div> -->
+  </div>
 
   <!-- RIGHT SIDE -->
-  <!-- <div class="space-y-6"> -->
+  <div class="space-y-6">
     <!-- ADD NEW TENANT BUTTON -->
-    <!-- <div class="bg-back rounded-lg p-6">
+    <div class="bg-back rounded-lg p-6">
       <button
         on:click={openModal}
         class="w-full bg-muted hover:bg-muted/80 text-white py-3 px-4 rounded-lg transition-colors"
       >
         Add New Tenant
       </button>
-    </div> -->
+    </div>
 
     <!-- PLACEHOLDER -->
-    <!-- <div class="bg-back rounded-lg p-6 min-h-[300px]">
+    <div class="bg-back rounded-lg p-6 min-h-[300px]">
       <h2 class="text-xl font-bold mb-4">Highlighted Tenants</h2>
       <p class="text-gray-600">(Display of tenants with outstanding rent)</p>
     </div>
-  </div> -->
+  </div>
 
   <!-- FORM MODAL-->
-  <!-- {#if showModal}
+  {#if showModal}
     <div
       class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center"
     >
@@ -385,11 +340,15 @@
                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
             </div>
-          </div> -->
+          </div>
 
           <!-- Lease Information Section -->
 <<<<<<< HEAD
+<<<<<<< HEAD
           <!-- <div class="mb-6">
+=======
+          <div class="mb-6">
+>>>>>>> parent of a8b7df5 (unit search and sort (done))
             <h3 class="text-lg font-semibold mb-3">Lease Information</h3>
 =======
           <div class="mb-6">
@@ -451,4 +410,4 @@
       </div>
     </div>
   {/if}
-</section> -->
+</section>
