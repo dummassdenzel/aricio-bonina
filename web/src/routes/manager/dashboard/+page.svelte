@@ -11,12 +11,12 @@
     totalUnits: number;
     overdueLease: Array<{
       unit: string;
-      tenants: string;
+      tenant: string;
       daysOverdue: number;
     }>;
     expiringSoon: Array<{
       unit: string;
-      tenants: string;
+      issue: string;
       date: string;
     }>;
     recentPayments: Array<{
@@ -106,12 +106,7 @@
           <div class="flex justify-between items-center border-b pb-2">
             <div>
               <p class="font-medium">Unit {lease.unit}</p>
-              <p
-                class="text-sm text-gray-500 max-w-[200px] truncate"
-                title={lease.tenants}
-              >
-                {lease.tenants}
-              </p>
+              <p class="text-sm text-gray-500">{lease.tenant}</p>
             </div>
             <span class="text-red-500">{lease.daysOverdue} days</span>
           </div>
@@ -131,12 +126,7 @@
           <div class="flex justify-between items-center border-b pb-2">
             <div>
               <p class="font-medium">Unit {lease.unit}</p>
-              <p
-                class="text-sm text-gray-500 max-w-[200px] truncate"
-                title={lease.tenants}
-              >
-                {lease.tenants}
-              </p>
+              <p class="text-sm text-gray-500">{lease.issue}</p>
             </div>
             <span class="text-gray-500">{formatDate(lease.date)}</span>
           </div>

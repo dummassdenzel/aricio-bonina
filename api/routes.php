@@ -127,7 +127,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 break;
 
             case 'addtenant':
-                // $user = $auth->authenticateRequest();
+                $user = $auth->authenticateRequest();
                 echo json_encode($post->addTenant($data));
                 break;
 

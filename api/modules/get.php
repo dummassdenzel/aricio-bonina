@@ -94,83 +94,32 @@ class Get extends GlobalMethods
 
     public function get_units($id = null)
     {
-        // First, get all units with their basic information
-        $sql = "SELECT 
-                u.*,
-                CASE 
-                    WHEN EXISTS (
-                        SELECT 1 FROM leases l 
-                        WHERE l.unit_id = u.id 
-                        AND CURRENT_DATE BETWEEN l.start_date AND l.end_date
-                    ) THEN 'occupied'
-                    ELSE 'vacant'
-                END as status
-                FROM units u";
+        $columns = "units.*, 
+                GROUP_CONCAT(tenants.id) as id,
+                GROUP_CONCAT(tenants.first_name) as first_name,
+                GROUP_CONCAT(tenants.last_name) as last_name,
+                GROUP_CONCAT(tenants.unit_id) as unit_id,
+                GROUP_CONCAT(tenants.move_in_date) as move_in_date,
+                GROUP_CONCAT(leases.start_date) as start_date,
+                GROUP_CONCAT(leases.end_date) as end_date,
+                GROUP_CONCAT(leases.date_renewed) as date_renewed";
 
-        if ($id !== null) {
-            $sql .= " WHERE u.id = :id";
+
+        $customSqlStr = "SELECT $columns 
+                     FROM units 
+                     LEFT JOIN tenants ON units.id = tenants.unit_id
+                     LEFT JOIN leases ON tenants.id = leases.tenant_id";
+
+        if ($id != null) {
+            $customSqlStr .= " WHERE units.id = :id";
             $params = ['id' => $id];
         } else {
             $params = [];
         }
 
-        $sql .= " ORDER BY u.id";
+        $customSqlStr .= " GROUP BY units.id";
 
-        $result = $this->executeQuery($sql, $params);
-
-        if ($result['code'] == 200) {
-            $units = $result['data'];
-
-            // For each unit, get its current lease and tenants
-            foreach ($units as &$unit) {
-                // Get the current active lease
-                $leaseSql = "SELECT 
-                                l.id,
-                                l.start_date,
-                                l.end_date,
-                                l.date_renewed,
-                                l.rent_amount
-                            FROM leases l
-                            WHERE l.unit_id = :unit_id
-                            AND CURRENT_DATE BETWEEN l.start_date AND l.end_date
-                            ORDER BY l.start_date DESC
-                            LIMIT 1";
-
-                $leaseResult = $this->executeQuery($leaseSql, ['unit_id' => $unit['id']]);
-
-                if ($leaseResult['code'] == 200 && !empty($leaseResult['data'])) {
-                    $lease = $leaseResult['data'][0];
-
-                    // Get tenants for this lease
-                    $tenantSql = "SELECT 
-                                    t.id,
-                                    t.first_name,
-                                    t.last_name,
-                                    t.move_in_date
-                                FROM tenants t
-                                WHERE t.lease_id = :lease_id";
-
-                    $tenantResult = $this->executeQuery($tenantSql, ['lease_id' => $lease['id']]);
-
-                    if ($tenantResult['code'] == 200) {
-                        $unit['current_lease'] = [
-                            'id' => $lease['id'],
-                            'start_date' => $lease['start_date'],
-                            'end_date' => $lease['end_date'],
-                            'date_renewed' => $lease['date_renewed'],
-                            'rent_amount' => $lease['rent_amount'],
-                            'tenants' => $tenantResult['data']
-                        ];
-                    }
-                } else {
-                    $unit['current_lease'] = null;
-                }
-            }
-
-            return $this->sendPayload($units, 'success', "Successfully retrieved data.", 200);
-        }
-
-        return $this->sendPayload(null, 'failed', "Failed to retrieve data.", $result['code']);
+        return $this->get_records(null, null, null, $customSqlStr, $params);
     }
 
 
@@ -200,17 +149,16 @@ class Get extends GlobalMethods
 
         $sql = "SELECT 
             units.*,
-            leases.id as lease_id,
+            tenants.id as tenant_id,
+            tenants.first_name,
+            tenants.last_name,
             leases.start_date,
             leases.end_date,
-            GROUP_CONCAT(CONCAT(tenants.first_name, ' ', tenants.last_name) SEPARATOR ', ') as tenant_names,
-            COUNT(tenants.id) as tenant_count,
             DATEDIFF(:today, leases.end_date) as days_overdue
         FROM units 
-        LEFT JOIN leases ON units.id = leases.unit_id
-        LEFT JOIN tenants ON leases.id = tenants.lease_id
-        WHERE leases.id IS NOT NULL
-        GROUP BY units.id, leases.id";
+        LEFT JOIN tenants ON units.id = tenants.unit_id
+        LEFT JOIN leases ON tenants.id = leases.tenant_id
+        WHERE tenants.id IS NOT NULL";
 
         $params = ['today' => $today];
 
@@ -231,27 +179,22 @@ class Get extends GlobalMethods
                 if ($row['end_date'] < $today) {
                     $stats['overdueLease'][] = [
                         'unit' => $row['unit_number'],
-                        'tenants' => $row['tenant_names'],
+                        'tenant' => $row['first_name'] . ' ' . $row['last_name'],
                         'daysOverdue' => max(0, $row['days_overdue'])
                     ];
                 } else if ($row['end_date'] <= $sevenDaysFromNow) {
                     $stats['expiringSoon'][] = [
                         'unit' => $row['unit_number'],
-                        'tenants' => $row['tenant_names'],
+                        'issue' => $row['first_name'] . ' ' . $row['last_name'],
                         'date' => $row['end_date']
                     ];
                 }
-
-                // Add to total tenant count
-                $stats['totalTenants'] += $row['tenant_count'];
             }
 
-            // Count unique occupied units
+            // Count totals
+            $stats['totalUnits'] = count($this->get_units()['payload']);
             $stats['occupiedUnits'] = count($result['data']);
-
-            // Get total units (including unoccupied)
-            $totalUnitsResult = $this->executeQuery("SELECT COUNT(*) as total FROM units");
-            $stats['totalUnits'] = $totalUnitsResult['data'][0]['total'];
+            $stats['totalTenants'] = count($result['data']);
 
             return $this->sendPayload($stats, 'success', "Successfully retrieved dashboard stats.", 200);
         }

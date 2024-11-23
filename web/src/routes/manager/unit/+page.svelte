@@ -3,43 +3,14 @@
   import { api } from "$lib/services/api";
   import { onMount } from "svelte";
 
-  interface Tenant {
-    id: number;
-    first_name: string;
-    last_name: string;
-    move_in_date: string;
-  }
-
-  interface Lease {
-    id: number;
-    start_date: string;
-    end_date: string;
-    date_renewed: string | null;
-    rent_amount: number;
-    tenants: Tenant[];
-  }
-
-  interface Unit {
-    id: number;
-    unit_number: string;
-    floor: number;
-    price: number;
-    max_occupants: number;
-    unit_furniture: string;
-    unit_description: string;
-    image_url: string;
-    status: "occupied" | "vacant";
-    current_lease: Lease | null;
-  }
-
   let isModalOpen: boolean = false;
-  let units: Unit[] = [];
-  let filteredUnits: Unit[] = [];
+  let units: any[] = [];
+  let filteredUnits: any[] = [];
   let error: string | null = null;
-  let selectedFloor: string = "all";
-  let searchQuery: string = "";
+  let selectedFloor: string = "all"; // default (all floor)
 
   onMount(async () => {
+    // fetching units
     try {
       const response = await api.get("units");
       units = response.payload;
@@ -56,50 +27,16 @@
 
   // filter of units
   const filterUnits = () => {
-    let filtered = [...units];
-
-    // Floor filter
-    if (selectedFloor !== "all") {
-      filtered = filtered.filter(
-        (unit) => unit.floor === parseInt(selectedFloor),
-      );
+    if (selectedFloor === "all") {
+      filteredUnits = units;
+    } else {
+      filteredUnits = units.filter((unit) => unit.floor === parseInt(selectedFloor));
     }
-
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter((unit) => {
-        const searchLower = searchQuery.toLowerCase();
-
-        // Search by unit number
-        if (unit.unit_number.toLowerCase().includes(searchLower)) {
-          return true;
-        }
-
-        // Search by tenant names if unit is occupied
-        if (unit.current_lease?.tenants) {
-          return unit.current_lease.tenants.some((tenant) =>
-            `${tenant.first_name} ${tenant.last_name}`
-              .toLowerCase()
-              .includes(searchLower),
-          );
-        }
-
-        return false;
-      });
-    }
-
-    filteredUnits = filtered;
   };
 
   // floor button
   const handleFloorClick = (floor: string) => {
     selectedFloor = floor;
-    filterUnits();
-  };
-
-  // Handle search input
-  const handleSearch = (event: Event) => {
-    searchQuery = (event.target as HTMLInputElement).value;
     filterUnits();
   };
 </script>
@@ -110,28 +47,11 @@
   <div class="flex justify-center gap-2 align-middle items-center">
     <!-- Search Bar -->
     <div class="relative">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#989898"
-        stroke-width="1"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="absolute left-3 top-1/2 transform -translate-y-1/2"
-      >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2">
         <circle cx="11" cy="11" r="8" />
         <path d="m21 21-4.3-4.3" />
       </svg>
-      <input
-        type="text"
-        placeholder="Search by unit or tenant name"
-        class="pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
-        on:input={handleSearch}
-        value={searchQuery}
-      />
+      <input type="text" placeholder="Search by unit" class="pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop" />
     </div>
 
     <!-- buttons -->
@@ -139,66 +59,34 @@
       <!-- svelte-ignore a11y_consider_explicit_label -->
       <!-- filter button -->
       <button class="bg-back p-3 rounded-2xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#989898"
-          stroke-width="1"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-blend"
-          ><circle cx="9" cy="9" r="7" /><circle cx="15" cy="15" r="7" /></svg
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-blend"><circle cx="9" cy="9" r="7" /><circle cx="15" cy="15" r="7" /></svg>
       </button>
 
       <!-- svelte-ignore a11y_consider_explicit_label -->
       <!-- sort button -->
       <button class="bg-back p-3 rounded-2xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#989898"
-          stroke-width="1"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-arrow-up-down"
-          ><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path
-            d="m3 8 4-4 4 4"
-          /><path d="M7 4v16" /></svg
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down"><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4"/><path d="M7 4v16" /></svg>
       </button>
     </div>
   </div>
 
   <!-- floor navigation -->
   <div class="flex justify-center mt-5 gap-4">
-    <button
-      class="px-4 py-2 text-sm font-semibold text-teal rounded-full transition"
-      class:bg-lightteal={selectedFloor === "all"}
-      on:click={() => handleFloorClick("all")}>All Floors</button
-    >
+    <button class="px-4 py-2 text-sm font-semibold text-teal rounded-full transition" class:bg-lightteal="{selectedFloor === 'all'}" on:click={() => handleFloorClick("all")}>All Floor</button>
 
     {#each [1, 2, 3, 4, 5] as floor}
       <button
         class="px-5 py-2 text-sm font-semibold text-teal rounded-full transition"
-        class:bg-lightteal={selectedFloor === String(floor)}
-        on:click={() => handleFloorClick(String(floor))}
-      >
+        class:bg-lightteal="{selectedFloor === String(floor)}"
+        on:click={() => handleFloorClick(String(floor))}>
         {floor}
       </button>
     {/each}
+    
   </div>
 
   <!-- unit cards -->
-  <div
-    class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 overflow-auto max-h-[490px] scrollbar-none"
-  >
+  <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 overflow-auto max-h-[490px] scrollbar-none">
     {#if error}
       <p class="text-red-500">{error}</p>
     {:else if filteredUnits.length === 0}
@@ -207,8 +95,11 @@
       {#each filteredUnits as unit}
         <UnitCard
           unitNumber={unit.unit_number}
-          floor={unit.floor.toString()}
-          current_lease={unit.current_lease}
+          floor={unit.floor}
+          tenantName={unit.first_name && unit.last_name
+            ? `${unit.first_name} ${unit.last_name}`
+            : "Unoccupied"}
+          leaseEndDate={unit.end_date}
         />
       {/each}
     {/if}
