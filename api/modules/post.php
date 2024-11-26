@@ -120,6 +120,44 @@ class Post extends GlobalMethods
     }
 
 
+    public function renewLease($data)
+    {
+        try {
+            $this->pdo->beginTransaction();
+
+            // UPDATE EXISTING LEASE
+            $sql = "UPDATE leases SET date_renewed = CURRENT_TIMESTAMP WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$data->lease_id]);
+
+            // Create new lease record with updated dates and rent
+            $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount, previous_lease_id) 
+                    SELECT unit_id, ?, ?, ?, id 
+                    FROM leases 
+                    WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                $data->start_date,
+                $data->end_date,
+                $data->rent_amount,
+                $data->lease_id
+            ]);
+
+            $newLeaseId = $this->pdo->lastInsertId();
+
+            // Transfer existing tenants to new lease
+            $sql = "UPDATE tenants SET lease_id = ? WHERE lease_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$newLeaseId, $data->lease_id]);
+
+            $this->pdo->commit();
+            return $this->sendPayload(null, "success", "Successfully renewed lease", 200);
+        } catch (PDOException $e) {
+            $this->pdo->rollBack();
+            return $this->sendPayload(null, "failed", $e->getMessage(), 400);
+        }
+    }
+
 }
 
 

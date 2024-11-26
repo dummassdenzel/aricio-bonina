@@ -28,7 +28,7 @@ export default {
 
         green: "#A3C6B2", 
         orange: "#E78F81", 
-        red: "#B3645C", 
+        // red: "#ef4444", 
         blue: "#394867",
 
         green20: "rgba(163, 198, 178, 0.2)",

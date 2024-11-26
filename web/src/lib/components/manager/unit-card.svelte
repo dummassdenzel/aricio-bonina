@@ -1,5 +1,6 @@
 <script lang="ts">
   import { formatDate } from "$lib/pipes/date-pipe";
+  import UnitModal from "./unit-modal.svelte";
 
   export let unitNumber: string;
   export let floor: string;
@@ -7,21 +8,35 @@
     tenants: Array<{
       first_name: string;
       last_name: string;
+      email: string;
+      phone: string;
     }>;
     end_date: string;
+    start_date: string;
+    rent_amount: number;
   } | null;
 
-  $: isOccupied = current_lease !== null;
+  let isModalOpen = false;
 
+  $: isOccupied = current_lease !== null;
   $: tenantNames =
     isOccupied && current_lease
       ? current_lease.tenants
           .map((t) => `${t.first_name} ${t.last_name}`)
           .join(", ")
       : "";
+
+  const handleOpenModal = () => {
+    isModalOpen = true;
+  };
+
+  const handleCloseModal = () => {
+    isModalOpen = false;
+  };
 </script>
 
-<div
+<button
+  on:click={handleOpenModal}
   class="bg-white p-5 rounded-2xl border border-backdrop flex flex-col gap-4"
 >
   <!-- FLOOR NUMBER AND UNIT NUMBER -->
@@ -82,7 +97,17 @@
       <p class="text-xs text-green font-medium">Available</p>
     </div>
   {/if}
-</div>
+</button>
+
+<UnitModal
+  isOpen={isModalOpen}
+  onClose={handleCloseModal}
+  unit={{
+    unit_number: parseInt(unitNumber),
+    floor: parseInt(floor),
+    current_lease: current_lease || undefined,
+  }}
+/>
 
 <style>
   /* HOVER EFFECT */

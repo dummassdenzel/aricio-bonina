@@ -104,6 +104,16 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 }
                 break;
 
+            case 'lease-history':
+                // ENDPOINT PROTECTION
+                // $user = $auth->authenticateRequest();
+                if (count($request) > 1) {
+                    echo json_encode($get->getLeaseHistory($request[1]));
+                } else {
+                    echo json_encode($get->getLeaseHistory());
+                }
+                break;
+
             default:
                 // RESPONSE FOR UNSUPPORTED REQUESTS
                 echo "No Such Request";
@@ -129,6 +139,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
             case 'addtenant':
                 // $user = $auth->authenticateRequest();
                 echo json_encode($post->addTenant($data));
+                break;
+
+            case 'renewlease':
+                // $user = $auth->authenticateRequest();
+                echo json_encode($post->renewLease($data));
                 break;
 
             default:

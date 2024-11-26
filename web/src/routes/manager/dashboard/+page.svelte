@@ -149,7 +149,7 @@
 
   <!-- Recent Payments -->
   <div class="bg-white p-6 rounded-lg shadow-sm">
-    <h2 class="text-xl font-semibold mb-4">Recent Payments</h2>
+    <h2 class="text-xl font-semibold mb-4">Recent Lease Renewals</h2>
     {#if dashboardStats.recentPayments.length > 0}
       <div class="space-y-3">
         {#each dashboardStats.recentPayments as payment}
@@ -165,7 +165,7 @@
         {/each}
       </div>
     {:else}
-      <p class="text-gray-500">No recent payments</p>
+      <p class="text-gray-500">No recent renewals.</p>
     {/if}
   </div>
 </div>

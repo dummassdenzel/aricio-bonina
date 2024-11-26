@@ -259,4 +259,51 @@ class Get extends GlobalMethods
         return $this->sendPayload(null, 'failed', "Failed to retrieve dashboard stats.", $result['code']);
     }
 
+
+    public function getLeaseHistory($unit_id = null)
+    {
+        $sql = "SELECT 
+                    l.*,
+                    u.unit_number,
+                    GROUP_CONCAT(CONCAT(t.first_name, ' ', t.last_name) SEPARATOR ', ') as tenant_names
+                FROM leases l
+                JOIN units u ON l.unit_id = u.id
+                LEFT JOIN tenants t ON l.id = t.lease_id
+                WHERE 1=1 ";
+
+        $params = [];
+        if ($unit_id !== null) {
+            $sql .= "AND l.unit_id = ? ";
+            $params[] = $unit_id;
+        }
+
+        $sql .= "GROUP BY l.id 
+                 ORDER BY u.unit_number, l.start_date DESC";
+
+        $result = $this->executeQuery($sql, $params);
+
+        if ($result['code'] == 200) {
+            // Organize leases by unit
+            $organizedLeases = [];
+            foreach ($result['data'] as $lease) {
+                $unitNumber = $lease['unit_number'];
+                if (!isset($organizedLeases[$unitNumber])) {
+                    $organizedLeases[$unitNumber] = [];
+                }
+                $organizedLeases[$unitNumber][] = [
+                    'id' => $lease['id'],
+                    'start_date' => $lease['start_date'],
+                    'end_date' => $lease['end_date'],
+                    'date_renewed' => $lease['date_renewed'],
+                    'rent_amount' => $lease['rent_amount'],
+                    'tenants' => $lease['tenant_names']
+                ];
+            }
+
+            return $this->sendPayload($organizedLeases, 'success', "Successfully retrieved lease history.", 200);
+        }
+
+        return $this->sendPayload(null, 'failed', "Failed to retrieve lease history.", $result['code']);
+    }
+
 }

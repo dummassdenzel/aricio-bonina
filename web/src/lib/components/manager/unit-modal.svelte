@@ -1,0 +1,156 @@
+<script lang="ts">
+    export let isOpen: boolean = false;
+    export let onClose: () => void;
+    export let unit: {
+        unit_number: number;
+        floor: number;
+        current_lease?: {
+            tenants: Array<{
+                first_name: string;
+                last_name: string;
+                email: string;
+                phone: string;
+            }>;
+            start_date: string;
+            end_date: string;
+            rent_amount: number;
+        };
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString();
+    };
+
+    const handleKeydown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") onClose();
+    };
+</script>
+
+<svelte:window on:keydown={handleKeydown} />
+
+{#if isOpen}
+    <div class="fixed inset-0 z-50">
+        <!-- Backdrop -->
+        <button
+            class="absolute inset-0 w-full h-full bg-black bg-opacity-50"
+            on:click={onClose}
+            aria-label="Close modal"
+        ></button>
+
+        <!-- Modal Content -->
+        <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+            class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-2xl mx-4"
+        >
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="modal-title" class="text-2xl font-bold text-teal">
+                    Unit {unit.unit_number} Details
+                </h2>
+                <button
+                    type="button"
+                    on:click={onClose}
+                    class="text-gray hover:text-teal transition-colors"
+                    aria-label="Close modal"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Unit Information -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-2 text-teal">
+                    Unit Information
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray">Unit Number</p>
+                        <p class="font-medium">{unit.unit_number}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray">Floor</p>
+                        <p class="font-medium">{unit.floor}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lease Information -->
+            {#if unit.current_lease}
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2 text-teal">
+                        Lease Information
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray">Start Date</p>
+                            <p class="font-medium">
+                                {formatDate(unit.current_lease.start_date)}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray">End Date</p>
+                            <p class="font-medium">
+                                {formatDate(unit.current_lease.end_date)}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray">Monthly Rent</p>
+                            <p class="font-medium">
+                                {unit.current_lease.rent_amount
+                                    ? `₱${unit.current_lease.rent_amount.toLocaleString()}`
+                                    : "Not specified"}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tenant Information -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-2 text-teal">
+                        Tenants
+                    </h3>
+                    <div class="space-y-4">
+                        {#each unit.current_lease.tenants as tenant}
+                            <div
+                                class="bg-back p-4 rounded-lg grid grid-cols-2 gap-4"
+                            >
+                                <div>
+                                    <p class="text-sm text-gray">Name</p>
+                                    <p class="font-medium">
+                                        {tenant.first_name}
+                                        {tenant.last_name}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray">Email</p>
+                                    <p class="font-medium">{tenant.email}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray">Phone</p>
+                                    <p class="font-medium">{tenant.phone}</p>
+                                </div>
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+            {:else}
+                <p class="text-gray">This unit is currently vacant</p>
+            {/if}
+        </div>
+    </div>
+{/if}

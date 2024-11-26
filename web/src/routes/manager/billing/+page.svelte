@@ -2,43 +2,78 @@
     import { onMount } from "svelte";
     import { api } from "$lib/services/api";
 
-    let tenants: any[] = [];
+    let leaseHistory: Record<
+        string,
+        Array<{
+            id: number;
+            start_date: string;
+            end_date: string;
+            date_renewed: string | null;
+            rent_amount: number;
+            tenants: string;
+        }>
+    > = {};
 
     let error: string | null = null;
-    let success: string | null = null;
 
-    async function loadTenants() {
+    async function loadLeaseHistory() {
         try {
-            const response = await api.get("tenants");
-            tenants = response.payload;
+            const response = await api.get("lease-history");
+            leaseHistory = response.payload;
         } catch (err: any) {
             error = err.message;
         }
     }
 
-    onMount(async () => {
-        loadTenants();
-    });
+    onMount(loadLeaseHistory);
 </script>
 
-<!-- NOTE TO SELF: CHANGE BILLING INTO LEASE HISTORY -->
-<h1 class="text-3xl font-bold text-teal">Billing</h1>
+<h1 class="text-3xl font-bold text-teal">Lease History</h1>
 <section class="mt-5">
     <div class="bg-back rounded-lg p-6">
-        <h2 class="text-xl font-bold mb-4">Recent:</h2>
         {#if error}
             <p class="text-red-500">{error}</p>
-        {:else if tenants.length === 0}
-            <p>No tenants found.</p>
+        {:else if Object.keys(leaseHistory).length === 0}
+            <p>No lease history found.</p>
         {:else}
-            <ul class="space-y-2">
-                {#each tenants as tenant}
-                    <li class="p-3 bg-white rounded-lg shadow">
-                        {tenant.first_name}
-                        {tenant.last_name}
-                    </li>
-                {/each}
-            </ul>
+            {#each Object.entries(leaseHistory) as [unitNumber, leases]}
+                <div class="mb-8">
+                    <h2 class="text-xl font-bold mb-4">Unit {unitNumber}</h2>
+                    <div class="space-y-4">
+                        {#each leases as lease}
+                            <div class="p-4 bg-white rounded-lg shadow">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-semibold">
+                                            {new Date(
+                                                lease.start_date,
+                                            ).toLocaleDateString()} -
+                                            {new Date(
+                                                lease.end_date,
+                                            ).toLocaleDateString()}
+                                        </p>
+                                        <p class="text-gray-600">
+                                            Tenants: {lease.tenants}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-bold">
+                                            ${lease.rent_amount}/month
+                                        </p>
+                                        {#if lease.date_renewed}
+                                            <p class="text-sm text-gray-500">
+                                                Renewed: {new Date(
+                                                    lease.date_renewed,
+                                                ).toLocaleDateString()}
+                                            </p>
+                                        {/if}
+                                    </div>
+                                </div>
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+            {/each}
         {/if}
     </div>
 </section>
