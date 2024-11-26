@@ -8,8 +8,7 @@
     tenants: Array<{
       first_name: string;
       last_name: string;
-      email: string;
-      phone: string;
+      move_in_date: string;
     }>;
     end_date: string;
     start_date: string;
@@ -41,12 +40,12 @@
 >
   <!-- FLOOR NUMBER AND UNIT NUMBER -->
   <div class="flex flex-col">
-    <p class="text-xs font-medium text-muted">
-      {floor ? floor : "Unavailable"}
-    </p>
     <h3 class="text-lg font-bold font-inter text-teal text-center">
       Unit {unitNumber}
     </h3>
+    <p class="text-xs font-medium text-muted text-left -mt-1">
+      Floor {floor ? floor : "Unavailable"}
+    </p>
   </div>
 
   {#if isOccupied && current_lease}

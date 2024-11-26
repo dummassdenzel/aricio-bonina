@@ -187,7 +187,7 @@
     {#if error}
       <p class="text-red-500">{error}</p>
     {:else if filteredUnits.length === 0}
-      <p class="text-xs text-muted font-medium">No units found.</p>
+      <p class="text-lg text-muted font-medium">No units found.</p>
     {:else}
       {#each filteredUnits as unit}
         <UnitCard

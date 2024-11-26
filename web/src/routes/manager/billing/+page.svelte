@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { api } from "$lib/services/api";
+    import { formatDate } from "$lib/pipes/date-pipe";
 
     let leaseHistory: Record<
         string,
@@ -55,12 +56,16 @@
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <p class="font-semibold">
-                                            {new Date(
-                                                lease.start_date,
-                                            ).toLocaleDateString()} -
-                                            {new Date(
-                                                lease.end_date,
-                                            ).toLocaleDateString()}
+                                            {formatDate(
+                                                new Date(
+                                                    lease.start_date,
+                                                ).toLocaleDateString(),
+                                            )} -
+                                            {formatDate(
+                                                new Date(
+                                                    lease.end_date,
+                                                ).toLocaleDateString(),
+                                            )}
                                         </p>
                                         <p class="text-gray-600">
                                             Tenants: {lease.tenants}

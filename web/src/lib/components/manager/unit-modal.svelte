@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { formatDate } from "$lib/pipes/date-pipe";
+
     export let isOpen: boolean = false;
     export let onClose: () => void;
     export let unit: {
@@ -8,17 +10,12 @@
             tenants: Array<{
                 first_name: string;
                 last_name: string;
-                email: string;
-                phone: string;
+                move_in_date: string;
             }>;
             start_date: string;
             end_date: string;
             rent_amount: number;
         };
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString();
     };
 
     const handleKeydown = (e: KeyboardEvent) => {
@@ -130,19 +127,19 @@
                                 class="bg-back p-4 rounded-lg grid grid-cols-2 gap-4"
                             >
                                 <div>
-                                    <p class="text-sm text-gray">Name</p>
+                                    <p class="text-sm text-gray">Name:</p>
                                     <p class="font-medium">
                                         {tenant.first_name}
                                         {tenant.last_name}
                                     </p>
                                 </div>
                                 <div>
-                                    <p class="text-sm text-gray">Email</p>
-                                    <p class="font-medium">{tenant.email}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray">Phone</p>
-                                    <p class="font-medium">{tenant.phone}</p>
+                                    <p class="text-sm text-gray">
+                                        Tenant Since:
+                                    </p>
+                                    <p class="font-medium">
+                                        {formatDate(tenant.move_in_date)}
+                                    </p>
                                 </div>
                             </div>
                         {/each}
