@@ -11,6 +11,7 @@
             date_renewed: string | null;
             rent_amount: number;
             tenants: string;
+            latest_date: string;
         }>
     > = {};
 
@@ -26,6 +27,15 @@
     }
 
     onMount(loadLeaseHistory);
+
+    // Helper function to sort units by their latest lease date
+    function getSortedUnits(history: typeof leaseHistory) {
+        return Object.entries(history).sort((a, b) => {
+            const aLatestDate = a[1][0]?.latest_date || "";
+            const bLatestDate = b[1][0]?.latest_date || "";
+            return bLatestDate.localeCompare(aLatestDate);
+        });
+    }
 </script>
 
 <h1 class="text-3xl font-bold text-teal">Lease History</h1>
@@ -36,7 +46,7 @@
         {:else if Object.keys(leaseHistory).length === 0}
             <p>No lease history found.</p>
         {:else}
-            {#each Object.entries(leaseHistory) as [unitNumber, leases]}
+            {#each getSortedUnits(leaseHistory) as [unitNumber, leases]}
                 <div class="mb-8">
                     <h2 class="text-xl font-bold mb-4">Unit {unitNumber}</h2>
                     <div class="space-y-4">
@@ -58,7 +68,7 @@
                                     </div>
                                     <div class="text-right">
                                         <p class="font-bold">
-                                            ${lease.rent_amount}/month
+                                            ₱{lease.rent_amount}
                                         </p>
                                         {#if lease.date_renewed}
                                             <p class="text-sm text-gray-500">

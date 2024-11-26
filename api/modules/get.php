@@ -265,7 +265,8 @@ class Get extends GlobalMethods
         $sql = "SELECT 
                     l.*,
                     u.unit_number,
-                    GROUP_CONCAT(CONCAT(t.first_name, ' ', t.last_name) SEPARATOR ', ') as tenant_names
+                    GROUP_CONCAT(CONCAT(t.first_name, ' ', t.last_name) SEPARATOR ', ') as tenant_names,
+                    MAX(COALESCE(l.date_renewed, l.start_date)) OVER (PARTITION BY u.unit_number) as latest_date
                 FROM leases l
                 JOIN units u ON l.unit_id = u.id
                 LEFT JOIN tenants t ON l.id = t.lease_id
@@ -277,8 +278,8 @@ class Get extends GlobalMethods
             $params[] = $unit_id;
         }
 
-        $sql .= "GROUP BY l.id 
-                 ORDER BY u.unit_number, l.start_date DESC";
+        $sql .= "GROUP BY l.id, u.unit_number 
+                 ORDER BY latest_date DESC, u.unit_number, l.start_date DESC";
 
         $result = $this->executeQuery($sql, $params);
 
@@ -296,7 +297,8 @@ class Get extends GlobalMethods
                     'end_date' => $lease['end_date'],
                     'date_renewed' => $lease['date_renewed'],
                     'rent_amount' => $lease['rent_amount'],
-                    'tenants' => $lease['tenant_names']
+                    'tenants' => $lease['tenant_names'],
+                    'latest_date' => $lease['latest_date']
                 ];
             }
 
