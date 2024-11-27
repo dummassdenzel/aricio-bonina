@@ -194,6 +194,8 @@
           unitNumber={unit.unit_number}
           floor={unit.floor.toString()}
           current_lease={unit.current_lease}
+          isOverdue={unit.current_lease?.end_date <
+            new Date().toISOString().split("T")[0]}
         />
       {/each}
     {/if}

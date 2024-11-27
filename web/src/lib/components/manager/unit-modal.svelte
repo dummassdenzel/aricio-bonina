@@ -1,5 +1,6 @@
 <script lang="ts">
     import { formatDate } from "$lib/pipes/date-pipe";
+    import { api } from "$lib/services/api";
 
     export let isOpen: boolean = false;
     export let onClose: () => void;
@@ -18,8 +19,24 @@
         };
     };
 
+    let formData = {
+        lease_id: 0,
+        start_date: "",
+        end_date: "",
+        rent_amount: 0,
+    };
+
     const handleKeydown = (e: KeyboardEvent) => {
         if (e.key === "Escape") onClose();
+    };
+
+    const renewLease = async () => {
+        try {
+            const response = await api.post("renewlease", formData);
+            console.log("Lease renewed successfully:", response);
+        } catch (error) {
+            console.error("Error renewing lease:", error);
+        }
     };
 </script>
 
@@ -114,6 +131,27 @@
                             </p>
                         </div>
                     </div>
+                    {#if new Date(unit.current_lease.end_date) < new Date()}
+                        <div class="mb-6 flex justify-center text-center">
+                            <div class="p-4 rounded bg-red-100">
+                                <p class="text-red-600 font-semibold">
+                                    This lease is overdue!
+                                </p>
+                                <button
+                                    on:click={renewLease}
+                                    class="bg-teal-500 bg-white text-black p-2 rounded-lg"
+                                >
+                                    Renew Lease
+                                </button>
+                                <button
+                                    on:click={renewLease}
+                                    class="bg-teal-500 bg-white text-black p-2 rounded-lg"
+                                >
+                                    End Lease
+                                </button>
+                            </div>
+                        </div>
+                    {/if}
                 </div>
 
                 <!-- Tenant Information -->
@@ -148,6 +186,32 @@
             {:else}
                 <p class="text-gray">This unit is currently vacant</p>
             {/if}
+
+            <!-- UI for renewing lease -->
+            <!-- <div>
+                <h2>Renew Lease</h2>
+                <input
+                    type="number"
+                    bind:value={formData.lease_id}
+                    placeholder="Lease ID"
+                />
+                <input
+                    type="date"
+                    bind:value={formData.start_date}
+                    placeholder="Start Date"
+                />
+                <input
+                    type="date"
+                    bind:value={formData.end_date}
+                    placeholder="End Date"
+                />
+                <input
+                    type="number"
+                    bind:value={formData.rent_amount}
+                    placeholder="Rent Amount"
+                />
+                <button on:click={renewLease}>Renew Lease</button>
+            </div> -->
         </div>
     </div>
 {/if}

@@ -185,7 +185,7 @@
           icon: "success",
           confirmButtonText: "OK",
         });
-        closeModal(true); // Pass true to skip confirmation
+        closeModal(true);
         await loadTenants();
       } else {
         await swal.fire({
@@ -218,10 +218,13 @@
     {:else}
       <ul class="space-y-2">
         {#each tenants as tenant}
-          <li class="p-3 bg-white rounded-lg shadow">
-            {tenant.first_name}
-            {tenant.last_name}
-          </li>
+          <div class="p-3 bg-white rounded-lg shadow justify-between flex">
+            <p>
+              {tenant.first_name}
+              {tenant.last_name}
+            </p>
+            <p class="text-muted">Unit {tenant.unit_number}</p>
+          </div>
         {/each}
       </ul>
     {/if}

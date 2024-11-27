@@ -14,6 +14,7 @@
     start_date: string;
     rent_amount: number;
   } | null;
+  export let isOverdue: boolean;
 
   let isModalOpen = false;
 
@@ -36,8 +37,13 @@
 
 <button
   on:click={handleOpenModal}
-  class="bg-white p-5 rounded-2xl border border-backdrop flex flex-col gap-4"
+  class="bg-white p-5 rounded-2xl border border-backdrop flex flex-col gap-4 relative"
 >
+  <!-- IF LEASE IS OVERDUE INDICATOR -->
+  {#if isOverdue}
+    <div class="bg-red-500 h-3 w-3 rounded-full absolute top-2 right-2"></div>
+  {/if}
+
   <!-- FLOOR NUMBER AND UNIT NUMBER -->
   <div class="flex flex-col">
     <h3 class="text-lg font-bold font-inter text-teal text-center">
@@ -59,7 +65,9 @@
           {current_lease.tenants.length}
         </div>
         <p class="text-teal text-xs font-medium truncate" title={tenantNames}>
-          {tenantNames}
+          {current_lease.tenants.length > 1
+            ? `${current_lease.tenants[0].first_name} ${current_lease.tenants[0].last_name}, +${current_lease.tenants.length - 1} more`
+            : tenantNames}
         </p>
       </div>
 

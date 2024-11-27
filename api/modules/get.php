@@ -131,8 +131,7 @@ class Get extends GlobalMethods
                                 l.date_renewed,
                                 l.rent_amount
                             FROM leases l
-                            WHERE l.unit_id = :unit_id
-                            AND CURRENT_DATE BETWEEN l.start_date AND l.end_date
+                            WHERE l.unit_id = :unit_id                            
                             ORDER BY l.start_date DESC
                             LIMIT 1";
 
@@ -177,11 +176,14 @@ class Get extends GlobalMethods
     //NOTE TO SELF, INCLUDE LEASE INFO OF EACH TENANT WITH JOIN QUERY
     public function get_tenants($id = null)
     {
-        $condition = null;
-        if ($id != null) {
-            $condition = "id=$id";
-        }
-        return $this->get_records('tenants', $condition);
+        $sql = "SELECT 
+                    t.*, 
+                    u.unit_number 
+                FROM tenants t
+                LEFT JOIN leases l ON t.lease_id = l.id
+                LEFT JOIN units u ON l.unit_id = u.id";
+
+        return $this->get_records(null, null, null, $sql, null);
     }
 
     public function get_billings($id = null)
