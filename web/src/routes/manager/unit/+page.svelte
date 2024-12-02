@@ -93,101 +93,62 @@
 <!-- F R O N T E N D -->
 <h1 class="text-3xl font-bold text-teal">Unit Management</h1>
 
-<section class="mt-5">
-  <div class="flex justify-center gap-2 align-middle items-center">
-    <!-- search bar -->
-    <div class="relative">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#989898"
-        stroke-width="1"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="absolute left-3 top-1/2 transform -translate-y-1/2"
-        ><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg
-      >
-      <input
-        type="text"
-        placeholder="Search by unit"
-        class="pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
-        on:input={handleSearchInput}
-      />
-      <!-- search bar functionality -->
-    </div>
-
-    <!-- buttons -->
-    <div class="flex gap-2">
-      <!-- svelte-ignore a11y_consider_explicit_label -->
-      <!-- filter button -->
-      <button class="bg-back p-3 rounded-2xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#989898"
-          stroke-width="1"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-blend"
-          ><circle cx="9" cy="9" r="7" /><circle cx="15" cy="15" r="7" /></svg
-        >
-      </button>
-
-      <!-- svelte-ignore a11y_consider_explicit_label -->
-      <!-- sort button -->
-      <button class="bg-back p-3 rounded-2xl" on:click={toggleSortOrder}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#989898"
-          stroke-width="1"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-arrow-up-down"
-          ><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path
-            d="m3 8 4-4 4 4"
-          /><path d="M7 4v16" /></svg
-        >
-      </button>
-    </div>
-  </div>
-
-  <!-- floor navigation -->
-  <div class="flex justify-center mt-5 gap-4">
-    <button
-      class="px-4 py-2 text-sm font-semibold text-teal rounded-full transition"
+<section class="mt-8">
+  <div class="flex justify-between align-middle items-center">
+    <!-- floor navigation -->
+    <div class="bg-back p-1 rounded-xl w-max flex"> 
+      <button
+      class="p-2 py-3 w-16 text-xs font-semibold text-muted rounded-lg transition"
       class:bg-lightteal={selectedFloor === "all"}
-      on:click={() => handleFloorClick("all")}>All Floor</button
-    >
+      class:text-teal={selectedFloor === "all"}
+      on:click={() => handleFloorClick("all")}>
+      All
+    </button>
 
     {#each [1, 2, 3, 4, 5] as floor}
-      <button
-        class="px-5 py-2 text-sm font-semibold text-teal rounded-full transition"
-        class:bg-lightteal={selectedFloor === String(floor)}
-        on:click={() => handleFloorClick(String(floor))}
-      >
-        {floor}
-      </button>
+    <button
+      class="p-2 w-16 text-xs font-semibold text-muted rounded-lg transition"
+      class:bg-lightteal={selectedFloor === String(floor)}
+      class:text-teal={selectedFloor === String(floor)}
+      on:click={() => handleFloorClick(String(floor))}>
+      {floor}
+    </button>
     {/each}
+    </div>
+
+    <!-- functionality -->
+    <div class="flex gap-2">
+      <!-- search bar -->
+      <div class="relative">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+        <input type="text" placeholder="Search by unit or tenant name" class="pl-10 text-xs text-dmSans w-72 text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
+          on:input={handleSearchInput} 
+        /> <!-- search bar functionality -->
+      </div>
+
+      <!-- buttons -->
+      <div class="flex gap-2">
+        <!-- svelte-ignore a11y_consider_explicit_label -->
+        <!-- filter button -->
+        <button class="bg-back p-3 rounded-2xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"  viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-blend"><circle cx="9" cy="9" r="7" /><circle cx="15" cy="15" r="7" /></svg>
+        </button>
+
+        <!-- svelte-ignore a11y_consider_explicit_label -->
+        <!-- sort button -->
+        <button class="bg-back p-3 rounded-2xl" on:click={toggleSortOrder}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down"><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4"/><path d="M7 4v16" /></svg>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- unit cards -->
-  <div
-    class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 overflow-auto max-h-[490px] scrollbar-none"
-  >
+  <div class="mt-8 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 overflow-auto max-h-[520px] scrollbar-none">
     {#if error}
       <p class="text-red-500">{error}</p>
     {:else if filteredUnits.length === 0}
-      <p class="text-lg text-muted font-medium">No units found.</p>
+      <p class="text-sm text-muted font-medium">No units or tenants found.</p>
     {:else}
       {#each filteredUnits as unit}
         <UnitCard
