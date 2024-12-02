@@ -9,7 +9,7 @@
   let error: string | null = null;
   let success: string | null = null;
 
-  // Add validation state
+  // VALIDATION FOR ERRORS
   let errors = {
     unit_number: "",
     move_in_date: "",
@@ -128,36 +128,8 @@
 
     return true;
   }
-
   // Add skipConfirmation parameter
   async function closeModal(skipConfirmation: boolean = false) {
-    const hasData = Object.values(formData).some((value) => {
-      if (Array.isArray(value)) {
-        return (
-          value.length > 0 &&
-          value.some(
-            (tenant) => tenant.first_name.trim() || tenant.last_name.trim(),
-          )
-        );
-      }
-      return value !== "";
-    });
-
-    if (hasData && !skipConfirmation) {
-      const result = await swal.fire({
-        title: "Close Form",
-        text: "Are you sure you want to close? All entered data will be lost.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, close",
-        cancelButtonText: "Cancel",
-      });
-
-      if (!result.isConfirmed) {
-        return;
-      }
-    }
-
     showModal = false;
     formData = {
       unit_number: "",
@@ -178,27 +150,19 @@
     try {
       const response = await api.post("addtenant", formData);
 
-      if (response.status.remarks === "success") {
-        await swal.fire({
-          title: "Success!",
-          text: response.status.message,
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-        closeModal(true);
-        await loadTenants();
-      } else {
-        await swal.fire({
-          title: "Error",
-          text: response.status.message,
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      }
+      await swal.fire({
+        title: "Success!",
+        text: response.status.message,
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      closeModal(true);
+      await loadTenants();
     } catch (err: any) {
+      // Show error message from API
       await swal.fire({
         title: "Error",
-        text: err.message,
+        text: err.message || "An error occurred",
         icon: "error",
         confirmButtonText: "OK",
       });

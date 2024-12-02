@@ -1,12 +1,20 @@
 <?php
 
-require_once __DIR__ . "/../vendor/autoload.php";
+require_once __DIR__ . '/../config/Environment.php';
 
 class Jwt
 {
-    public function __construct(private string $key)
-    {
+    private $key;
 
+    public function __construct()
+    {
+        try {
+            // Get JWT key from environment variables
+            $this->key = Environment::getInstance()->get('JWT_KEY');
+        } catch (Exception $e) {
+            error_log("JWT Error: " . $e->getMessage());
+            throw new Exception("Failed to initialize JWT");
+        }
     }
 
     /**

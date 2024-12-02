@@ -1,3 +1,5 @@
+import EncryptionService from './encryption';
+
 const BASE_URL = "http://localhost/aricio-bonina/api";
 
 async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
@@ -15,21 +17,21 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
-    if (endpoint === "login") {
-      const errorData = await response.json();
-      throw new Error(errorData.status.message);
-    }
-
-    if (response.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/web/login";
-      throw new Error("Session expired. Please login again.");
-    }
-    throw new Error("Network response was not ok");
+    const errorData = await response.json();
+    throw new Error(errorData.status?.message || 'Request failed');
   }
 
-  return response.json();
+  const jsonResponse = await response.json();
+  // console.log('Raw API response:', jsonResponse);
+
+  // DECRYPT PAYLOAD GIVEN THAT ITS CONVERTED TO STRING
+  if (jsonResponse.payload && typeof jsonResponse.payload === 'string') {
+      jsonResponse.payload = EncryptionService.decrypt(jsonResponse.payload);
+      // console.log('Decrypted payload:', jsonResponse.payload);
+    
+  }
+
+  return jsonResponse;
 }
 
 export const api = {
@@ -39,5 +41,4 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  // Add other methods as needed
 };

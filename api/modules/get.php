@@ -7,6 +7,7 @@ class Get extends GlobalMethods
     private $pdo;
     public function __construct(\PDO $pdo)
     {
+        parent::__construct();
         $this->pdo = $pdo;
     }
 

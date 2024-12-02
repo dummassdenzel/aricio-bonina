@@ -8,6 +8,7 @@
         unit_number: number;
         floor: number;
         current_lease?: {
+            id: number;
             tenants: Array<{
                 first_name: string;
                 last_name: string;
@@ -20,8 +21,8 @@
     };
 
     let formData = {
-        lease_id: 0,
-        start_date: "",
+        lease_id: unit?.current_lease?.id,
+        start_date: new Date().toISOString().split("T")[0],
         end_date: "",
         rent_amount: 0,
     };
@@ -37,6 +38,16 @@
         } catch (error) {
             console.error("Error renewing lease:", error);
         }
+    };
+
+    let isRenewLeaseOpen: boolean = false;
+
+    const openRenewLeaseModal = () => {
+        isRenewLeaseOpen = true;
+    };
+
+    const closeRenewLeaseModal = () => {
+        isRenewLeaseOpen = false;
     };
 </script>
 
@@ -138,7 +149,7 @@
                                     This lease is overdue!
                                 </p>
                                 <button
-                                    on:click={renewLease}
+                                    on:click={openRenewLeaseModal}
                                     class="bg-teal-500 bg-white text-black p-2 rounded-lg"
                                 >
                                     Renew Lease
@@ -186,32 +197,58 @@
             {:else}
                 <p class="text-gray">This unit is currently vacant</p>
             {/if}
+        </div>
+    </div>
+{/if}
 
-            <!-- UI for renewing lease -->
-            <!-- <div>
-                <h2>Renew Lease</h2>
-                <input
-                    type="number"
-                    bind:value={formData.lease_id}
-                    placeholder="Lease ID"
-                />
-                <input
-                    type="date"
-                    bind:value={formData.start_date}
-                    placeholder="Start Date"
-                />
-                <input
-                    type="date"
-                    bind:value={formData.end_date}
-                    placeholder="End Date"
-                />
-                <input
-                    type="number"
-                    bind:value={formData.rent_amount}
-                    placeholder="Rent Amount"
-                />
-                <button on:click={renewLease}>Renew Lease</button>
-            </div> -->
+{#if isRenewLeaseOpen}
+    <!-- Renew Lease Modal -->
+    <div class="fixed inset-0 z-50">
+        <button
+            class="absolute inset-0 w-full h-full bg-black bg-opacity-50"
+            on:click={closeRenewLeaseModal}
+            aria-label="Close modal"
+        ></button>
+
+        <div
+            role="dialog"
+            aria-modal="true"
+            class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-md mx-4"
+        >
+            <h2 class="text-2xl font-bold text-teal mb-4">Renew Lease</h2>
+            <p class="text-gray">Start Date</p>
+            <input
+                type="date"
+                bind:value={formData.start_date}
+                placeholder="Start Date"
+                class="border p-2 mb-2 w-full"
+            />
+            <p class="text-gray">End Date</p>
+            <input
+                type="date"
+                bind:value={formData.end_date}
+                placeholder="End Date"
+                class="border p-2 mb-2 w-full"
+            />
+            <p class="text-gray">Rent Amount</p>
+            <input
+                type="number"
+                bind:value={formData.rent_amount}
+                placeholder="Rent Amount"
+                class="border p-2 mb-4 w-full"
+            />
+            <button
+                on:click={renewLease}
+                class="bg-teal-500 text-white p-2 rounded-lg"
+            >
+                Renew Lease
+            </button>
+            <button
+                on:click={closeRenewLeaseModal}
+                class="bg-gray-500 text-white p-2 rounded-lg ml-2"
+            >
+                Cancel
+            </button>
         </div>
     </div>
 {/if}

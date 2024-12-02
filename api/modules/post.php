@@ -9,6 +9,7 @@ class Post extends GlobalMethods
 
     public function __construct(\PDO $pdo)
     {
+        parent::__construct();
         $this->pdo = $pdo;
     }
 
@@ -26,7 +27,7 @@ class Post extends GlobalMethods
             }
 
             // GENERATE JWT TOKEN
-            $jwt = new Jwt("test-env-key101932");
+            $jwt = new Jwt();
             $payload = [
                 "id" => $user['id'],
                 "firstName" => $user['first_name'],
@@ -55,12 +56,13 @@ class Post extends GlobalMethods
     {
         try {
             $hashed_password = password_hash($data->password, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO users (first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?)";
+            $sql = "INSERT INTO users (first_name, last_name, email, role, password_hash) VALUES (?, ?, ?, ?, ?)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 $data->first_name,
                 $data->last_name,
                 $data->email,
+                $data->role,
                 $hashed_password
 
             ]);
@@ -75,14 +77,23 @@ class Post extends GlobalMethods
         try {
             $this->pdo->beginTransaction();
 
-            // GET UNIT ID ACCORDING TO UNIT NUMBER
-            $sql = "SELECT id FROM units WHERE unit_number = ?";
+            // GET UNIT ID AND CHECK FOR EXISTING ACTIVE LEASE
+            $sql = "SELECT u.id, 
+                    (SELECT COUNT(*) FROM leases l 
+                     WHERE l.unit_id = u.id 
+                     AND ? BETWEEN l.start_date AND l.end_date) as has_active_lease
+                    FROM units u 
+                    WHERE u.unit_number = ?";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$data->unit_number]);
+            $stmt->execute([$data->start_date, $data->unit_number]);
             $unit = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$unit) {
                 return $this->sendPayload(null, "failed", "Unit not found.", 400);
+            }
+
+            if ($unit['has_active_lease'] > 0) {
+                return $this->sendPayload(null, "failed", "This unit already has an active lease.", 400);
             }
 
             // CREATE LEASE
@@ -130,7 +141,10 @@ class Post extends GlobalMethods
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$data->lease_id]);
 
-            // Create new lease record with updated dates and rent
+            if ($stmt->rowCount() === 0) {
+                throw new Exception("Lease not found or already renewed.");
+            }
+
             $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount, previous_lease_id) 
                     SELECT unit_id, ?, ?, ?, id 
                     FROM leases 
@@ -145,7 +159,6 @@ class Post extends GlobalMethods
 
             $newLeaseId = $this->pdo->lastInsertId();
 
-            // Transfer existing tenants to new lease
             $sql = "UPDATE tenants SET lease_id = ? WHERE lease_id = ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$newLeaseId, $data->lease_id]);
@@ -153,6 +166,9 @@ class Post extends GlobalMethods
             $this->pdo->commit();
             return $this->sendPayload(null, "success", "Successfully renewed lease", 200);
         } catch (PDOException $e) {
+            $this->pdo->rollBack();
+            return $this->sendPayload(null, "failed", $e->getMessage(), 400);
+        } catch (Exception $e) {
             $this->pdo->rollBack();
             return $this->sendPayload(null, "failed", $e->getMessage(), 400);
         }

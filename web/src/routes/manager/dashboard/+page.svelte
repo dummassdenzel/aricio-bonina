@@ -38,6 +38,7 @@
   onMount(async () => {
     try {
       const response = await api.get("dashboard-stats");
+      console.log(response);
       dashboardStats = response.payload;
     } catch (err: any) {
       error = err.message;

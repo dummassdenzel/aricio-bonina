@@ -114,6 +114,17 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 }
                 break;
 
+            case 'encryption-key':
+                // ENDPOINT PROTECTION
+                $user = $auth->authenticateRequest();
+                if ($user) {
+                    //NOT TO SELF: REVISE THIS
+                    $tempKey = "5d9831496a0db45f6ed44b42194890c1f1d233cd7fbe9d1d1c2e76dc96e5c3f2";
+                    $_SESSION['temp_encryption_key'] = $tempKey;
+                    echo json_encode(['key' => $tempKey]);
+                }
+                break;
+
             default:
                 // RESPONSE FOR UNSUPPORTED REQUESTS
                 echo "No Such Request";

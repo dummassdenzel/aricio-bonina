@@ -5,6 +5,7 @@
   export let unitNumber: string;
   export let floor: string;
   export let current_lease: {
+    id: number;
     tenants: Array<{
       first_name: string;
       last_name: string;
