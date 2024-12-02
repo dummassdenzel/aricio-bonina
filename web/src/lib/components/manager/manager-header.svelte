@@ -1,6 +1,12 @@
 <script lang="ts">
     import { auth } from "$lib/stores/auth";
     import { goto } from "$app/navigation";
+
+    let dropdownOpen = false;
+
+    function toggleDropdown() {
+    dropdownOpen = !dropdownOpen;
+    }
   
     function handleLogout() {
       auth.logout();
@@ -8,16 +14,6 @@
     }
   </script>
   
-  <!-- <nav>
-    {#if $auth.isAuthenticated}
-      <div class="user-info">
-        Welcome, {$auth.user?.first_name}!
-      </div>
-      <button on:click={handleLogout}>Logout</button>
-    {:else}
-      <a href="/web/login">Login</a>
-    {/if}
-  </nav> -->
 
 <header class="flex justify-between">
     <!-- logo of aricio bonina real estate leasing -->
@@ -51,13 +47,25 @@
 
     <!-- user profile -->
     <div class="flex gap-3">
-        <!-- notification bell -->
-        <!-- <button><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#686868" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell-dot"><path d="M19.4 14.9C20.2 16.4 21 17 21 17H3s3-2 3-9c0-3.3 2.7-6 6-6 .7 0 1.3.1 1.9.3"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><circle cx="18" cy="8" r="3"/></svg></button> -->
-        
-        <!-- actions: profile, settings, log out. create dropdown function (to be implemented) -->
+        <!-- actions: profile and settings. create dropdown function (to be implemented) -->
         <div class="flex justify-center align-middle text-center gap-3 items-center">
-            <div class="w-8 h-8 bg-lightteal rounded-full text-center flex justify-center items-center text-teal text-xs font-bold">d</div>
-            <button class="user-info text-teal text-xs font-semibold hover:text-red-500" on:click={handleLogout}>{$auth.user?.first_name}</button>
+          <div class="w-8 h-8 bg-lightteal rounded-full text-center flex justify-center items-center text-teal text-xs font-bold">
+            {#if $auth.user?.first_name}
+                { $auth.user.first_name[0].toUpperCase() }
+            {/if}
+          </div>
+
+          <button class="user-info text-teal text-xs font-semibold hover:text-slate" on:click={toggleDropdown}>{$auth.user?.first_name}</button>
         </div>
+
+        {#if dropdownOpen}
+          <div class="absolute right-12 mt-10 w-28 bg-transparent backdrop-blur-md border rounded-lg">
+            <ul>
+              <!-- svelte-ignore a11y_click_events_have_key_events -->
+              <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+              <li class="px-4 py-2 text-red font-medium text-xs cursor-pointer hover:bg-back" on:click={handleLogout}>Log Out</li>
+            </ul>
+          </div>
+        {/if}
     </div>
 </header>
