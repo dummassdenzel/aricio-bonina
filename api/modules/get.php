@@ -245,14 +245,14 @@ class Get extends GlobalMethods
                     ];
                 }
 
-                // Add to total tenant count
+                // TENANT COUNT
                 $stats['totalTenants'] += $row['tenant_count'];
             }
 
-            // Count unique occupied units
+            // OCCUPIED UNITS
             $stats['occupiedUnits'] = count($result['data']);
 
-            // Get total units (including unoccupied)
+            // ALL UNITS
             $totalUnitsResult = $this->executeQuery("SELECT COUNT(*) as total FROM units");
             $stats['totalUnits'] = $totalUnitsResult['data'][0]['total'];
 
@@ -287,7 +287,7 @@ class Get extends GlobalMethods
         $result = $this->executeQuery($sql, $params);
 
         if ($result['code'] == 200) {
-            // Organize leases by unit
+            // ORGANIZE LEASES BY UNIT
             $organizedLeases = [];
             foreach ($result['data'] as $lease) {
                 $unitNumber = $lease['unit_number'];
