@@ -1,9 +1,11 @@
 import CryptoJS from 'crypto-js';
 
 class EncryptionService {
-    private static readonly key = "5d9831496a0db45f6ed44b42194890c1f1d233cd7fbe9d1d1c2e76dc96e5c3f2";
+    private static readonly key = import.meta.env.VITE_ENCRYPTION_KEY;
 
     static decrypt(encryptedData: string): any {
+        if (!encryptedData) return null;
+        
         try {
             // DECODE BASE64 STRING TO GET COMBINED IV + ENCRYPTED DATA
             const combined = CryptoJS.enc.Base64.parse(encryptedData);
@@ -33,6 +35,9 @@ class EncryptionService {
             return JSON.parse(decryptedStr);
         } catch (error) {
             console.error('Decryption failed:', error);
+            if (import.meta.env.MODE === 'development') {
+                console.error('Original data:', encryptedData);
+            }
             throw error;
         }
     }

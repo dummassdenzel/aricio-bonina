@@ -52,6 +52,7 @@ class Get extends GlobalMethods
             } else {
                 $errmsg = "No data found.";
                 $code = 404;
+                return array("code" => $code, "errmsg" => $errmsg);
             }
         } catch (\PDOException $e) {
             $errmsg = $e->getMessage();
