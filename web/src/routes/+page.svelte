@@ -8,16 +8,12 @@
 </script>
 
 <section>
-  <div class="flex flex-col gap-20">
+  <div class="flex flex-col gap-20 justify-center">
     <Header />
-    <div class="mt-20 mb-20">
-      <Hero />
-    </div>
+    <Hero />
     <About />
     <Features />
     <Contact />
-  </div>
-  <div class="mt-20">
     <Footer />
   </div>
 </section>

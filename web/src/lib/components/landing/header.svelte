@@ -7,7 +7,7 @@
   <!-- logo of Aricio Bonina Real Estate Leasing -->
   <div class="flex items-center gap-2.5">
     <div class="w-3 h-9 bg-teal rounded-full"></div>
-    <h1 class="font-semibold text-midnight text-sm flex flex-col">
+    <h1 class="font-semibold text-midnight text-xs flex flex-col">
       aricio <span class="text-teal">real estate</span>
     </h1>
   </div>

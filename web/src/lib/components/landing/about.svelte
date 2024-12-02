@@ -1,4 +1,5 @@
-<section id="about" class="flex flex-col md:flex-row items-center gap-20 p-6 md:p-24 bg-back rounded-2xl">
+<section id="about" class="p-20">
+  <div class="flex flex-col md:flex-row items-center gap-10 md:p-20 p-6 bg-back rounded-2xl">
     <!-- about us -->
     <div class="w-full md:w-1/2 text-center md:text-justify">
       <h2 class="md:text-3xl font-bold text-teal mb-4 font-inter">About Us</h2>
@@ -10,21 +11,12 @@
     
       <!-- location -->
       <p class="text-teal leading-relaxed font-semibold">Sea Pearl Residences</p>
-      <p class="text-slate leading-relaxed text-sm mb-5">69 Gallagher Street, East Tapinac, Olongapo City</p>
-      
-      <!-- ceo profile -->
-      <!-- <div class="border-t">
-        <div class="flex items-center gap-4 mt-5">
-            <div class="w-10 h-10 rounded-full bg-drop"></div> 
-            <div>
-              <p class="text-muted text-sm">Founder and CEO, Aricio Bonina Real Estate Leasing</p>
-            </div>
-          </div>
-      </div> -->
+      <p class="text-slate leading-relaxed text-sm">69 Gallagher Street, East Tapinac, Olongapo City</p>
     </div>
 
     <!-- image -->
     <div class="w-full md:w-1/2 bg-drop rounded-2xl h-80 flex items-center justify-center">
-        <!-- add image here -->
+        <!-- add image or map api here -->
     </div>
+  </div>
 </section>
