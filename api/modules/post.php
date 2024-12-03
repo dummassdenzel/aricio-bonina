@@ -111,14 +111,16 @@ class Post extends GlobalMethods
 
             // CREATE TENANTS
             foreach ($data->tenants as $tenant) {
-                $sql = "INSERT INTO tenants (first_name, last_name, lease_id, move_in_date) 
-                    VALUES (?, ?, ?, ?)";
+                $sql = "INSERT INTO tenants (first_name, last_name, lease_id, move_in_date, contact_number, email) 
+                    VALUES (?, ?, ?, ?, ?, ?)";
                 $stmt = $this->pdo->prepare($sql);
                 $stmt->execute([
                     $tenant->first_name,
                     $tenant->last_name,
                     $leaseId,
-                    $data->move_in_date
+                    $data->move_in_date,
+                    $tenant->phone_number,
+                    $tenant->email
                 ]);
             }
 
@@ -165,6 +167,34 @@ class Post extends GlobalMethods
 
             $this->pdo->commit();
             return $this->sendPayload(null, "success", "Successfully renewed lease", 200);
+        } catch (PDOException $e) {
+            $this->pdo->rollBack();
+            return $this->sendPayload(null, "failed", $e->getMessage(), 400);
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            return $this->sendPayload(null, "failed", $e->getMessage(), 400);
+        }
+    }
+
+    public function endLease($data)
+    {
+        try {
+            $this->pdo->beginTransaction();
+
+            $sql = "DELETE FROM tenants WHERE lease_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$data->lease_id]);
+
+            $sql = "DELETE FROM leases WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$data->lease_id]);
+
+            if ($stmt->rowCount() === 0) {
+                throw new Exception("Lease not found.");
+            }
+
+            $this->pdo->commit();
+            return $this->sendPayload(null, "success", "Successfully ended lease and removed tenants", 200);
         } catch (PDOException $e) {
             $this->pdo->rollBack();
             return $this->sendPayload(null, "failed", $e->getMessage(), 400);

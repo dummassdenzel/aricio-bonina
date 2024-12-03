@@ -103,7 +103,6 @@ class Get extends GlobalMethods
                     WHEN EXISTS (
                         SELECT 1 FROM leases l 
                         WHERE l.unit_id = u.id 
-                        AND CURRENT_DATE BETWEEN l.start_date AND l.end_date
                     ) THEN 'occupied'
                     ELSE 'vacant'
                 END as status

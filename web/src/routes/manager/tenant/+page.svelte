@@ -23,20 +23,20 @@
     try {
       const response = await api.get("units");
       units = response.payload;
-      console.log(units);
     } catch (err: any) {
       error = err.message;
     }
   }
 
   onMount(async () => {
-    await Promise.all([loadTenants(), loadUnits()]);
+    loadTenants();
   });
 
   // MODAL CONTROLS
   let showModal = false;
   function openModal() {
     showModal = true;
+    loadUnits();
   }
 
   function getTodayDate() {
@@ -122,7 +122,7 @@
   async function validateForm(): Promise<boolean> {
     let errors = [];
 
-    if (!formData.unit_number.trim()) {
+    if (!formData.unit_number) {
       errors.push("Unit number is required");
     }
 

@@ -147,6 +147,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 echo json_encode($post->renewLease($data));
                 break;
 
+            case 'endlease':
+                // $user = $auth->authenticateRequest();
+                echo json_encode($post->endLease($data));
+                break;
+
             default:
                 // RESPONSE FOR UNSUPPORTED REQUESTS
                 echo "No Such Request";
