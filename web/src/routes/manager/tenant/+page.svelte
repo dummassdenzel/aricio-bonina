@@ -5,19 +5,9 @@
   import { load } from "../+layout";
 
   let tenants: any[] = [];
+  let units: any[] = [];
 
   let error: string | null = null;
-  let success: string | null = null;
-
-  // VALIDATION FOR ERRORS
-  let errors = {
-    unit_number: "",
-    move_in_date: "",
-    start_date: "",
-    end_date: "",
-    rent_amount: "",
-    tenants: [] as string[],
-  };
 
   // GET ALL TENANTS
   async function loadTenants() {
@@ -29,8 +19,18 @@
     }
   }
 
+  async function loadUnits() {
+    try {
+      const response = await api.get("units");
+      units = response.payload;
+      console.log(units);
+    } catch (err: any) {
+      error = err.message;
+    }
+  }
+
   onMount(async () => {
-    loadTenants();
+    await Promise.all([loadTenants(), loadUnits()]);
   });
 
   // MODAL CONTROLS
@@ -43,6 +43,7 @@
     return new Date().toISOString().split("T")[0];
   }
 
+  // INITIALIZE FORM DATA
   let formData = {
     unit_number: "",
     move_in_date: getTodayDate(),
@@ -53,28 +54,78 @@
       {
         first_name: "",
         last_name: "",
+        phone_number: "",
+        email: "",
       },
     ],
   };
 
   function addTenant() {
-    formData.tenants = [...formData.tenants, { first_name: "", last_name: "" }];
+    formData.tenants = [
+      ...formData.tenants,
+      { first_name: "", last_name: "", phone_number: "", email: "" },
+    ];
   }
 
   function removeTenant(index: number) {
     formData.tenants = formData.tenants.filter((_, i) => i !== index);
   }
 
-  // Validation function
+  async function closeModal() {
+    showModal = false;
+    formData = {
+      unit_number: "",
+      move_in_date: getTodayDate(),
+      start_date: getTodayDate(),
+      end_date: "",
+      rent_amount: "",
+      tenants: [{ first_name: "", last_name: "", phone_number: "", email: "" }],
+    };
+  }
+
+  async function handleSubmit(event: SubmitEvent) {
+    event.preventDefault();
+
+    const isValid = await validateForm();
+    if (!isValid) return;
+
+    try {
+      const response = await api.post("addtenant", formData);
+
+      await swal.fire({
+        title: "Success!",
+        text: response.status.message,
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      closeModal();
+      await loadTenants();
+    } catch (err: any) {
+      await swal.fire({
+        title: "Error",
+        text: err.message || "An error occurred",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  }
+  // FORM VALIDATION
+  // VALIDATION FOR ERRORS
+  let errors = {
+    unit_number: "",
+    move_in_date: "",
+    start_date: "",
+    end_date: "",
+    rent_amount: "",
+    tenants: [] as string[],
+  };
   async function validateForm(): Promise<boolean> {
     let errors = [];
 
-    // Check unit number
     if (!formData.unit_number.trim()) {
       errors.push("Unit number is required");
     }
 
-    // Check dates
     if (!formData.move_in_date) {
       errors.push("Move-in date is required");
     }
@@ -87,7 +138,6 @@
       errors.push("Lease end date is required");
     }
 
-    // Validate date order
     if (formData.start_date && formData.end_date) {
       const start = new Date(formData.start_date);
       const end = new Date(formData.end_date);
@@ -96,14 +146,12 @@
       }
     }
 
-    // Check rent amount
     if (!formData.rent_amount) {
       errors.push("Rent amount is required");
     } else if (parseFloat(formData.rent_amount) <= 0) {
       errors.push("Rent amount must be greater than 0");
     }
 
-    // Validate tenants
     if (formData.tenants.length === 0) {
       errors.push("At least one tenant is required");
     }
@@ -127,46 +175,6 @@
     }
 
     return true;
-  }
-  // Add skipConfirmation parameter
-  async function closeModal(skipConfirmation: boolean = false) {
-    showModal = false;
-    formData = {
-      unit_number: "",
-      move_in_date: getTodayDate(),
-      start_date: getTodayDate(),
-      end_date: "",
-      rent_amount: "",
-      tenants: [{ first_name: "", last_name: "" }],
-    };
-  }
-
-  async function handleSubmit(event: SubmitEvent) {
-    event.preventDefault();
-
-    const isValid = await validateForm();
-    if (!isValid) return;
-
-    try {
-      const response = await api.post("addtenant", formData);
-
-      await swal.fire({
-        title: "Success!",
-        text: response.status.message,
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-      closeModal(true);
-      await loadTenants();
-    } catch (err: any) {
-      // Show error message from API
-      await swal.fire({
-        title: "Error",
-        text: err.message || "An error occurred",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    }
   }
 </script>
 
@@ -234,12 +242,21 @@
               >
                 Unit Number:
               </label>
-              <input
-                type="text"
+              <select
                 id="unit_number"
                 bind:value={formData.unit_number}
                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              />
+              >
+                <option value="">Select a unit</option>
+                {#each units as unit}
+                  <option
+                    value={unit.unit_number}
+                    disabled={unit.status === "occupied"}
+                  >
+                    Unit {unit.unit_number} {unit.status}</option
+                  >
+                {/each}
+              </select>
             </div>
           </div>
 
@@ -259,7 +276,7 @@
             {#each formData.tenants as tenant, index}
               <div class="bg-gray-50 p-4 rounded-lg mb-4">
                 <div class="flex justify-between items-center mb-2">
-                  <h4 class="font-medium">Tenant {index + 1}</h4>
+                  <h4 class="font-medium">• Tenant {index + 1}</h4>
                   {#if formData.tenants.length > 1}
                     <button
                       type="button"
@@ -272,9 +289,9 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                  <div class="mb-4">
+                  <div class="">
                     <p class="block text-gray-700 text-sm font-bold mb-2">
-                      First Name
+                      First Name *
                     </p>
                     <input
                       type="text"
@@ -283,13 +300,33 @@
                     />
                   </div>
 
-                  <div class="mb-4">
+                  <div class="">
                     <p class="block text-gray-700 text-sm font-bold mb-2">
-                      Last Name
+                      Last Name *
                     </p>
                     <input
                       type="text"
                       bind:value={tenant.last_name}
+                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                  </div>
+                  <div class="">
+                    <p class="block text-gray-700 text-sm font-bold mb-2">
+                      Contact Number
+                    </p>
+                    <input
+                      type="text"
+                      bind:value={tenant.phone_number}
+                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                  </div>
+                  <div class="">
+                    <p class="block text-gray-700 text-sm font-bold mb-2">
+                      Email
+                    </p>
+                    <input
+                      type="text"
+                      bind:value={tenant.email}
                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     />
                   </div>
@@ -353,7 +390,7 @@
             <button
               type="button"
               class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-              on:click={() => closeModal(false)}
+              on:click={() => closeModal()}
             >
               Cancel
             </button>
