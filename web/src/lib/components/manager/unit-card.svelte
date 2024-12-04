@@ -135,7 +135,7 @@
   .modal:hover {
     transform: translateY(-4px);
     box-shadow:
-      0 6px 12px rgba(0, 0, 0, 0.15),
-      0 4px 10px rgba(0, 0, 0, 0.08);
+      0 6px 12px rgba(194, 192, 192, 0.30),
+      0 4px 10px rgba(194, 192, 192, 0.08);
   }
 </style>
