@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { api } from "$lib/services/api";
+  import Chart from "chart.js/auto";
+  import { formatDate } from "$lib/pipes/date-pipe";
 
   let error: string | null = null;
-  let success: string | null = null;
 
   interface DashboardStats {
     totalTenants: number;
@@ -35,11 +36,74 @@
     recentPayments: [],
   };
 
+  // HARD  CODED DATA FOR CHART
+  const monthlyData = {
+    labels: ["January", "February", "March", "April", "May", "June"],
+    revenue: [45000, 48000, 47000, 49000, 46000, 50000],
+  };
+
   onMount(async () => {
     try {
       const response = await api.get("dashboard-stats");
       console.log(response);
       dashboardStats = response.payload;
+
+      // INITIALIZE CHART
+      const ctx = document.getElementById(
+        "financialChart",
+      ) as HTMLCanvasElement;
+      new Chart(ctx, {
+        // TYPE OF CHART
+        type: "line",
+        data: {
+          // X-AXIS LABELS(yung months)
+          labels: monthlyData.labels,
+          // DATASET TO BE PLOTTED
+          datasets: [
+            {
+              // LABEL OF THE DATASET
+              label: "Monthly Revenue",
+              // DATA POINTS
+              data: monthlyData.revenue,
+              // COLOR OF THE LINE
+              borderColor: "#14B8A6",
+              // SMOOTHNESS OF THE LINE
+              tension: 0.4,
+              // IF THE LINE SHOULD BE FILLED
+              fill: false,
+            },
+          ],
+        },
+        // CHART CONFIGURATION OPTIONS
+        options: {
+          // MAKES THE CHART RESIZE IF ITS CONTAINER (yung div) RESIZES
+          responsive: true,
+          // MAINTAINS THE ASPECT RATIO OF THE CHART
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              // POSITION OF THE LEGEND BOX
+              position: "top",
+            },
+            title: {
+              // IF THE TITLE SHOULD BE DISPLAYED
+              display: true,
+              // TITLE OF THE CHART
+              text: "Monthly Revenue",
+            },
+          },
+          scales: {
+            y: {
+              // IF THE CHART SHOULD START FROM ZERO
+              beginAtZero: true,
+              ticks: {
+                // FORMAT Y-AXIS VALUES WITH PESO SIGN
+                callback: (value) => "₱" + value.toLocaleString(),
+              },
+            },
+          },
+        },
+      });
     } catch (err: any) {
       error = err.message;
     }
@@ -52,15 +116,6 @@
     : 0;
 
   $: vacantUnits = dashboardStats.totalUnits - dashboardStats.occupiedUnits;
-
-  // Helper function to format dates
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
 </script>
 
 <h1 class="text-3xl font-bold text-teal">Dashboard</h1>
@@ -68,17 +123,12 @@
 <div class="mt-6 flex flex-col gap-4">
   <div class="flex justify-between gap-4 rounded-2xl">
     <!-- left side -->
-    <div class="grid grid-cols-2 gap-4 w-full">
+    <div class="grid grid-cols-1 gap-4 w-full">
       <!-- analytics -->
       <div
-        class="w-auto h-auto bg-back border backdrop-blur-sm backdrop-filter rounded-xl text-center flex items-center justify-center text-muted font-inter text-sm"
+        class="w-full h-full bg-back border backdrop-blur-sm backdrop-filter rounded-xl p-4"
       >
-        income/costs stats
-      </div>
-      <div
-        class="w-auto h-auto bg-back border backdrop-blur-sm backdrop-filter rounded-xl text-center flex items-center justify-center text-muted font-inter text-sm"
-      >
-        maintenance request
+        <canvas id="financialChart"></canvas>
       </div>
     </div>
 
