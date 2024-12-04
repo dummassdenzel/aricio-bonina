@@ -109,7 +109,7 @@ class Get extends GlobalMethods
                 FROM units u";
 
         if ($id !== null) {
-            $sql .= " WHERE u.id = :id";
+            $sql .= " WHERE u.unit_number = :id";
             $params = ['id' => $id];
         } else {
             $params = [];
