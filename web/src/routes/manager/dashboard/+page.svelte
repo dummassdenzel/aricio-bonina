@@ -63,7 +63,7 @@
   };
 </script>
 
-<h1 class="text-3xl font-bold text-teal mb-6">Dashboard</h1>
+<h1 class="text-3xl font-bold text-teal">Dashboard</h1>
 
 <div class="mt-6 flex flex-col gap-4">
 
@@ -100,31 +100,31 @@
     </div>
   </div>
 
-  <h1 class="text-3xl font-bold text-teal mb-4 mt-6">Lease Overview</h1>
+  <h1 class="text-2xl font-bold text-teal mb-2 mt-2">Lease Overview</h1>
   <div class="flex justify-between w-100 gap-4">
 
     <!-- recent renewals -->
     <div class="w-full h-auto border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4 flex flex-col items-center justify-center gap-2">
       <p class="text-lg text-teal font-bold text-center font-inter">Total of Overdue</p>
-      <p class="text-4xl text-slate font-bold text-center font-inter">{dashboardStats.overdueLease.length}</p>
+      <p class="text-8xl text-slate font-bold text-center font-inter">{dashboardStats.overdueLease.length}</p>
     </div>
 
     <!-- overdue -->
     <div class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4">
-      <p class="text-lg text-teal font-bold font-inter">Overdue</p>
+      <p class="text-lg text-teal font-bold font-inter mb-4">Overdue</p>
       {#if dashboardStats.overdueLease.length > 0}
-      <div class="space-y-3">
+      <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
         {#each dashboardStats.overdueLease as lease}
-          <div class="flex justify-between items-center border-b pb-2">
-            <div>
-              <p class="font-medium">Unit {lease.unit}</p>
-              <p class="text-sm text-gray-500 max-w-[200px] truncate"
+            <div class="justify-between bg-back p-3 rounded-lg">
+              <div class="flex justify-between items-center">
+                <p class="font-inter text-teal font-medium text-sm">Unit {lease.unit}</p>
+                <span class="text-xs text-red">{lease.daysOverdue} days ago</span>
+              </div>
+              <!-- <p class="text-xs text-muted  "
                 title={lease.tenants} >
                 {lease.tenants}
-              </p>
+              </p> -->
             </div>
-            <span class="text-red-500">{lease.daysOverdue} days</span>
-          </div>
         {/each}
       </div>
       {:else}
@@ -136,20 +136,20 @@
 
     <!-- expring soon -->
     <div class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4">
-      <p class="text-lg text-teal font-bold font-inter">Expiring Soon</p>
+      <p class="text-lg text-teal font-bold font-inter mb-4">Expiring Soon</p>
       {#if dashboardStats.expiringSoon.length > 0}
-      <div class="space-y-3">
+      <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
         {#each dashboardStats.expiringSoon as lease}
-          <div class="flex justify-between items-center border-b pb-2">
-            <div>
-              <p class="font-medium">Unit {lease.unit}</p>
-              <p class="text-sm text-gray-500 max-w-[200px] truncate"
-                title={lease.tenants}>
-                {lease.tenants}
-              </p>
-            </div>
-            <span class="text-gray-500">{formatDate(lease.date)}</span>
+        <div class="justify-between bg-back p-3 rounded-lg">
+          <div class="flex justify-between items-center">
+            <p class="font-inter text-teal font-medium text-sm">Unit {lease.unit}</p>
+            <span class="text-xs text-orange">{formatDate(lease.date)}</span>
           </div>
+          <!-- <p class="text-xs text-muted  "
+            title={lease.tenants} >
+            {lease.tenants}
+          </p> -->
+        </div>
         {/each}
       </div>
       {:else}
@@ -161,11 +161,17 @@
 
     <!-- recent renewals -->
     <div class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4">
-      <p class="text-lg text-teal font-bold font-inter">Recent Renewals</p>
+      <p class="text-lg text-teal font-bold font-inter mb-4">Recent Renewals</p>
       {#if dashboardStats.recentPayments.length > 0}
-      <div class="space-y-3">
+      <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
         {#each dashboardStats.recentPayments as payment}
-          <div class="flex justify-between items-center border-b pb-2">
+        <div class="justify-between bg-back p-3 rounded-lg">
+          <div class="flex justify-between items-center">
+            <p class="font-inter text-teal font-medium text-sm">Unit {payment.unit}</p>
+            <span class="text-xs text-orange">{formatDate(payment.date)}</span>
+          </div>
+        </div>
+          <!-- <div class="flex justify-between items-center border-b pb-2">
             <div>
               <p class="font-medium">Unit {payment.unit}</p>
             </div>
@@ -173,7 +179,7 @@
               <p class="text-green-500 font-medium">₱{payment.amount}</p>
               <p class="text-sm text-gray-500">{formatDate(payment.date)}</p>
             </div>
-          </div>
+          </div> -->
         {/each}
       </div>
       {:else}
@@ -185,6 +191,7 @@
   </div>
 </div>
 
+<!-- ======  O L D  V E R S I O N ======= -->
 
   <!-- Stats Cards -->
   <!-- <div class="bg-white p-6 rounded-lg shadow-sm">

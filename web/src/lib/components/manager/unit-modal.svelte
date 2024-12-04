@@ -157,6 +157,7 @@
                         </div>
                     </div>
                 </div>
+                
                 <!-- tenant information -->
                 <div class="border-t">
                     <h3

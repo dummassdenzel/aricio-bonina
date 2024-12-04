@@ -93,7 +93,7 @@
 <!-- F R O N T E N D -->
 <h1 class="text-3xl font-bold text-teal">Unit Management</h1>
 
-<section class="mt-8">
+<section class="mt-6">
   <div class="flex justify-between align-middle items-center">
     <!-- floor navigation -->
     <div class="bg-back p-1 rounded-xl w-max flex"> 
@@ -144,7 +144,7 @@
   </div>
 
   <!-- unit cards -->
-  <div class="mt-8 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 overflow-auto max-h-[520px] scrollbar-none">
+  <div class="mt-8 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 overflow-auto max-h-[500px] scrollbar-none">
     {#if error}
       <p class="text-red-500">{error}</p>
     {:else if filteredUnits.length === 0}

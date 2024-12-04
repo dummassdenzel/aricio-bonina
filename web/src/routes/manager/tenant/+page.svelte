@@ -179,230 +179,219 @@
 </script>
 
 <h1 class="text-3xl font-bold text-teal">Tenant Management</h1>
-<section class="grid grid-cols-2 gap-8 mt-5">
-  <!-- LEFT SIDE -->
-  <div class="bg-back rounded-lg p-6">
-    <h2 class="text-xl font-bold mb-4">Tenants List</h2>
-    {#if error}
-      <p class="text-red-500">{error}</p>
-    {:else if tenants.length === 0}
-      <p>No tenants found.</p>
-    {:else}
-      <ul class="space-y-2">
-        {#each tenants as tenant}
-          <div class="p-3 bg-white rounded-lg shadow justify-between flex">
-            <p>
-              {tenant.first_name}
-              {tenant.last_name}
-            </p>
-            <p class="text-muted">Unit {tenant.unit_number}</p>
-          </div>
-        {/each}
-      </ul>
-    {/if}
-  </div>
+<section class="grid grid-cols-2 gap-8 mt-6">
+  <div class="flex justify-between gap-2 w-full">
+    <!-- tenant list -->
+     
+    <div class="w-full h-[70vh] flex flex-col">
+      <!-- functionality -->
+      <div class="flex gap-2 mb-6">
+        <!-- search bar -->
+        <div class="flex items-center relative">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+          <input type="text" placeholder="Search by unit or tenant name" class="pl-10 text-xs text-dmSans w-72 text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop" /> <!-- search bar functionality -->
+        </div>
 
-  <!-- RIGHT SIDE -->
-  <div class="space-y-6">
-    <!-- ADD NEW TENANT BUTTON -->
-    <div class="bg-back rounded-lg p-6">
-      <button
-        on:click={openModal}
-        class="w-full bg-muted hover:bg-muted/80 text-white py-3 px-4 rounded-lg transition-colors"
-      >
-        Add New Tenant
-      </button>
+        <!-- buttons -->
+        <div class="flex gap-2">
+          <!-- svelte-ignore a11y_consider_explicit_label -->
+          <!-- sort button -->
+          <button class="bg-back p-3 rounded-2xl hover:bg-backdrop">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down"><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4"/><path d="M7 4v16" /></svg>
+          </button>
+
+          <!-- svelte-ignore a11y_consider_explicit_label -->
+          <!-- add button -->
+          <button class="bg-back p-3 rounded-2xl hover:bg-backdrop"
+              on:click={openModal} >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        {#if error}
+          <p class="text-red-500">{error}</p>
+        {:else if tenants.length === 0}
+        <div class="border p-5 rounded-xl items-center justify-between flex bg-back">
+          <p class="text-sm text-muted">No tenants found.</p>
+        </div>
+        {:else}
+          <ul class="space-y-2">
+            {#each tenants as tenant}
+              <div class="border p-5 rounded-xl items-center justify-between flex">
+                <p class="font-inter text-teal text-sm font-medium">
+                  {tenant.first_name}
+                  {tenant.last_name}
+                </p>
+                <p class="font-inter text-slate text-xs font-medium">Unit {tenant.unit_number}</p>
+              </div>
+            {/each}
+          </ul>
+        {/if}
+      </div>
+      
     </div>
 
-    <!-- PLACEHOLDER -->
-    <div class="bg-back rounded-lg p-6 min-h-[300px]">
-      <h2 class="text-xl font-bold mb-4">Highlighted Tenants</h2>
-      <p class="text-gray-600">(Display of tenants with outstanding rent)</p>
-    </div>
   </div>
 
-  <!-- FORM MODAL-->
+  <!-- highlight tenant -->
+  <div class="flex gap-2 w-full">
+    <!-- <div class="w-full rounded-2xl border"></div> -->
+  </div>
+
+  <!-- tenant form -->
   {#if showModal}
-    <div
-      class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center"
-    >
-      <div
-        class="bg-white p-6 rounded-lg shadow-lg max-h-[90vh] overflow-y-auto"
-      >
-        <h2 class="text-xl font-bold mb-4">Add New Tenant:</h2>
+    <form class="fixed inset-0 bg-muted bg-opacity-40 flex items-center justify-center" on:submit|preventDefault={handleSubmit}>
+      <div class="bg-white p-6 rounded-lg w-1/3 max-h-[80vh] overflow-y-auto">
 
-        <form on:submit|preventDefault={handleSubmit}>
-          <!-- Unit Information -->
-          <div class="mb-6">
-            <h3 class="text-lg font-semibold mb-3">Unit Information *</h3>
-            <div class="mb-4">
-              <label
-                class="block text-gray-700 text-sm font-bold mb-2"
-                for="unit_number"
-              >
-                Unit Number:
-              </label>
-              <select
+        <!-- tenant form -->
+        <div class="flex justify-between items-center border-b">
+          <h1 class="font-inter text-midnight font-semibold text-xl mb-4">Tenant Form</h1>
+          <!-- close button -->
+          <button type="button" class="hover:bg-drop p-2 rounded-full mb-4" aria-label="close modal"
+            on:click={() => closeModal()} >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#686868" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          </button>
+        </div>
+
+        <!-- unit information -->
+        <div class="mt-6">
+          <h1 class="font-inter text-midnight font-semibold text-sm">Unit Information</h1>
+          <p class="text-xs text-muted font-medium mt-2 mb-2">Unit Number</p>
+            <select class="mb-4 appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
                 id="unit_number"
-                bind:value={formData.unit_number}
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              >
-                <option value="">Select a unit</option>
+                bind:value={formData.unit_number} >
+                <option value="">Select Unit</option>
                 {#each units as unit}
                   <option
                     value={unit.unit_number}
-                    disabled={unit.status === "occupied"}
-                  >
-                    Unit {unit.unit_number} {unit.status}</option
-                  >
+                    disabled={unit.status === "occupied"} >
+                    Unit {unit.unit_number} {unit.status}
+                  </option>
                 {/each}
               </select>
-            </div>
+        </div>
+
+        <div class="mb-2">
+          <p class="text-xs text-muted font-medium mb-2">Move In Date</p>
+          <input class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
+            type="date"
+            bind:value={formData.move_in_date} />
+        </div>
+
+        <!-- tenant information -->
+        <div class="mt-6">
+          <div class="flex justify-between">
+            <h1 class="font-inter text-midnight font-semibold text-sm">Tenant Information</h1>
+            <button class="text-slate font-semibold text-xs"
+              type="button"
+              on:click={addTenant} >
+              + add more
+            </button>
           </div>
 
-          <!-- Tenant Information Section -->
-          <div class="mb-6">
-            <div class="flex justify-between items-center mb-3">
-              <h3 class="text-lg font-semibold">Tenant Information *</h3>
-              <button
-                type="button"
-                on:click={addTenant}
-                class="bg-green-500 hover:bg-green-700 text-green-500 font-bold py-1 px-3 rounded text-sm"
-              >
-                + Add more People
-              </button>
-            </div>
-
+          <div class="max-h-56 mt-2 overflow-y-auto flex flex-col gap-2">
             {#each formData.tenants as tenant, index}
-              <div class="bg-gray-50 p-4 rounded-lg mb-4">
-                <div class="flex justify-between items-center mb-2">
-                  <h4 class="font-medium">• Tenant {index + 1}</h4>
+              <div class="bg-back p-4 rounded-lg">
+
+                <!-- tenant count -->
+                <div class="flex justify-between items-center">
+                  <h4 class="text-xs text-slate font-inter font-semibold mb-2">Tenant {index + 1}</h4>
                   {#if formData.tenants.length > 1}
-                    <button
+                    <button class="text-xs text-slate font-semibold"
                       type="button"
-                      on:click={() => removeTenant(index)}
-                      class="bg-red-500 hover:bg-red-700 text-black font-bold rounded text-sm"
-                    >
+                      on:click={() => removeTenant(index)}>
                       Remove
                     </button>
                   {/if}
                 </div>
+                <!-- end of tenant count -->
+          
+                <!-- tenant details  -->
+                <div class="grid grid-cols-2 gap-2">
 
-                <div class="grid grid-cols-2 gap-4">
-                  <div class="">
-                    <p class="block text-gray-700 text-sm font-bold mb-2">
-                      First Name *
-                    </p>
-                    <input
+                  <div>
+                    <p class="text-xs text-muted font-medium mb-2">First Name</p>
+                    <input class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
                       type="text"
-                      bind:value={tenant.first_name}
-                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
+                      bind:value={tenant.first_name} />
                   </div>
-
-                  <div class="">
-                    <p class="block text-gray-700 text-sm font-bold mb-2">
-                      Last Name *
-                    </p>
-                    <input
+          
+                  <div>
+                    <p class="text-xs text-muted font-medium mb-2">Last Name</p>
+                    <input class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
                       type="text"
-                      bind:value={tenant.last_name}
-                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
+                      bind:value={tenant.last_name} />
                   </div>
-                  <div class="">
-                    <p class="block text-gray-700 text-sm font-bold mb-2">
-                      Contact Number
-                    </p>
-                    <input
+          
+                  <div class="mt-2">
+                    <p class="text-xs text-muted font-medium mb-2">Contact Number</p>
+                    <input class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
                       type="text"
-                      bind:value={tenant.phone_number}
-                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
+                      bind:value={tenant.phone_number} />
                   </div>
-                  <div class="">
-                    <p class="block text-gray-700 text-sm font-bold mb-2">
-                      Email
-                    </p>
-                    <input
+          
+                  <div class="mt-2">
+                    <p class="text-xs text-muted font-medium mb-2">Email</p>
+                    <input class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
                       type="text"
-                      bind:value={tenant.email}
-                      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
+                      bind:value={tenant.email} />
                   </div>
                 </div>
+                <!-- end of tenant details -->
               </div>
             {/each}
+          </div>
+        </div>
 
-            <div class="mb-4">
-              <p class="block text-gray-700 text-sm font-bold mb-2">
-                Move-in Date
-              </p>
-              <input
+        <!-- lease information -->
+        <div class="mt-6">
+          <h1 class="font-inter text-midnight font-semibold text-sm">Lease Information</h1>
+          <div class="grid grid-cols-2 gap-2">
+
+            <div>
+              <p class="text-xs text-muted font-medium mt-2 mb-2">Start of Lease</p>
+              <input class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
                 type="date"
-                bind:value={formData.move_in_date}
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              />
+                bind:value={formData.start_date} />
             </div>
-          </div>
 
-          <!-- Lease Information Section -->
-          <div class="mb-6">
-            <h3 class="text-lg font-semibold mb-3">Lease Information *</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="mb-4">
-                <p class="block text-gray-700 text-sm font-bold mb-2">
-                  Lease Start Date
-                </p>
-                <input
-                  type="date"
-                  bind:value={formData.start_date}
-                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
-
-              <div class="mb-4">
-                <p class="block text-gray-700 text-sm font-bold mb-2">
-                  Lease End Date
-                </p>
-                <input
-                  type="date"
-                  bind:value={formData.end_date}
-                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
-
-              <div class="mb-4 col-span-2">
-                <p class="block text-gray-700 text-sm font-bold mb-2">
-                  Rent Amount
-                </p>
-                <input
-                  type="number"
-                  step="0.01"
-                  bind:value={formData.rent_amount}
-                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
+            <div>
+              <p class="text-xs text-muted font-medium mt-2 mb-2">End of Lease</p>
+              <input class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
+                type="date"
+                bind:value={formData.end_date} />
             </div>
-          </div>
 
-          <div class="flex justify-end gap-2">
-            <button
-              type="button"
-              class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-              on:click={() => closeModal()}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded"
-            >
-              Save
-            </button>
+            <div class="mb-4 col-span-2">
+              <p class="text-xs text-muted font-medium mt-2 mb-2">Rent Amount</p>
+              <input class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
+                placeholder="PHP"
+                type="number"
+                step="0.01"
+                bind:value={formData.rent_amount} />
+            </div>
+
           </div>
-        </form>
+        </div>
+
+        <!-- buttons -->
+        <div class="flex justify-between gap-2 mt-6">
+          <button class="p-4 w-full text-xs font-inter text-red bg-red20 border border-red rounded-lg"
+            type="button"
+            on:click={() => closeModal()} >
+            Cancel
+          </button>
+
+          <button class="p-4 w-full text-xs font-inter text-green bg-green20 border border-green rounded-lg"
+            type="submit" >
+            Save
+          </button>
+        </div>
+        <!-- end of buttons -->
+
       </div>
-    </div>
+    </form>
   {/if}
 </section>

@@ -39,8 +39,8 @@
     }
 </script>
 
-<h1 class="text-3xl font-bold text-teal">Lease History</h1>
-<section class="mt-5">
+<h1 class="text-3xl font-bold text-teal">Billing History</h1>
+<section class="mt-6">
     <div class="bg-back rounded-lg p-6">
         {#if error}
             <p class="text-red-500">{error}</p>
