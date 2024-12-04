@@ -85,15 +85,15 @@
       </div>
 
       <!-- lease overview -->
-      <div class="flex gap-2 items-center">
+      <div class="flex gap-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="18"
-          height="18"
+          width="15"
+          height="15"
           viewBox="0 0 24 24"
           fill="none"
           stroke="#314A60"
-          stroke-width="1.5"
+          stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
         >
@@ -113,7 +113,7 @@
   {:else}
     <!-- IF TENANTS ARE EMPTY, DISPLAY AVAILABLE STATUS -->
     <div
-      class="flex items-center gap-2 justify-center bg-green20 p-2 px-4 rounded-full"
+      class="flex items-center gap-2 justify-center bg-green20 p-2 px-4 rounded-full mt-2"
     >
       <div class="w-2 h-2 bg-green rounded-full"></div>
       <p class="text-xs text-green font-medium">Available</p>
