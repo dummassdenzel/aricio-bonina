@@ -66,117 +66,165 @@
 <h1 class="text-3xl font-bold text-teal">Dashboard</h1>
 
 <div class="mt-6 flex flex-col gap-4">
-
   <div class="flex justify-between gap-4 rounded-2xl">
-
     <!-- left side -->
-    <div class="grid grid-cols-2 gap-4 w-full ">
+    <div class="grid grid-cols-2 gap-4 w-full">
       <!-- analytics -->
-      <div class="w-auto h-auto bg-back border backdrop-blur-sm backdrop-filter rounded-xl text-center flex items-center justify-center text-muted font-inter text-sm">income/costs stats</div>
-      <div class="w-auto h-auto bg-back border backdrop-blur-sm backdrop-filter rounded-xl text-center flex items-center justify-center text-muted font-inter text-sm">maintenance request</div>
+      <div
+        class="w-auto h-auto bg-back border backdrop-blur-sm backdrop-filter rounded-xl text-center flex items-center justify-center text-muted font-inter text-sm"
+      >
+        income/costs stats
+      </div>
+      <div
+        class="w-auto h-auto bg-back border backdrop-blur-sm backdrop-filter rounded-xl text-center flex items-center justify-center text-muted font-inter text-sm"
+      >
+        maintenance request
+      </div>
     </div>
 
     <!-- right side -->
     <div class="flex flex-col gap-2">
-      <div class="w-80 h-20 border backdrop-blur-sm backdrop-filter rounded-xl p-4">
+      <div
+        class="w-80 h-20 border backdrop-blur-sm backdrop-filter rounded-xl p-4"
+      >
         <p class="text-xs text-teal font-medium">All Tenants</p>
-        <p class="text-3xl text-teal font-bold text-end font-inter">{dashboardStats.totalTenants}</p>
+        <p class="text-3xl text-teal font-bold text-end font-inter">
+          {dashboardStats.totalTenants}
+        </p>
       </div>
 
-      <div class="w-80 h-20 border backdrop-blur-sm backdrop-filter rounded-xl p-4">
+      <div
+        class="w-80 h-20 border backdrop-blur-sm backdrop-filter rounded-xl p-4"
+      >
         <p class="text-xs text-teal font-medium">Available Units</p>
-        <p class="text-3xl text-teal font-bold text-end font-inter">{vacantUnits}</p>
+        <p class="text-3xl text-teal font-bold text-end font-inter">
+          {vacantUnits}
+        </p>
       </div>
 
-      <div class="w-80 h-20 border backdrop-blur-sm backdrop-filter rounded-xl p-4">
+      <div
+        class="w-80 h-20 border backdrop-blur-sm backdrop-filter rounded-xl p-4"
+      >
         <p class="text-xs text-teal font-medium font-inter">Occupied Units</p>
-        <p class="text-3xl text-teal font-bold text-end font-inter">{dashboardStats.occupiedUnits} / {dashboardStats.totalUnits}</p>
+        <p class="text-3xl text-teal font-bold text-end font-inter">
+          {dashboardStats.occupiedUnits} / {dashboardStats.totalUnits}
+        </p>
       </div>
 
-      <div class="w-80 h-20 border backdrop-blur-sm backdrop-filter rounded-xl p-4">
-        <p class="text-xs text-teal font-medium font-inter">Maintenance Units</p>
-        <p class="text-3xl text-teal font-bold text-end font-inter">{dashboardStats.overdueLease.length}</p>
+      <div
+        class="w-80 h-20 border backdrop-blur-sm backdrop-filter rounded-xl p-4"
+      >
+        <p class="text-xs text-teal font-medium font-inter">
+          Maintenance Units
+        </p>
+        <p class="text-3xl text-teal font-bold text-end font-inter">
+          {dashboardStats.overdueLease.length}
+        </p>
       </div>
     </div>
   </div>
 
-  <h1 class="text-2xl font-bold text-teal mb-2 mt-2 font-inter">Lease Overview</h1>
+  <h1 class="text-2xl font-bold text-teal mb-2 mt-2 font-inter">
+    Lease Overview
+  </h1>
   <div class="flex justify-between w-100 gap-4">
-
     <!-- recent renewals -->
-    <div class="w-full h-auto border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4 flex flex-col items-center justify-center gap-2">
-      <p class="text-lg text-teal font-bold text-center font-inter">Total of Overdue</p>
-      <p class="text-8xl text-slate font-bold text-center font-inter">{dashboardStats.overdueLease.length}</p>
+    <div
+      class="w-full h-auto border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4 flex flex-col items-center justify-center gap-2"
+    >
+      <p class="text-lg text-teal font-bold text-center font-inter">
+        Total of Overdue
+      </p>
+      <p class="text-8xl text-slate font-bold text-center font-inter">
+        {dashboardStats.overdueLease.length}
+      </p>
     </div>
 
     <!-- overdue -->
-    <div class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4">
+    <div
+      class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4"
+    >
       <p class="text-lg text-teal font-bold font-inter mb-4">Overdue</p>
       {#if dashboardStats.overdueLease.length > 0}
-      <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
-        {#each dashboardStats.overdueLease as lease}
+        <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
+          {#each dashboardStats.overdueLease as lease}
             <div class="justify-between bg-back p-3 rounded-lg">
               <div class="flex justify-between items-center">
-                <p class="font-inter text-teal font-medium text-sm">Unit {lease.unit}</p>
-                <span class="text-xs text-red">{lease.daysOverdue} days ago</span>
+                <p class="font-inter text-teal font-medium text-sm">
+                  Unit {lease.unit}
+                </p>
+                <span class="text-xs text-red"
+                  >{lease.daysOverdue} days ago</span
+                >
               </div>
               <!-- <p class="text-xs text-muted  "
                 title={lease.tenants} >
                 {lease.tenants}
               </p> -->
             </div>
-        {/each}
-      </div>
+          {/each}
+        </div>
       {:else}
-      <div class="bg-back p-4 rounded-lg mt-4">
-        <p class="text-xs text-muted">No overdue leases.</p>
-      </div>
+        <div class="bg-back p-4 rounded-lg mt-4">
+          <p class="text-xs text-muted">No overdue leases.</p>
+        </div>
       {/if}
     </div>
 
     <!-- expring soon -->
-    <div class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4">
+    <div
+      class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4"
+    >
       <p class="text-lg text-teal font-bold font-inter mb-4">Expiring Soon</p>
       {#if dashboardStats.expiringSoon.length > 0}
-      <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
-        {#each dashboardStats.expiringSoon as lease}
-        <div class="justify-between bg-back p-3 rounded-lg">
-          <div class="flex justify-between items-center">
-            <p class="font-inter text-teal font-medium text-sm">Unit {lease.unit}</p>
-            <span class="text-xs text-orange">{formatDate(lease.date)}</span>
-          </div>
-          <!-- <p class="text-xs text-muted  "
+        <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
+          {#each dashboardStats.expiringSoon as lease}
+            <div class="justify-between bg-back p-3 rounded-lg">
+              <div class="flex justify-between items-center">
+                <p class="font-inter text-teal font-medium text-sm">
+                  Unit {lease.unit}
+                </p>
+                <span class="text-xs text-orange">{formatDate(lease.date)}</span
+                >
+              </div>
+              <!-- <p class="text-xs text-muted  "
             title={lease.tenants} >
             {lease.tenants}
           </p> -->
+            </div>
+          {/each}
         </div>
-        {/each}
-      </div>
       {:else}
-      <div class="bg-back p-4 rounded-lg mt-4">
-        <p class="text-xs text-muted">No lease expiring soon.</p>
-      </div>
+        <div class="bg-back p-4 rounded-lg mt-4">
+          <p class="text-xs text-muted">No lease expiring soon.</p>
+        </div>
       {/if}
     </div>
 
     <!-- recent renewals -->
-    <div class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4">
+    <div
+      class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4"
+    >
       <p class="text-lg text-teal font-bold font-inter mb-4">Recent Renewals</p>
       {#if dashboardStats.recentPayments.length > 0}
-      <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
-        {#each dashboardStats.recentPayments as payment}
-        <div class="justify-between bg-back p-3 rounded-lg">
-          <div class="flex justify-between items-center">
-            <p class="font-inter text-teal font-medium text-sm">Unit {payment.unit}</p>
-            <span class="text-xs text-orange">{formatDate(payment.date)}</span>
-          </div>
+        <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
+          {#each dashboardStats.recentPayments as payment}
+            <div class="justify-between bg-back p-3 rounded-lg">
+              <div class="flex justify-between items-center">
+                <p class="font-inter text-teal font-medium text-sm">
+                  Unit {payment.unit}
+                </p>
+                <span class="text-xs text-orange"
+                  >{formatDate(payment.date)}</span
+                >
+              </div>
+            </div>
+          {/each}
         </div>
-        {/each}
-      </div>
       {:else}
-      <div class="bg-back p-4 rounded-lg mt-4">
-        <p class="text-xs text-muted">No recent renewals.</p>
-      </div>
+        <div class="bg-back p-4 rounded-lg mt-4">
+          <p class="text-xs text-muted">No recent renewals.</p>
+        </div>
       {/if}
     </div>
   </div>
@@ -184,8 +232,8 @@
 
 <!-- ======  O L D  V E R S I O N ======= -->
 
-  <!-- Stats Cards -->
-  <!-- <div class="bg-white p-6 rounded-lg shadow-sm">
+<!-- Stats Cards -->
+<!-- <div class="bg-white p-6 rounded-lg shadow-sm">
     <h3 class="text-gray-500 text-sm font-medium">Total Tenants</h3>
     <p class="text-2xl font-bold text-teal mt-2">
       {dashboardStats.totalTenants}
@@ -216,8 +264,8 @@
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> -->
-  <!-- Overdue Leases -->
-  <!-- <div class="bg-white p-6 rounded-lg shadow-sm">
+<!-- Overdue Leases -->
+<!-- <div class="bg-white p-6 rounded-lg shadow-sm">
     <h2 class="text-xl font-semibold mb-4">Overdue Leases</h2>
     {#if dashboardStats.overdueLease.length > 0}
       <div class="space-y-3">
@@ -241,8 +289,8 @@
     {/if}
   </div> -->
 
-  <!-- Leases Expiring Soon -->
-  <!-- <div class="bg-white p-6 rounded-lg shadow-sm">
+<!-- Leases Expiring Soon -->
+<!-- <div class="bg-white p-6 rounded-lg shadow-sm">
     <h2 class="text-xl font-semibold mb-4">Leases Expiring Soon</h2>
     {#if dashboardStats.expiringSoon.length > 0}
       <div class="space-y-3">
@@ -266,8 +314,8 @@
     {/if}
   </div> -->
 
-  <!-- Recent Payments -->
-  <!-- <div class="bg-white p-6 rounded-lg shadow-sm">
+<!-- Recent Payments -->
+<!-- <div class="bg-white p-6 rounded-lg shadow-sm">
     <h2 class="text-xl font-semibold mb-4">Recent Lease Renewals</h2>
     {#if dashboardStats.recentPayments.length > 0}
       <div class="space-y-3">

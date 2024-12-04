@@ -200,6 +200,7 @@ class Get extends GlobalMethods
     {
         $today = date('Y-m-d');
         $sevenDaysFromNow = date('Y-m-d', strtotime('+7 days'));
+        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days'));
 
         $sql = "SELECT 
             units.*,
@@ -213,6 +214,7 @@ class Get extends GlobalMethods
         LEFT JOIN leases ON units.id = leases.unit_id
         LEFT JOIN tenants ON leases.id = tenants.lease_id
         WHERE leases.id IS NOT NULL
+        AND (leases.date_renewed IS NULL OR leases.date_renewed <= leases.end_date)
         GROUP BY units.id, leases.id";
 
         $params = ['today' => $today];
@@ -255,6 +257,32 @@ class Get extends GlobalMethods
             // ALL UNITS
             $totalUnitsResult = $this->executeQuery("SELECT COUNT(*) as total FROM units");
             $stats['totalUnits'] = $totalUnitsResult['data'][0]['total'];
+
+            // GET RECENT PAYMENTS (LEASE RENEWALS)
+            $recentPaymentsSQL = "SELECT 
+                u.unit_number,
+                l.rent_amount,
+                l.date_renewed,
+                GROUP_CONCAT(CONCAT(t.first_name, ' ', t.last_name) SEPARATOR ', ') as tenant_names
+            FROM leases l
+            JOIN units u ON l.unit_id = u.id
+            LEFT JOIN tenants t ON l.id = t.lease_id
+            WHERE l.date_renewed >= :sevenDaysAgo
+            GROUP BY l.id, u.unit_number
+            ORDER BY l.date_renewed DESC";
+
+            $recentPaymentsResult = $this->executeQuery($recentPaymentsSQL, ['sevenDaysAgo' => $sevenDaysAgo]);
+
+            if ($recentPaymentsResult['code'] == 200) {
+                foreach ($recentPaymentsResult['data'] as $payment) {
+                    $stats['recentPayments'][] = [
+                        'unit' => $payment['unit_number'],
+                        'amount' => $payment['rent_amount'],
+                        'date' => $payment['date_renewed'],
+                        'tenants' => $payment['tenant_names']
+                    ];
+                }
+            }
 
             return $this->sendPayload($stats, 'success', "Successfully retrieved dashboard stats.", 200);
         }
@@ -301,7 +329,8 @@ class Get extends GlobalMethods
                     'date_renewed' => $lease['date_renewed'],
                     'rent_amount' => $lease['rent_amount'],
                     'tenants' => $lease['tenant_names'],
-                    'latest_date' => $lease['latest_date']
+                    'latest_date' => $lease['latest_date'],
+                    'created_at' => $lease['created_at']
                 ];
             }
 
