@@ -155,6 +155,46 @@
         isRenewLeaseOpen = false;
         isSubmitting = false;
     };
+
+    const endLease = async () => {
+        // Show confirmation dialog first
+        const result = await Swal.fire({
+            title: "Are you sure?",
+            text: "This will permanently remove the lease and all tenant information. This action cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, end lease",
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const response = await api.post("endlease", {
+                lease_id: unit?.current_lease?.id,
+            });
+
+            await Swal.fire({
+                title: "Success!",
+                text: "Lease has been ended successfully",
+                icon: "success",
+            });
+
+            // Reload units data
+            await unitsStore.loadUnits();
+
+            // Close modal after successful operation
+            onClose();
+        } catch (error: any) {
+            await Swal.fire({
+                title: "Error",
+                text: error.message || "Failed to end lease",
+                icon: "error",
+            });
+            console.error("Error ending lease:", error);
+        }
+    };
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -324,7 +364,7 @@
 
                                 <button
                                     class="mt-8 text-xs font-medium bg-red20 text-red p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal"
-                                    on:click={renewLease}
+                                    on:click={endLease}
                                 >
                                     End Lease
                                 </button>
