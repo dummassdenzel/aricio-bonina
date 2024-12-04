@@ -209,7 +209,7 @@
         </div>
       </div>
 
-      <div>
+      <div class="max-h-full overflow-y-auto flex flex-col gap-2">
         {#if error}
           <p class="text-red-500">{error}</p>
         {:else if tenants.length === 0}

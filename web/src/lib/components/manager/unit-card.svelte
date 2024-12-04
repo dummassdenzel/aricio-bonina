@@ -43,7 +43,10 @@
   <!-- unit number and floor number -->
   <div class="flex items-center justify-between w-full">
     {#if isOverdue}
-      <div class="w-3 h-3 bg-red rounded-full"></div>
+    <div class="p-1 bg-red20 rounded-full">
+      <!-- <p class="text-xs text-red font-medium">!</p> -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock-alert"><path d="M12 6v6l4 2"/><path d="M16 21.16a10 10 0 1 1 5-13.516"/><path d="M20 11.5v6"/><path d="M20 21.5h.01"/></svg>
+    </div>
     {/if}
     <h3 class="text-lg font-bold font-inter text-teal text-center">
       Unit {unitNumber}

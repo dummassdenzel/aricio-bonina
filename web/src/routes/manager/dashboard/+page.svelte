@@ -100,7 +100,7 @@
     </div>
   </div>
 
-  <h1 class="text-2xl font-bold text-teal mb-2 mt-2">Lease Overview</h1>
+  <h1 class="text-2xl font-bold text-teal mb-2 mt-2 font-inter">Lease Overview</h1>
   <div class="flex justify-between w-100 gap-4">
 
     <!-- recent renewals -->
@@ -171,15 +171,6 @@
             <span class="text-xs text-orange">{formatDate(payment.date)}</span>
           </div>
         </div>
-          <!-- <div class="flex justify-between items-center border-b pb-2">
-            <div>
-              <p class="font-medium">Unit {payment.unit}</p>
-            </div>
-            <div>
-              <p class="text-green-500 font-medium">₱{payment.amount}</p>
-              <p class="text-sm text-gray-500">{formatDate(payment.date)}</p>
-            </div>
-          </div> -->
         {/each}
       </div>
       {:else}
