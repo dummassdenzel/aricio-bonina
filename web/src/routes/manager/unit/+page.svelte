@@ -101,7 +101,7 @@
 <!-- F R O N T E N D -->
 <h1 class="text-3xl font-bold text-teal">Unit Management</h1>
 
-<section class="mt-8">
+<section class="mt-6">
   <div class="flex justify-between align-middle items-center">
     <!-- floor navigation -->
     <div class="bg-back p-1 rounded-xl w-max flex">

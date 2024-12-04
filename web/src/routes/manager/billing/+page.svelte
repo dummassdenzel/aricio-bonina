@@ -39,13 +39,13 @@
     }
 </script>
 
-<h1 class="text-3xl font-bold text-teal">Lease History</h1>
-<section class="mt-5">
-    <div class="bg-back rounded-lg p-6">
+<h1 class="text-3xl font-bold text-teal">Billing History</h1>
+<section class="mt-8">
+    <div class="bg-back rounded-lg p-5 border">
         {#if error}
             <p class="text-red-500">{error}</p>
         {:else if Object.keys(leaseHistory).length === 0}
-            <p>No lease history found.</p>
+            <p class="text-sm text-muted">No lease history found.</p>
         {:else}
             {#each getSortedUnits(leaseHistory) as [unitNumber, leases]}
                 <div class="mb-8">
