@@ -113,7 +113,7 @@
   {:else}
     <!-- IF TENANTS ARE EMPTY, DISPLAY AVAILABLE STATUS -->
     <div
-      class="flex items-center gap-2 justify-center bg-green20 p-2 px-4 rounded-full mt-3"
+      class="flex items-center gap-2 justify-center bg-green20 p-2 w-full rounded-lg mt-3"
     >
       <div class="w-2 h-2 bg-green rounded-full"></div>
       <p class="text-xs text-green font-medium">Available</p>
