@@ -1,6 +1,8 @@
 <script lang="ts">
     import { formatDate } from "$lib/pipes/date-pipe";
     import { api } from "$lib/services/api";
+    import Swal from "sweetalert2";
+    import { unitsStore } from "$lib/stores/units-store";
 
     export let isOpen: boolean = false;
     export let onClose: () => void;
@@ -37,6 +39,22 @@
     let unit: Unit | null = null;
     let loading = false;
     let error: string | null = null;
+    let formData = {
+        lease_id: null as number | null,
+        start_date: new Date().toISOString().split("T")[0],
+        end_date: "",
+        rent_amount: 0,
+    };
+    let isSubmitting = false;
+
+    $: if (unit && unit.current_lease) {
+        formData = {
+            lease_id: unit.current_lease.id,
+            start_date: new Date().toISOString().split("T")[0],
+            end_date: "",
+            rent_amount: 0,
+        };
+    }
 
     $: if (isOpen) {
         loadUnit();
@@ -56,34 +74,86 @@
         }
     }
 
-    let formData = {
-        lease_id: unitNumber,
-        start_date: new Date().toISOString().split("T")[0],
-        end_date: "",
-        rent_amount: 0,
-    };
-
     const handleKeydown = (e: KeyboardEvent) => {
         if (e.key === "Escape") onClose();
     };
 
+    const validateLeaseDates = (): string[] => {
+        const errors = [];
+        const start = new Date(formData.start_date);
+        const end = new Date(formData.end_date);
+
+        if (!formData.start_date) {
+            errors.push("Start date is required");
+        }
+        if (!formData.end_date) {
+            errors.push("End date is required");
+        }
+        if (start >= end) {
+            errors.push("End date must be after start date");
+        }
+        if (formData.rent_amount <= 0) {
+            errors.push("Rent amount must be greater than 0");
+        }
+
+        return errors;
+    };
+
     const renewLease = async () => {
+        const validationErrors = validateLeaseDates();
+        if (validationErrors.length > 0) {
+            await Swal.fire({
+                title: "Validation Error",
+                html: validationErrors.join("<br>"),
+                icon: "error",
+            });
+            return;
+        }
+
+        isSubmitting = true;
+
         try {
             const response = await api.post("renewlease", formData);
-            console.log("Lease renewed successfully:", response);
-        } catch (error) {
+
+            await Swal.fire({
+                title: "Success!",
+                text: "Lease has been renewed successfully",
+                icon: "success",
+            });
+
+            await unitsStore.loadUnits();
+
+            await loadUnit();
+            closeRenewLeaseModal();
+        } catch (error: any) {
+            await Swal.fire({
+                title: "Error",
+                text: error.message || "Failed to renew lease",
+                icon: "error",
+            });
             console.error("Error renewing lease:", error);
+        } finally {
+            isSubmitting = false;
         }
     };
 
     let isRenewLeaseOpen: boolean = false;
 
     const openRenewLeaseModal = () => {
+        if (unit?.current_lease) {
+            formData = {
+                lease_id: unit.current_lease.id,
+                start_date: new Date().toISOString().split("T")[0],
+                end_date: "",
+                rent_amount: parseFloat(unit.current_lease.rent_amount) || 0,
+            };
+        }
         isRenewLeaseOpen = true;
     };
 
     const closeRenewLeaseModal = () => {
         isRenewLeaseOpen = false;
+        isSubmitting = false;
     };
 </script>
 
@@ -278,6 +348,7 @@
             class="absolute inset-0 w-full h-full bg-black bg-opacity-50"
             aria-label="close modal"
             on:click={closeRenewLeaseModal}
+            disabled={isSubmitting}
         >
         </button>
 
@@ -292,44 +363,53 @@
                 Renew Lease
             </h2>
 
-            <p class="text-xs text-muted font-medium mb-2">Start Date</p>
-            <input
-                type="date"
-                bind:value={formData.start_date}
-                placeholder="Start Date"
-                class="border p-2 mb-4 w-full rounded-lg text-sm font-medium text-teal font-inter"
-            />
+            <form on:submit|preventDefault={renewLease}>
+                <p class="text-xs text-muted font-medium mb-2">Start Date</p>
+                <input
+                    type="date"
+                    bind:value={formData.start_date}
+                    min={new Date().toISOString().split("T")[0]}
+                    disabled={isSubmitting}
+                    class="border p-2 mb-4 w-full rounded-lg text-sm font-medium text-teal font-inter"
+                />
 
-            <p class="text-xs text-muted font-medium mb-2">End Date</p>
-            <input
-                type="date"
-                bind:value={formData.end_date}
-                placeholder="End Date"
-                class="border p-2 mb-4 w-full rounded-lg text-sm font-medium text-teal font-inter"
-            />
+                <p class="text-xs text-muted font-medium mb-2">End Date</p>
+                <input
+                    type="date"
+                    bind:value={formData.end_date}
+                    min={formData.start_date}
+                    disabled={isSubmitting}
+                    class="border p-2 mb-4 w-full rounded-lg text-sm font-medium text-teal font-inter"
+                />
 
-            <p class="text-xs text-muted font-medium mb-2">Rent Amount</p>
-            <input
-                type="number"
-                bind:value={formData.rent_amount}
-                placeholder="Rent Amount"
-                class="border p-2 mb-4 w-full rounded-lg text-sm font-medium text-teal font-inter"
-            />
+                <p class="text-xs text-muted font-medium mb-2">Rent Amount</p>
+                <input
+                    type="number"
+                    bind:value={formData.rent_amount}
+                    min="0"
+                    step="0.01"
+                    disabled={isSubmitting}
+                    class="border p-2 mb-4 w-full rounded-lg text-sm font-medium text-teal font-inter"
+                />
 
-            <div class="flex justify-between gap-2 items-center">
-                <button
-                    class="mt-8 text-xs font-medium bg-green20 text-green p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal"
-                    on:click={renewLease}
-                >
-                    Renew Lease
-                </button>
-                <button
-                    class="mt-8 text-xs font-medium bg-red20 text-red p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal"
-                    on:click={closeRenewLeaseModal}
-                >
-                    Cancel
-                </button>
-            </div>
+                <div class="flex justify-between gap-2 items-center">
+                    <button
+                        type="submit"
+                        class="mt-8 text-xs font-medium bg-green20 text-green p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "Renewing..." : "Renew Lease"}
+                    </button>
+                    <button
+                        type="button"
+                        class="mt-8 text-xs font-medium bg-red20 text-red p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal disabled:opacity-50 disabled:cursor-not-allowed"
+                        on:click={closeRenewLeaseModal}
+                        disabled={isSubmitting}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 {/if}
