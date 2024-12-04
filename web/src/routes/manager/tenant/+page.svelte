@@ -237,7 +237,8 @@
 
   <!-- highlight tenant -->
   <div class="flex gap-2 w-full">
-    <!-- <div class="w-full rounded-2xl border"></div> -->
+    <div class="w-full rounded-2xl border"></div>
+    <div class="w-full rounded-2xl border"></div>
   </div>
 
   <!-- tenant form -->

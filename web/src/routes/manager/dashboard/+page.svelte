@@ -148,7 +148,7 @@
       {#if dashboardStats.overdueLease.length > 0}
         <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
           {#each dashboardStats.overdueLease as lease}
-            <div class="justify-between bg-back p-3 rounded-lg">
+            <div class="justify-between bg-red20 p-3 rounded-lg">
               <div class="flex justify-between items-center">
                 <p class="font-inter text-teal font-medium text-sm">
                   Unit {lease.unit}
@@ -179,7 +179,7 @@
       {#if dashboardStats.expiringSoon.length > 0}
         <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
           {#each dashboardStats.expiringSoon as lease}
-            <div class="justify-between bg-back p-3 rounded-lg">
+            <div class="justify-between bg-orange20 p-3 rounded-lg">
               <div class="flex justify-between items-center">
                 <p class="font-inter text-teal font-medium text-sm">
                   Unit {lease.unit}
@@ -209,12 +209,12 @@
       {#if dashboardStats.recentPayments.length > 0}
         <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
           {#each dashboardStats.recentPayments as payment}
-            <div class="justify-between bg-back p-3 rounded-lg">
+            <div class="justify-between bg-green20 p-3 rounded-lg">
               <div class="flex justify-between items-center">
                 <p class="font-inter text-teal font-medium text-sm">
                   Unit {payment.unit}
                 </p>
-                <span class="text-xs text-orange"
+                <span class="text-xs text-green font-medium"
                   >{formatDate(payment.date)}</span
                 >
               </div>
