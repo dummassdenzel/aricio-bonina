@@ -228,7 +228,11 @@ class Get extends GlobalMethods
                 'totalTenants' => 0,
                 'overdueLease' => [],
                 'expiringSoon' => [],
-                'recentPayments' => []
+                'recentPayments' => [],
+                'monthlyRevenue' => [
+                    'labels' => [],
+                    'revenue' => []
+                ]
             ];
 
             // PROCESS DATA
@@ -281,6 +285,27 @@ class Get extends GlobalMethods
                         'date' => $payment['date_renewed'],
                         'tenants' => $payment['tenant_names']
                     ];
+                }
+            }
+
+            // Get monthly revenue for the last 6 months
+            $monthlyRevenueSQL = "
+                SELECT 
+                    DATE_FORMAT(l.date_renewed, '%M') as month,
+                    YEAR(l.date_renewed) as year,
+                    SUM(l.rent_amount) as total_revenue
+                FROM leases l
+                WHERE l.date_renewed >= DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH)
+                GROUP BY YEAR(l.date_renewed), MONTH(l.date_renewed)
+                ORDER BY YEAR(l.date_renewed), MONTH(l.date_renewed)
+            ";
+
+            $revenueResult = $this->executeQuery($monthlyRevenueSQL);
+
+            if ($revenueResult['code'] == 200) {
+                foreach ($revenueResult['data'] as $revenue) {
+                    $stats['monthlyRevenue']['labels'][] = $revenue['month'];
+                    $stats['monthlyRevenue']['revenue'][] = (float) $revenue['total_revenue'];
                 }
             }
 

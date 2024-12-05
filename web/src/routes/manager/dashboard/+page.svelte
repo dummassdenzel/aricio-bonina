@@ -3,6 +3,7 @@
   import { api } from "$lib/services/api";
   import Chart from "chart.js/auto";
   import { formatDate } from "$lib/pipes/date-pipe";
+  import UnitModal from "$lib/components/manager/unit-modal.svelte";
 
   let error: string | null = null;
 
@@ -40,6 +41,14 @@
   const monthlyData = {
     labels: ["January", "February", "March", "April", "May", "June"],
     revenue: [45000, 48000, 47000, 49000, 46000, 50000],
+  };
+
+  let isUnitModalOpen = false;
+  let selectedUnitNumber: number | null = null;
+
+  const handleUnitClick = (unitNumber: string) => {
+    selectedUnitNumber = parseInt(unitNumber);
+    isUnitModalOpen = true;
   };
 
   onMount(async () => {
@@ -198,7 +207,10 @@
       {#if dashboardStats.overdueLease.length > 0}
         <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
           {#each dashboardStats.overdueLease as lease}
-            <div class="justify-between bg-red20 p-3 rounded-lg">
+            <div
+              class="justify-between bg-red20 p-3 rounded-lg cursor-pointer hover:bg-red10"
+              on:click={() => handleUnitClick(lease.unit)}
+            >
               <div class="flex justify-between items-center">
                 <p class="font-inter text-teal font-medium text-sm">
                   Unit {lease.unit}
@@ -229,7 +241,10 @@
       {#if dashboardStats.expiringSoon.length > 0}
         <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
           {#each dashboardStats.expiringSoon as lease}
-            <div class="justify-between bg-orange20 p-3 rounded-lg">
+            <div
+              class="justify-between bg-orange20 p-3 rounded-lg cursor-pointer hover:bg-orange10"
+              on:click={() => handleUnitClick(lease.unit)}
+            >
               <div class="flex justify-between items-center">
                 <p class="font-inter text-teal font-medium text-sm">
                   Unit {lease.unit}
@@ -259,7 +274,10 @@
       {#if dashboardStats.recentPayments.length > 0}
         <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
           {#each dashboardStats.recentPayments as payment}
-            <div class="justify-between bg-green20 p-3 rounded-lg">
+            <div
+              class="justify-between bg-green20 p-3 rounded-lg cursor-pointer hover:bg-green10"
+              on:click={() => handleUnitClick(payment.unit)}
+            >
               <div class="flex justify-between items-center">
                 <p class="font-inter text-teal font-medium text-sm">
                   Unit {payment.unit}
@@ -386,3 +404,14 @@
     {/if}
   </div> -->
 <!-- </div> -->
+
+{#if selectedUnitNumber !== null}
+  <UnitModal
+    isOpen={isUnitModalOpen}
+    unitNumber={selectedUnitNumber}
+    onClose={() => {
+      isUnitModalOpen = false;
+      selectedUnitNumber = null;
+    }}
+  />
+{/if}
