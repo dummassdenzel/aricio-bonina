@@ -26,6 +26,10 @@
       amount: number;
       date: string;
     }>;
+    monthlyRevenue: {
+      labels: string[];
+      revenue: number[];
+    };
   }
 
   let dashboardStats: DashboardStats = {
@@ -35,12 +39,10 @@
     overdueLease: [],
     expiringSoon: [],
     recentPayments: [],
-  };
-
-  // HARD  CODED DATA FOR CHART
-  const monthlyData = {
-    labels: ["January", "February", "March", "April", "May", "June"],
-    revenue: [45000, 48000, 47000, 49000, 46000, 50000],
+    monthlyRevenue: {
+      labels: [],
+      revenue: [],
+    },
   };
 
   let isUnitModalOpen = false;
@@ -66,14 +68,14 @@
         type: "line",
         data: {
           // X-AXIS LABELS(yung months)
-          labels: monthlyData.labels,
+          labels: dashboardStats.monthlyRevenue.labels,
           // DATASET TO BE PLOTTED
           datasets: [
             {
               // LABEL OF THE DATASET
               label: "Monthly Revenue",
               // DATA POINTS
-              data: monthlyData.revenue,
+              data: dashboardStats.monthlyRevenue.revenue,
               // COLOR OF THE LINE
               borderColor: "#14B8A6",
               // SMOOTHNESS OF THE LINE
@@ -173,11 +175,9 @@
       <div
         class="w-80 h-20 border backdrop-blur-sm backdrop-filter rounded-xl p-4"
       >
-        <p class="text-xs text-teal font-medium font-inter">
-          Maintenance Units
-        </p>
+        <p class="text-xs text-teal font-medium font-inter">Ocupancy Rate</p>
         <p class="text-3xl text-teal font-bold text-end font-inter">
-          {dashboardStats.overdueLease.length}
+          {occupancyRate}%
         </p>
       </div>
     </div>
@@ -194,7 +194,7 @@
       <p class="text-lg text-teal font-bold text-center font-inter">
         Total of Overdue
       </p>
-      <p class="text-8xl text-slate font-bold text-center font-inter">
+      <p class="text-7xl text-slate font-bold text-center font-inter">
         {dashboardStats.overdueLease.length}
       </p>
     </div>
@@ -203,11 +203,13 @@
     <div
       class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4"
     >
-      <p class="text-lg text-teal font-bold font-inter mb-4">Overdue</p>
+      <p class="text-lg text-teal font-bold font-inter mb-4">
+        Expired ({dashboardStats.overdueLease.length})
+      </p>
       {#if dashboardStats.overdueLease.length > 0}
         <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
           {#each dashboardStats.overdueLease as lease}
-            <div
+            <button
               class="justify-between bg-red20 p-3 rounded-lg cursor-pointer hover:bg-red10"
               on:click={() => handleUnitClick(lease.unit)}
             >
@@ -223,7 +225,7 @@
                 title={lease.tenants} >
                 {lease.tenants}
               </p> -->
-            </div>
+            </button>
           {/each}
         </div>
       {:else}
@@ -237,11 +239,13 @@
     <div
       class="w-full h-auto bg-white border backdrop-blur-sm backdrop-filter rounded-xl font-inter p-4"
     >
-      <p class="text-lg text-teal font-bold font-inter mb-4">Expiring Soon</p>
+      <p class="text-lg text-teal font-bold font-inter mb-4">
+        Expiring Soon ({dashboardStats.expiringSoon.length})
+      </p>
       {#if dashboardStats.expiringSoon.length > 0}
         <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
           {#each dashboardStats.expiringSoon as lease}
-            <div
+            <button
               class="justify-between bg-orange20 p-3 rounded-lg cursor-pointer hover:bg-orange10"
               on:click={() => handleUnitClick(lease.unit)}
             >
@@ -256,7 +260,7 @@
             title={lease.tenants} >
             {lease.tenants}
           </p> -->
-            </div>
+            </button>
           {/each}
         </div>
       {:else}
@@ -274,7 +278,7 @@
       {#if dashboardStats.recentPayments.length > 0}
         <div class="max-h-24 overflow-y-auto flex flex-col gap-2">
           {#each dashboardStats.recentPayments as payment}
-            <div
+            <button
               class="justify-between bg-green20 p-3 rounded-lg cursor-pointer hover:bg-green10"
               on:click={() => handleUnitClick(payment.unit)}
             >
@@ -286,7 +290,7 @@
                   >{formatDate(payment.date)}</span
                 >
               </div>
-            </div>
+            </button>
           {/each}
         </div>
       {:else}

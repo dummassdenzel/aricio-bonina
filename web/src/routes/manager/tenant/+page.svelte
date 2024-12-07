@@ -182,14 +182,31 @@
 <section class="grid grid-cols-2 gap-8 mt-6">
   <div class="flex justify-between gap-2 w-full">
     <!-- tenant list -->
-     
+
     <div class="w-full h-[70vh] flex flex-col">
       <!-- functionality -->
       <div class="flex gap-2 mb-6">
         <!-- search bar -->
         <div class="flex items-center relative">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 transform -translate-y-1/2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-          <input type="text" placeholder="Search by unit or tenant name" class="pl-10 text-xs text-dmSans w-72 text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop" /> <!-- search bar functionality -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#989898"
+            stroke-width="1"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="absolute left-3 top-1/2 transform -translate-y-1/2"
+            ><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg
+          >
+          <input
+            type="text"
+            placeholder="Search by unit or tenant name"
+            class="pl-10 text-xs text-dmSans w-72 text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
+          />
+          <!-- search bar functionality -->
         </div>
 
         <!-- buttons -->
@@ -197,14 +214,42 @@
           <!-- svelte-ignore a11y_consider_explicit_label -->
           <!-- sort button -->
           <button class="bg-back p-3 rounded-2xl hover:bg-backdrop">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down"><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4"/><path d="M7 4v16" /></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#989898"
+              stroke-width="1"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-arrow-up-down"
+              ><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path
+                d="m3 8 4-4 4 4"
+              /><path d="M7 4v16" /></svg
+            >
           </button>
 
           <!-- svelte-ignore a11y_consider_explicit_label -->
           <!-- add button -->
-          <button class="bg-back p-3 rounded-2xl hover:bg-backdrop"
-              on:click={openModal} >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#989898" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          <button
+            class="bg-back p-3 rounded-2xl hover:bg-backdrop"
+            on:click={openModal}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#989898"
+              stroke-width="1"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-plus"
+              ><path d="M5 12h14" /><path d="M12 5v14" /></svg
+            >
           </button>
         </div>
       </div>
@@ -213,26 +258,30 @@
         {#if error}
           <p class="text-red-500">{error}</p>
         {:else if tenants.length === 0}
-        <div class="border p-5 rounded-xl items-center justify-between flex bg-back">
-          <p class="text-sm text-muted">No tenants found.</p>
-        </div>
+          <div
+            class="border p-5 rounded-xl items-center justify-between flex bg-back"
+          >
+            <p class="text-sm text-muted">No tenants found.</p>
+          </div>
         {:else}
           <ul class="space-y-2">
             {#each tenants as tenant}
-              <div class="border p-5 rounded-xl items-center justify-between flex">
+              <div
+                class="border p-5 rounded-xl items-center justify-between flex"
+              >
                 <p class="font-inter text-teal text-sm font-medium">
                   {tenant.first_name}
                   {tenant.last_name}
                 </p>
-                <p class="font-inter text-slate text-xs font-medium">Unit {tenant.unit_number}</p>
+                <p class="font-inter text-slate text-xs font-medium">
+                  Unit {tenant.unit_number}
+                </p>
               </div>
             {/each}
           </ul>
         {/if}
       </div>
-      
     </div>
-
   </div>
 
   <!-- highlight tenant -->
@@ -243,51 +292,82 @@
 
   <!-- tenant form -->
   {#if showModal}
-    <form class="fixed inset-0 bg-muted bg-opacity-40 flex items-center justify-center" on:submit|preventDefault={handleSubmit}>
+    <form
+      class="fixed inset-0 bg-muted bg-opacity-40 flex items-center justify-center"
+      on:submit|preventDefault={handleSubmit}
+    >
       <div class="bg-white p-6 rounded-lg w-1/3 max-h-[80vh] overflow-y-auto">
-
         <!-- tenant form -->
         <div class="flex justify-between items-center border-b">
-          <h1 class="font-inter text-midnight font-semibold text-xl mb-4">Tenant Form</h1>
+          <h1 class="font-inter text-midnight font-semibold text-xl mb-4">
+            Tenant Form
+          </h1>
           <!-- close button -->
-          <button type="button" class="hover:bg-drop p-2 rounded-full mb-4" aria-label="close modal"
-            on:click={() => closeModal()} >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#686868" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          <button
+            type="button"
+            class="hover:bg-drop p-2 rounded-full mb-4"
+            aria-label="close modal"
+            on:click={() => closeModal()}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#686868"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg
+            >
           </button>
         </div>
 
         <!-- unit information -->
         <div class="mt-6">
-          <h1 class="font-inter text-midnight font-semibold text-sm">Unit Information</h1>
+          <h1 class="font-inter text-midnight font-semibold text-sm">
+            Unit Information
+          </h1>
           <p class="text-xs text-muted font-medium mt-2 mb-2">Unit Number</p>
-            <select class="mb-4 appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
-                id="unit_number"
-                bind:value={formData.unit_number} >
-                <option value="">Select Unit</option>
-                {#each units as unit}
-                  <option
-                    value={unit.unit_number}
-                    disabled={unit.status === "occupied"} >
-                    Unit {unit.unit_number} {unit.status}
-                  </option>
-                {/each}
-              </select>
+          <select
+            class="mb-4 appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+            id="unit_number"
+            bind:value={formData.unit_number}
+          >
+            <option value="">Select Unit</option>
+            {#each units as unit}
+              <option
+                value={unit.unit_number}
+                disabled={unit.status === "occupied"}
+              >
+                Unit {unit.unit_number}
+                {unit.status}
+              </option>
+            {/each}
+          </select>
         </div>
 
         <div class="mb-2">
           <p class="text-xs text-muted font-medium mb-2">Move In Date</p>
-          <input class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
+          <input
+            class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
             type="date"
-            bind:value={formData.move_in_date} />
+            bind:value={formData.move_in_date}
+          />
         </div>
 
         <!-- tenant information -->
         <div class="mt-6">
           <div class="flex justify-between">
-            <h1 class="font-inter text-midnight font-semibold text-sm">Tenant Information</h1>
-            <button class="text-slate font-semibold text-xs"
+            <h1 class="font-inter text-midnight font-semibold text-sm">
+              Tenant Information
+            </h1>
+            <button
+              class="text-slate font-semibold text-xs"
               type="button"
-              on:click={addTenant} >
+              on:click={addTenant}
+            >
               + add more
             </button>
           </div>
@@ -295,49 +375,63 @@
           <div class="max-h-56 mt-2 overflow-y-auto flex flex-col gap-2">
             {#each formData.tenants as tenant, index}
               <div class="bg-back p-4 rounded-lg">
-
                 <!-- tenant count -->
                 <div class="flex justify-between items-center">
-                  <h4 class="text-xs text-slate font-inter font-semibold mb-2">Tenant {index + 1}</h4>
+                  <h4 class="text-xs text-slate font-inter font-semibold mb-2">
+                    Tenant {index + 1}
+                  </h4>
                   {#if formData.tenants.length > 1}
-                    <button class="text-xs text-slate font-semibold"
+                    <button
+                      class="text-xs text-slate font-semibold"
                       type="button"
-                      on:click={() => removeTenant(index)}>
+                      on:click={() => removeTenant(index)}
+                    >
                       Remove
                     </button>
                   {/if}
                 </div>
                 <!-- end of tenant count -->
-          
+
                 <!-- tenant details  -->
                 <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <p class="text-xs text-muted font-medium mb-2">
+                      First Name
+                    </p>
+                    <input
+                      class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                      type="text"
+                      bind:value={tenant.first_name}
+                    />
+                  </div>
 
                   <div>
-                    <p class="text-xs text-muted font-medium mb-2">First Name</p>
-                    <input class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
-                      type="text"
-                      bind:value={tenant.first_name} />
-                  </div>
-          
-                  <div>
                     <p class="text-xs text-muted font-medium mb-2">Last Name</p>
-                    <input class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                    <input
+                      class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
                       type="text"
-                      bind:value={tenant.last_name} />
+                      bind:value={tenant.last_name}
+                    />
                   </div>
-          
+
                   <div class="mt-2">
-                    <p class="text-xs text-muted font-medium mb-2">Contact Number</p>
-                    <input class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                    <p class="text-xs text-muted font-medium mb-2">
+                      Contact Number
+                    </p>
+                    <input
+                      class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
                       type="text"
-                      bind:value={tenant.phone_number} />
+                      bind:value={tenant.phone_number}
+                    />
                   </div>
-          
+
                   <div class="mt-2">
                     <p class="text-xs text-muted font-medium mb-2">Email</p>
-                    <input class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                    <input
+                      class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
                       type="text"
-                      bind:value={tenant.email} />
+                      bind:value={tenant.email}
+                    />
                   </div>
                 </div>
                 <!-- end of tenant details -->
@@ -348,50 +442,65 @@
 
         <!-- lease information -->
         <div class="mt-6">
-          <h1 class="font-inter text-midnight font-semibold text-sm">Lease Information</h1>
+          <h1 class="font-inter text-midnight font-semibold text-sm">
+            Lease Information
+          </h1>
           <div class="grid grid-cols-2 gap-2">
-
             <div>
-              <p class="text-xs text-muted font-medium mt-2 mb-2">Start of Lease</p>
-              <input class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
+              <p class="text-xs text-muted font-medium mt-2 mb-2">
+                Start of Lease
+              </p>
+              <input
+                class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
                 type="date"
-                bind:value={formData.start_date} />
+                bind:value={formData.start_date}
+              />
             </div>
 
             <div>
-              <p class="text-xs text-muted font-medium mt-2 mb-2">End of Lease</p>
-              <input class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
+              <p class="text-xs text-muted font-medium mt-2 mb-2">
+                End of Lease
+              </p>
+              <input
+                class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
                 type="date"
-                bind:value={formData.end_date} />
+                bind:value={formData.end_date}
+              />
             </div>
 
             <div class="mb-4 col-span-2">
-              <p class="text-xs text-muted font-medium mt-2 mb-2">Rent Amount</p>
-              <input class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
+              <p class="text-xs text-muted font-medium mt-2 mb-2">
+                Rent Amount
+              </p>
+              <input
+                class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
                 placeholder="PHP"
                 type="number"
                 step="0.01"
-                bind:value={formData.rent_amount} />
+                bind:value={formData.rent_amount}
+              />
             </div>
-
           </div>
         </div>
 
         <!-- buttons -->
         <div class="flex justify-between gap-2 mt-6">
-          <button class="p-4 w-full text-xs font-inter text-red bg-red20 border border-red rounded-lg"
+          <button
+            class="p-4 w-full text-xs font-inter text-red bg-red20 border border-red rounded-lg"
             type="button"
-            on:click={() => closeModal()} >
+            on:click={() => closeModal()}
+          >
             Cancel
           </button>
 
-          <button class="p-4 w-full text-xs font-inter text-green bg-green20 border border-green rounded-lg"
-            type="submit" >
+          <button
+            class="p-4 w-full text-xs font-inter text-green bg-green20 border border-green rounded-lg"
+            type="submit"
+          >
             Save
           </button>
         </div>
         <!-- end of buttons -->
-
       </div>
     </form>
   {/if}

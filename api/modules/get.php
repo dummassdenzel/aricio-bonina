@@ -291,19 +291,21 @@ class Get extends GlobalMethods
             // Get monthly revenue for the last 6 months
             $monthlyRevenueSQL = "
                 SELECT 
-                    DATE_FORMAT(l.date_renewed, '%M') as month,
-                    YEAR(l.date_renewed) as year,
+                    DATE_FORMAT(l.created_at, '%M') as month,
                     SUM(l.rent_amount) as total_revenue
                 FROM leases l
-                WHERE l.date_renewed >= DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH)
-                GROUP BY YEAR(l.date_renewed), MONTH(l.date_renewed)
-                ORDER BY YEAR(l.date_renewed), MONTH(l.date_renewed)
+                WHERE l.created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH)
+                GROUP BY MONTH(l.created_at)
+                ORDER BY l.created_at DESC
+                LIMIT 6
             ";
 
             $revenueResult = $this->executeQuery($monthlyRevenueSQL);
 
             if ($revenueResult['code'] == 200) {
-                foreach ($revenueResult['data'] as $revenue) {
+                // Reverse the arrays to show oldest to newest
+                $data = array_reverse($revenueResult['data']);
+                foreach ($data as $revenue) {
                     $stats['monthlyRevenue']['labels'][] = $revenue['month'];
                     $stats['monthlyRevenue']['revenue'][] = (float) $revenue['total_revenue'];
                 }
