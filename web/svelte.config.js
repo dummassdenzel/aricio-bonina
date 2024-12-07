@@ -21,12 +21,6 @@ const config = {
     paths: {
       base: "/web",
     },
-    // routes: {
-    //   // Protected routes will be under the (protected) directory
-    //   "/(protected)/*": {
-    //     prerender: false,
-    //   },
-    // },
   },
 };
 
