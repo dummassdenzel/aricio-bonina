@@ -42,14 +42,14 @@
         });
     }
 
-    // Toggle function
+    // TOGGLE FUNCTION
     function toggleUnitHistory(unitNumber: string) {
         if (expandedUnits.has(unitNumber)) {
             expandedUnits.delete(unitNumber);
         } else {
             expandedUnits.add(unitNumber);
         }
-        expandedUnits = expandedUnits; // trigger reactivity
+        expandedUnits = expandedUnits;
     }
 </script>
 
@@ -67,7 +67,7 @@
                         <h2 class="text-xl font-bold">Unit {unitNumber}</h2>
                     </div>
                     <div class="space-y-4">
-                        <!-- Show latest lease -->
+                        <!-- SHOW LATEST LEASE ONLY -->
                         {#if leases[0]}
                             <div class="p-4 bg-white rounded-lg shadow">
                                 <div class="flex justify-between items-start">
@@ -120,7 +120,7 @@
                             </div>
                         {/if}
 
-                        <!-- Show toggle button if there are more leases -->
+                        <!-- SHOW TOGGLE BUTTON IF THERE ARE MORE THAN ONE LEASES -->
                         {#if leases.length > 1}
                             <button
                                 class="text-sm text-teal hover:text-teal-600 mt-2"
@@ -131,7 +131,7 @@
                                     : `+ ${leases.length - 1} more`}
                             </button>
 
-                            <!-- Show older leases if expanded -->
+                            <!-- SHOW OLDER LEASES IF EXPANDED -->
                             {#if expandedUnits.has(unitNumber)}
                                 {#each leases.slice(1) as lease}
                                     <div

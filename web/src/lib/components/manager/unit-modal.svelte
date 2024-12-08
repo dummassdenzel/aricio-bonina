@@ -480,5 +480,6 @@
         isOpen={showTenantForm}
         onClose={closeTenantForm}
         preselectedUnit={unitNumber.toString()}
+        onParentClose={onClose}
     />
 {/if}

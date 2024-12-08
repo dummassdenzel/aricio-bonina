@@ -181,7 +181,12 @@ class Get extends GlobalMethods
     {
         $sql = "SELECT 
                     t.*, 
-                    u.unit_number 
+                    u.unit_number,
+                    CASE 
+                        WHEN t.valid_id_path IS NOT NULL 
+                        THEN CONCAT('http://localhost/aricio-bonina/api/', t.valid_id_path)
+                        ELSE NULL 
+                    END as valid_id_url
                 FROM tenants t
                 LEFT JOIN leases l ON t.lease_id = l.id
                 LEFT JOIN units u ON l.unit_id = u.id

@@ -3,11 +3,13 @@
     import swal from "sweetalert2";
     import { unitsStore } from "$lib/stores/units-store";
     import { dashboardStore } from "$lib/stores/dashboard-store";
+    import { tenantsStore } from "$lib/stores/tenants-store";
 
     // Props
     export let isOpen: boolean = false;
     export let onClose: () => void;
     export let preselectedUnit: string | null = null;
+    export let onParentClose: (() => void) | null = null;
 
     let units: any[] = [];
     let error: string | null = null;
@@ -29,11 +31,21 @@
                 last_name: "",
                 phone_number: "",
                 email: "",
+                valid_id: null,
             },
         ],
     };
 
-    let formData = { ...initialFormData };
+    interface TenantFormData {
+        unit_number: string;
+        move_in_date: string;
+        start_date: string;
+        end_date: string;
+        rent_amount: string;
+        tenants: Tenant[];
+    }
+
+    let formData: TenantFormData = { ...initialFormData };
 
     // Watch for changes to preselectedUnit
     $: if (preselectedUnit) {
@@ -68,7 +80,13 @@
     function addTenant() {
         formData.tenants = [
             ...formData.tenants,
-            { first_name: "", last_name: "", phone_number: "", email: "" },
+            {
+                first_name: "",
+                last_name: "",
+                phone_number: "",
+                email: "",
+                valid_id: null,
+            },
         ];
     }
 
@@ -92,22 +110,69 @@
         if (!isValid) return;
 
         try {
-            const response = await api.post("addtenant", formData);
+            const formDataToSend = new FormData();
 
-            await swal.fire({
-                title: "Success!",
-                text: response.status.message,
-                icon: "success",
-                confirmButtonText: "OK",
+            // Add basic form fields
+            formDataToSend.append("unit_number", formData.unit_number);
+            formDataToSend.append("move_in_date", formData.move_in_date);
+            formDataToSend.append("start_date", formData.start_date);
+            formDataToSend.append("end_date", formData.end_date);
+            formDataToSend.append(
+                "rent_amount",
+                formData.rent_amount.toString(),
+            );
+
+            // Add tenant data as JSON string to maintain structure
+            formData.tenants.forEach((tenant, index) => {
+                // Add tenant data as individual fields
+                Object.entries(tenant).forEach(([key, value]) => {
+                    if (key !== "valid_id") {
+                        formDataToSend.append(
+                            `tenants[${index}][${key}]`,
+                            value.toString(),
+                        );
+                    }
+                });
+
+                // Add file if it exists
+                if (tenant.valid_id instanceof File) {
+                    formDataToSend.append(
+                        `valid_id_${tenant.first_name}`,
+                        tenant.valid_id,
+                    );
+                }
             });
 
-            await Promise.all([
-                unitsStore.loadUnits(),
-                dashboardStore.loadStats(),
-            ]);
+            console.log("FormData entries:");
+            for (let pair of formDataToSend.entries()) {
+                console.log(pair[0] + ": " + pair[1]);
+            }
 
-            resetForm();
-            onClose();
+            const response = await api.postFormData(
+                "addtenant",
+                formDataToSend,
+            );
+
+            if (response.status.remarks === "success") {
+                await swal.fire({
+                    title: "Success!",
+                    text: response.status.message,
+                    icon: "success",
+                    confirmButtonText: "OK",
+                });
+
+                await Promise.all([
+                    unitsStore.loadUnits(),
+                    tenantsStore.loadTenants(),
+                    dashboardStore.loadStats(),
+                ]);
+
+                resetForm();
+                onClose();
+                if (onParentClose) onParentClose();
+            } else {
+                throw new Error(response.status.message);
+            }
         } catch (err: any) {
             await swal.fire({
                 title: "Error",
@@ -174,6 +239,60 @@
         }
 
         return true;
+    }
+
+    interface Tenant {
+        first_name: string;
+        last_name: string;
+        phone_number: string;
+        email: string;
+        valid_id: File | null;
+    }
+
+    const ALLOWED_FILE_TYPES = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "application/pdf",
+    ];
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+    function handleFileUpload(event: Event, index: number) {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+
+        if (!file) return;
+
+        // Validate file type
+        if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+            swal.fire({
+                title: "Invalid File Type",
+                text: "Please upload a JPG, PNG, WebP image or PDF file",
+                icon: "error",
+            });
+            input.value = "";
+            return;
+        }
+
+        // Validate file size
+        if (file.size > MAX_FILE_SIZE) {
+            swal.fire({
+                title: "File Too Large",
+                text: "File size should be less than 5MB",
+                icon: "error",
+            });
+            input.value = "";
+            return;
+        }
+
+        // Create a new tenant object with the updated valid_id
+        const updatedTenant = {
+            ...formData.tenants[index],
+            valid_id: file,
+        };
+
+        // Update the tenants array
+        formData.tenants[index] = updatedTenant;
     }
 </script>
 
@@ -264,7 +383,7 @@
                     </button>
                 </div>
 
-                <div class="max-h-56 mt-2 overflow-y-auto flex flex-col gap-2">
+                <div class=" mt-2 flex flex-col gap-2">
                     {#each formData.tenants as tenant, index}
                         <div class="bg-back p-4 rounded-lg">
                             <!-- tenant count -->
@@ -280,7 +399,7 @@
                                         type="button"
                                         on:click={() => removeTenant(index)}
                                     >
-                                        Remove
+                                        - Remove
                                     </button>
                                 {/if}
                             </div>
@@ -338,6 +457,29 @@
                                         type="text"
                                         bind:value={tenant.email}
                                     />
+                                </div>
+
+                                <div class="col-span-2 mt-2">
+                                    <p
+                                        class="text-xs text-muted font-medium mb-2"
+                                    >
+                                        Valid ID (JPG, PNG, WebP, or PDF, max
+                                        5MB)
+                                    </p>
+                                    <input
+                                        class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png,.webp,.pdf"
+                                        on:change={(e) =>
+                                            handleFileUpload(e, index)}
+                                    />
+                                    {#if formData.tenants[index].valid_id}
+                                        <p class="text-xs text-green mt-1">
+                                            File selected: {formData.tenants[
+                                                index
+                                            ].valid_id.name}
+                                        </p>
+                                    {/if}
                                 </div>
                             </div>
                             <!-- end of tenant details -->

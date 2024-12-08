@@ -16,41 +16,41 @@ class GlobalMethods
             throw $e;
         }
     }
-    public function sendPayload($data, $remarks, $message, $code)
-    {
-        $status = array("remarks" => $remarks, "message" => $message);
-        http_response_code($code);
-        return array(
-            "status" => $status,
-            "payload" => $data,
-            "prepared_by" => "Denzel Manz Perez",
-            "timestamp" => date_create()
-        );
-    }
-
-    // SEND PAYLOAD 
-    // protected function sendPayload($payload, $remarks, $message, $code)
+    // public function sendPayload($data, $remarks, $message, $code)
     // {
-    //     $status = array(
-    //         "remarks" => $remarks,
-    //         "message" => $message
-    //     );
-
-    //     // ONLY ENCRYPT SUCCESSFUL RESPONSES
-    //     $finalPayload = ($code === 200 && $payload !== null)
-    //         ? $this->encryptPayload($payload)
-    //         : $payload;
-
-    //     $responseData = [
+    //     $status = array("remarks" => $remarks, "message" => $message);
+    //     http_response_code($code);
+    //     return array(
     //         "status" => $status,
-    //         "payload" => $finalPayload,
+    //         "payload" => $data,
     //         "prepared_by" => "Denzel Manz Perez",
     //         "timestamp" => date_create()
-    //     ];
-
-    //     http_response_code($code);
-    //     return $responseData;
+    //     );
     // }
+
+    // SEND PAYLOAD 
+    protected function sendPayload($payload, $remarks, $message, $code)
+    {
+        $status = array(
+            "remarks" => $remarks,
+            "message" => $message
+        );
+
+        // ONLY ENCRYPT SUCCESSFUL RESPONSES
+        $finalPayload = ($code === 200 && $payload !== null)
+            ? $this->encryptPayload($payload)
+            : $payload;
+
+        $responseData = [
+            "status" => $status,
+            "payload" => $finalPayload,
+            "prepared_by" => "Denzel Manz Perez",
+            "timestamp" => date_create()
+        ];
+
+        http_response_code($code);
+        return $responseData;
+    }
 
     protected function encryptPayload($data)
     {

@@ -111,8 +111,35 @@ class Post extends GlobalMethods
 
             // CREATE TENANTS
             foreach ($data->tenants as $tenant) {
-                $sql = "INSERT INTO tenants (first_name, last_name, lease_id, move_in_date, contact_number, email) 
-                    VALUES (?, ?, ?, ?, ?, ?)";
+                $validIdPath = null;
+                $validIdType = null;
+
+                if (isset($_FILES["valid_id_" . $tenant->first_name])) {
+                    $file = $_FILES["valid_id_" . $tenant->first_name];
+                    $fileType = pathinfo($file['name'], PATHINFO_EXTENSION);
+
+                    // GENERATE UNIQUE FILENAME
+                    $fileName = uniqid() . '_' . $tenant->first_name . '.' . $fileType;
+                    $uploadPath = "uploads/tenant_ids/" . $fileName;
+
+                    // ENSURE UPLOAD DIRECTORY EXISTS
+                    if (!file_exists("uploads/tenant_ids")) {
+                        mkdir("uploads/tenant_ids", 0777, true);
+                    }
+
+                    // MOVE UPLOADED FILE
+                    if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+                        $validIdPath = $uploadPath;
+                        $validIdType = $fileType;
+                    }
+                }
+
+                $sql = "INSERT INTO tenants (
+                    first_name, last_name, lease_id, 
+                    move_in_date, contact_number, email,
+                    valid_id_path, valid_id_type, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')";
+
                 $stmt = $this->pdo->prepare($sql);
                 $stmt->execute([
                     $tenant->first_name,
@@ -120,12 +147,14 @@ class Post extends GlobalMethods
                     $leaseId,
                     $data->move_in_date,
                     $tenant->phone_number,
-                    $tenant->email
+                    $tenant->email,
+                    $validIdPath,
+                    $validIdType
                 ]);
             }
 
             $this->pdo->commit();
-            return $this->sendPayload(null, "success", "Successfully created lease with tenants", 200);
+            return $this->sendPayload(null, "success", "Successfully added tenant", 200);
         } catch (PDOException $e) {
             $this->pdo->rollBack();
             return $this->sendPayload(null, "failed", $e->getMessage(), 400);
@@ -191,7 +220,7 @@ class Post extends GlobalMethods
             // Update lease status and set terminated_at
             $sql = "UPDATE leases 
                     SET status = 'inactive',
-                        date_terminated = CURRENT_DATE
+                        terminated_at = CURRENT_TIMESTAMP
                     WHERE id = ? AND status = 'active'";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$data->lease_id]);

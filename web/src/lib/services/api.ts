@@ -41,4 +41,22 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  postFormData: async (endpoint: string, formData: FormData) => {
+    try {
+        const response = await fetch(`${BASE_URL}/${endpoint}`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+    }
+  },
 };
