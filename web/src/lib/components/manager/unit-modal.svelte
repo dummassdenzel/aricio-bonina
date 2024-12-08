@@ -4,6 +4,7 @@
     import Swal from "sweetalert2";
     import { unitsStore } from "$lib/stores/units-store";
     import { dashboardStore } from "$lib/stores/dashboard-store";
+    import TenantFormModal from "./tenant-form-modal.svelte";
 
     export let isOpen: boolean = false;
     export let onClose: () => void;
@@ -161,7 +162,6 @@
     };
 
     const endLease = async () => {
-        // Show confirmation dialog first
         const result = await Swal.fire({
             title: "Are you sure?",
             text: "This will permanently remove the lease and all tenant information. This action cannot be undone.",
@@ -200,6 +200,16 @@
             });
             console.error("Error ending lease:", error);
         }
+    };
+
+    let showTenantForm = false;
+
+    const openTenantForm = () => {
+        showTenantForm = true;
+    };
+
+    const closeTenantForm = () => {
+        showTenantForm = false;
     };
 </script>
 
@@ -376,9 +386,15 @@
                         </div>
                     </div>
                 {:else}
-                    <p class="text-muted text-sm font-medium">
+                    <p class="text-muted font-medium text-center">
                         This unit is currently vacant.
                     </p>
+                    <button
+                        class="mt-4 text-xs font-medium bg-green20 text-green p-4 font-inter w-full rounded-lg hover:bg-lightteal hover:text-teal"
+                        on:click={openTenantForm}
+                    >
+                        Add Tenant
+                    </button>
                 {/if}
             </div>
         {/if}
@@ -456,4 +472,13 @@
             </form>
         </div>
     </div>
+{/if}
+
+<!-- Add tenant form modal -->
+{#if showTenantForm}
+    <TenantFormModal
+        isOpen={showTenantForm}
+        onClose={closeTenantForm}
+        preselectedUnit={unitNumber.toString()}
+    />
 {/if}

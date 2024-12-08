@@ -181,17 +181,17 @@ class Post extends GlobalMethods
         try {
             $this->pdo->beginTransaction();
 
-            // Update tenants to inactive instead of deleting
+            // Update tenants to inactive
             $sql = "UPDATE tenants 
                     SET status = 'inactive' 
                     WHERE lease_id = ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$data->lease_id]);
 
-            // Update lease status
+            // Update lease status and set terminated_at
             $sql = "UPDATE leases 
                     SET status = 'inactive',
-                        end_date = CURRENT_DATE
+                        date_terminated = CURRENT_DATE
                     WHERE id = ? AND status = 'active'";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$data->lease_id]);
@@ -203,9 +203,6 @@ class Post extends GlobalMethods
             $this->pdo->commit();
             return $this->sendPayload(null, "success", "Successfully ended lease and updated tenant status", 200);
         } catch (PDOException $e) {
-            $this->pdo->rollBack();
-            return $this->sendPayload(null, "failed", $e->getMessage(), 400);
-        } catch (Exception $e) {
             $this->pdo->rollBack();
             return $this->sendPayload(null, "failed", $e->getMessage(), 400);
         }
