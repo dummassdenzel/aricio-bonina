@@ -51,9 +51,9 @@
                 <div class="mb-8">
                     <div class="flex items-center gap-2 mb-4">
                         <h2 class="text-xl font-bold">Unit {unitNumber}</h2>
-                        <p class="text-sm text-gray-600">
+                        <!-- <p class="text-sm text-gray-600">
                             Current Tenants: {leases[0]?.tenants || "None"}
-                        </p>
+                        </p> -->
                     </div>
                     <div class="space-y-4">
                         {#each leases as lease}
@@ -63,7 +63,7 @@
                                         <p class="font-semibold">
                                             {formatDate(
                                                 new Date(
-                                                    lease.created_at,
+                                                    lease.start_date,
                                                 ).toLocaleDateString(),
                                             )} -
                                             {formatDate(
@@ -87,7 +87,7 @@
                                         <p class="text-sm text-gray-500">
                                             {lease.date_renewed
                                                 ? `Renewed: ${new Date(lease.date_renewed).toLocaleDateString()}`
-                                                : "Current Latest Lease Term"}
+                                                : ""}
                                         </p>
                                     </div>
                                 </div>

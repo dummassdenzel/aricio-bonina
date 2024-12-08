@@ -34,7 +34,9 @@ export default {
         green20: "rgba(163, 198, 178, 0.1)",
         orange20: "rgb(231, 143, 129, 0.1)", 
         red20: "rgba(179, 100, 92, 0.1)",
-        blue20: "rgb(57, 72, 103, 0.2)"
+        blue20: "rgb(57, 72, 103, 0.2)",
+
+        brightgreen: "#14B8A6",
       },
     },
   },

@@ -4,46 +4,13 @@
   import Chart from "chart.js/auto";
   import { formatDate } from "$lib/pipes/date-pipe";
   import UnitModal from "$lib/components/manager/unit-modal.svelte";
+  import { dashboardStore } from "$lib/stores/dashboard-store";
 
   let error: string | null = null;
+  let financialChart: Chart | null = null;
 
-  interface DashboardStats {
-    totalTenants: number;
-    occupiedUnits: number;
-    totalUnits: number;
-    overdueLease: Array<{
-      unit: string;
-      tenants: string;
-      daysOverdue: number;
-    }>;
-    expiringSoon: Array<{
-      unit: string;
-      tenants: string;
-      date: string;
-    }>;
-    recentPayments: Array<{
-      unit: string;
-      amount: number;
-      date: string;
-    }>;
-    monthlyRevenue: {
-      labels: string[];
-      revenue: number[];
-    };
-  }
-
-  let dashboardStats: DashboardStats = {
-    totalTenants: 0,
-    occupiedUnits: 0,
-    totalUnits: 0,
-    overdueLease: [],
-    expiringSoon: [],
-    recentPayments: [],
-    monthlyRevenue: {
-      labels: [],
-      revenue: [],
-    },
-  };
+  // Subscribe to the store
+  $: dashboardStats = $dashboardStore;
 
   let isUnitModalOpen = false;
   let selectedUnitNumber: number | null = null;
@@ -53,68 +20,57 @@
     isUnitModalOpen = true;
   };
 
-  onMount(async () => {
-    try {
-      const response = await api.get("dashboard-stats");
-      console.log(response);
-      dashboardStats = response.payload;
+  // Update chart when dashboard stats change
+  $: if (dashboardStats?.monthlyRevenue) {
+    updateChart();
+  }
 
-      // INITIALIZE CHART
-      const ctx = document.getElementById(
-        "financialChart",
-      ) as HTMLCanvasElement;
-      new Chart(ctx, {
-        // TYPE OF CHART
-        type: "line",
-        data: {
-          // X-AXIS LABELS(yung months)
-          labels: dashboardStats.monthlyRevenue.labels,
-          // DATASET TO BE PLOTTED
-          datasets: [
-            {
-              // LABEL OF THE DATASET
-              label: "Monthly Revenue",
-              // DATA POINTS
-              data: dashboardStats.monthlyRevenue.revenue,
-              // COLOR OF THE LINE
-              borderColor: "#14B8A6",
-              // SMOOTHNESS OF THE LINE
-              tension: 0.4,
-              // IF THE LINE SHOULD BE FILLED
-              fill: false,
-            },
-          ],
-        },
-        // CHART CONFIGURATION OPTIONS
-        options: {
-          // MAKES THE CHART RESIZE IF ITS CONTAINER (yung div) RESIZES
-          responsive: true,
-          // MAINTAINS THE ASPECT RATIO OF THE CHART
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              // POSITION OF THE LEGEND BOX
-              position: "top",
-            },
-            title: {
-              // IF THE TITLE SHOULD BE DISPLAYED
-              display: true,
-              // TITLE OF THE CHART
-              text: "Monthly Revenue",
-            },
+  function updateChart() {
+    if (financialChart) {
+      financialChart.destroy();
+    }
+
+    const ctx = document.getElementById("financialChart") as HTMLCanvasElement;
+    if (!ctx) return;
+
+    financialChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: dashboardStats.monthlyRevenue.labels,
+        datasets: [
+          {
+            label: "Monthly Revenue",
+            data: dashboardStats.monthlyRevenue.revenue,
+            borderColor: "#14B8A6",
+            tension: 0.4,
+            fill: false,
           },
-          scales: {
-            y: {
-              // IF THE CHART SHOULD START FROM ZERO
-              beginAtZero: true,
-              ticks: {
-                // FORMAT Y-AXIS VALUES WITH PESO SIGN
-                callback: (value) => "₱" + value.toLocaleString(),
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function (value) {
+                return "₱" + value.toLocaleString();
               },
             },
           },
         },
-      });
+      },
+    });
+  }
+
+  onMount(async () => {
+    try {
+      await dashboardStore.loadStats();
     } catch (err: any) {
       error = err.message;
     }
@@ -175,9 +131,11 @@
       <div
         class="w-80 h-20 border backdrop-blur-sm backdrop-filter rounded-xl p-4"
       >
-        <p class="text-xs text-teal font-medium font-inter">Ocupancy Rate</p>
-        <p class="text-3xl text-teal font-bold text-end font-inter">
-          {occupancyRate}%
+        <p class="text-xs text-teal font-medium font-inter">
+          Total Revenue for This Year
+        </p>
+        <p class="text-3xl text-brightgreen font-bold text-end font-inter">
+          ₱{dashboardStats.yearlyRevenue.toLocaleString()}
         </p>
       </div>
     </div>

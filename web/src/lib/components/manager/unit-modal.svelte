@@ -3,6 +3,7 @@
     import { api } from "$lib/services/api";
     import Swal from "sweetalert2";
     import { unitsStore } from "$lib/stores/units-store";
+    import { dashboardStore } from "$lib/stores/dashboard-store";
 
     export let isOpen: boolean = false;
     export let onClose: () => void;
@@ -121,7 +122,10 @@
                 icon: "success",
             });
 
-            await unitsStore.loadUnits();
+            await Promise.all([
+                unitsStore.loadUnits(),
+                dashboardStore.loadStats(),
+            ]);
 
             await loadUnit();
             closeRenewLeaseModal();
@@ -171,6 +175,7 @@
         if (!result.isConfirmed) return;
 
         try {
+            console.log("Ending lease:", unit?.current_lease?.id);
             const response = await api.post("endlease", {
                 lease_id: unit?.current_lease?.id,
             });
@@ -181,10 +186,11 @@
                 icon: "success",
             });
 
-            // Reload units data
-            await unitsStore.loadUnits();
+            await Promise.all([
+                unitsStore.loadUnits(),
+                dashboardStore.loadStats(),
+            ]);
 
-            // Close modal after successful operation
             onClose();
         } catch (error: any) {
             await Swal.fire({
@@ -351,25 +357,23 @@
                             {/each}
                         </div>
 
-                        {#if new Date(unit.current_lease.end_date) < new Date()}
-                            <div
-                                class="flex justify-between gap-2 mt-6 items-center"
+                        <div
+                            class="flex justify-between gap-2 mt-6 items-center border-t"
+                        >
+                            <button
+                                class="mt-8 text-xs font-medium bg-green20 text-green p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal"
+                                on:click={openRenewLeaseModal}
                             >
-                                <button
-                                    class="mt-8 text-xs font-medium bg-green20 text-green p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal"
-                                    on:click={openRenewLeaseModal}
-                                >
-                                    Renew Lease
-                                </button>
+                                Renew Lease
+                            </button>
 
-                                <button
-                                    class="mt-8 text-xs font-medium bg-red20 text-red p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal"
-                                    on:click={endLease}
-                                >
-                                    End Lease
-                                </button>
-                            </div>
-                        {/if}
+                            <button
+                                class="mt-8 text-xs font-medium bg-red20 text-red p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal"
+                                on:click={endLease}
+                            >
+                                End Lease
+                            </button>
+                        </div>
                     </div>
                 {:else}
                     <p class="text-muted text-sm font-medium">

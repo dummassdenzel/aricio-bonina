@@ -103,6 +103,7 @@ class Get extends GlobalMethods
                     WHEN EXISTS (
                         SELECT 1 FROM leases l 
                         WHERE l.unit_id = u.id 
+                        AND l.status = 'active'
                     ) THEN 'occupied'
                     ELSE 'vacant'
                 END as status
@@ -122,9 +123,9 @@ class Get extends GlobalMethods
         if ($result['code'] == 200) {
             $units = $result['data'];
 
-            // For each unit, get its current lease and tenants
+            // For each unit, get its current ACTIVE lease and tenants
             foreach ($units as &$unit) {
-                // Get the current active lease
+                // Get the current active lease only
                 $leaseSql = "SELECT 
                                 l.id,
                                 l.start_date,
@@ -132,8 +133,8 @@ class Get extends GlobalMethods
                                 l.date_renewed,
                                 l.rent_amount
                             FROM leases l
-                            WHERE l.unit_id = :unit_id                            
-                            ORDER BY l.start_date DESC
+                            WHERE l.unit_id = :unit_id
+                            AND l.status = 'active'
                             LIMIT 1";
 
                 $leaseResult = $this->executeQuery($leaseSql, ['unit_id' => $unit['id']]);
@@ -141,14 +142,15 @@ class Get extends GlobalMethods
                 if ($leaseResult['code'] == 200 && !empty($leaseResult['data'])) {
                     $lease = $leaseResult['data'][0];
 
-                    // Get tenants for this lease
+                    // Get active tenants for this lease
                     $tenantSql = "SELECT 
                                     t.id,
                                     t.first_name,
                                     t.last_name,
                                     t.move_in_date
                                 FROM tenants t
-                                WHERE t.lease_id = :lease_id";
+                                WHERE t.lease_id = :lease_id
+                                AND t.status = 'active'";
 
                     $tenantResult = $this->executeQuery($tenantSql, ['lease_id' => $lease['id']]);
 
@@ -182,7 +184,8 @@ class Get extends GlobalMethods
                     u.unit_number 
                 FROM tenants t
                 LEFT JOIN leases l ON t.lease_id = l.id
-                LEFT JOIN units u ON l.unit_id = u.id";
+                LEFT JOIN units u ON l.unit_id = u.id
+                WHERE t.status = 'active'";
 
         return $this->get_records(null, null, null, $sql, null);
     }
@@ -211,10 +214,9 @@ class Get extends GlobalMethods
             COUNT(tenants.id) as tenant_count,
             DATEDIFF(:today, leases.end_date) as days_overdue
         FROM units 
-        LEFT JOIN leases ON units.id = leases.unit_id
+        LEFT JOIN leases ON units.id = leases.unit_id AND leases.status = 'active'
         LEFT JOIN tenants ON leases.id = tenants.lease_id
         WHERE leases.id IS NOT NULL
-        AND (leases.date_renewed IS NULL OR leases.date_renewed <= leases.end_date)
         GROUP BY units.id, leases.id";
 
         $params = ['today' => $today];
@@ -288,27 +290,61 @@ class Get extends GlobalMethods
                 }
             }
 
-            // Get monthly revenue for the last 6 months
+            // GET MONTHLY REVENUE FOR ALL MONTHS OF CURRENT YEAR
             $monthlyRevenueSQL = "
-                SELECT 
-                    DATE_FORMAT(l.created_at, '%M') as month,
-                    SUM(l.rent_amount) as total_revenue
-                FROM leases l
-                WHERE l.created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH)
-                GROUP BY MONTH(l.created_at)
-                ORDER BY l.created_at DESC
-                LIMIT 6
-            ";
+    WITH RECURSIVE months AS (
+        SELECT 1 as month_num, 'January' as month_name
+        UNION ALL
+        SELECT 
+            month_num + 1,
+            CASE month_num + 1
+                WHEN 1 THEN 'January'
+                WHEN 2 THEN 'February'
+                WHEN 3 THEN 'March'
+                WHEN 4 THEN 'April'
+                WHEN 5 THEN 'May'
+                WHEN 6 THEN 'June'
+                WHEN 7 THEN 'July'
+                WHEN 8 THEN 'August'
+                WHEN 9 THEN 'September'
+                WHEN 10 THEN 'October'
+                WHEN 11 THEN 'November'
+                WHEN 12 THEN 'December'
+            END
+        FROM months
+        WHERE month_num < 12
+    )
+    SELECT 
+        m.month_name as month,
+        COALESCE(SUM(l.rent_amount), 0) as total_revenue
+    FROM months m
+    LEFT JOIN leases l ON MONTH(l.start_date) = m.month_num 
+        AND YEAR(l.start_date) = YEAR(CURRENT_DATE)
+    GROUP BY m.month_num, m.month_name
+    ORDER BY m.month_num
+";
 
             $revenueResult = $this->executeQuery($monthlyRevenueSQL);
 
             if ($revenueResult['code'] == 200) {
-                // Reverse the arrays to show oldest to newest
-                $data = array_reverse($revenueResult['data']);
-                foreach ($data as $revenue) {
+                foreach ($revenueResult['data'] as $revenue) {
                     $stats['monthlyRevenue']['labels'][] = $revenue['month'];
                     $stats['monthlyRevenue']['revenue'][] = (float) $revenue['total_revenue'];
                 }
+            }
+            // Get total revenue for current year
+            $yearlyRevenueSQL = "
+                SELECT 
+                    YEAR(CURRENT_DATE) as year,
+                    SUM(l.rent_amount) as total_yearly_revenue
+                FROM leases l
+                WHERE YEAR(l.created_at) = YEAR(CURRENT_DATE)
+            ";
+
+            $yearlyResult = $this->executeQuery($yearlyRevenueSQL);
+
+            if ($yearlyResult['code'] == 200) {
+                $stats['yearlyRevenue'] = (float) $yearlyResult['data'][0]['total_yearly_revenue'] ?? 0;
             }
 
             return $this->sendPayload($stats, 'success', "Successfully retrieved dashboard stats.", 200);
@@ -324,7 +360,8 @@ class Get extends GlobalMethods
                     l.*,
                     u.unit_number,
                     GROUP_CONCAT(CONCAT(t.first_name, ' ', t.last_name) SEPARATOR ', ') as tenant_names,
-                    MAX(COALESCE(l.date_renewed, l.start_date)) OVER (PARTITION BY u.unit_number) as latest_date
+                    MAX(COALESCE(l.date_renewed, l.start_date)) OVER (PARTITION BY u.unit_number) as latest_date,
+                    l.status
                 FROM leases l
                 JOIN units u ON l.unit_id = u.id
                 LEFT JOIN tenants t ON l.id = t.lease_id

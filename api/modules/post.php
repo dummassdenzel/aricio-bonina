@@ -81,11 +81,11 @@ class Post extends GlobalMethods
             $sql = "SELECT u.id, 
                     (SELECT COUNT(*) FROM leases l 
                      WHERE l.unit_id = u.id 
-                     AND ? BETWEEN l.start_date AND l.end_date) as has_active_lease
+                     AND l.status = 'active') as has_active_lease
                     FROM units u 
                     WHERE u.unit_number = ?";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$data->start_date, $data->unit_number]);
+            $stmt->execute([$data->unit_number]);
             $unit = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$unit) {
@@ -97,8 +97,8 @@ class Post extends GlobalMethods
             }
 
             // CREATE LEASE
-            $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount) 
-                VALUES (?, ?, ?, ?)";
+            $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount, status) 
+                VALUES (?, ?, ?, ?, 'active')";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 $unit['id'],
@@ -139,7 +139,7 @@ class Post extends GlobalMethods
             $this->pdo->beginTransaction();
 
             // UPDATE EXISTING LEASE
-            $sql = "UPDATE leases SET date_renewed = CURRENT_TIMESTAMP WHERE id = ?";
+            $sql = "UPDATE leases SET date_renewed = CURRENT_TIMESTAMP, status = 'inactive' WHERE id = ? AND status = 'active'";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$data->lease_id]);
 
@@ -147,8 +147,8 @@ class Post extends GlobalMethods
                 throw new Exception("Lease not found or already renewed.");
             }
 
-            $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount, previous_lease_id) 
-                    SELECT unit_id, ?, ?, ?, id 
+            $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount, previous_lease_id, status) 
+                    SELECT unit_id, ?, ?, ?, id, 'active' 
                     FROM leases 
                     WHERE id = ?";
             $stmt = $this->pdo->prepare($sql);
@@ -181,20 +181,27 @@ class Post extends GlobalMethods
         try {
             $this->pdo->beginTransaction();
 
-            $sql = "DELETE FROM tenants WHERE lease_id = ?";
+            // Update tenants to inactive instead of deleting
+            $sql = "UPDATE tenants 
+                    SET status = 'inactive' 
+                    WHERE lease_id = ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$data->lease_id]);
 
-            $sql = "DELETE FROM leases WHERE id = ?";
+            // Update lease status
+            $sql = "UPDATE leases 
+                    SET status = 'inactive',
+                        end_date = CURRENT_DATE
+                    WHERE id = ? AND status = 'active'";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$data->lease_id]);
 
             if ($stmt->rowCount() === 0) {
-                throw new Exception("Lease not found.");
+                throw new Exception("Lease not found or already terminated.");
             }
 
             $this->pdo->commit();
-            return $this->sendPayload(null, "success", "Successfully ended lease and removed tenants", 200);
+            return $this->sendPayload(null, "success", "Successfully ended lease and updated tenant status", 200);
         } catch (PDOException $e) {
             $this->pdo->rollBack();
             return $this->sendPayload(null, "failed", $e->getMessage(), 400);
