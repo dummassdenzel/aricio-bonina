@@ -391,6 +391,7 @@ class Get extends GlobalMethods
                     'start_date' => $lease['start_date'],
                     'end_date' => $lease['end_date'],
                     'date_renewed' => $lease['date_renewed'],
+                    'date_terminated' => $lease['date_terminated'],
                     'rent_amount' => $lease['rent_amount'],
                     'tenants' => $lease['tenant_names'],
                     'latest_date' => $lease['latest_date'],
