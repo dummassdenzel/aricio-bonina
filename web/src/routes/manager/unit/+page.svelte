@@ -1,100 +1,52 @@
 <script lang="ts">
   import UnitCard from "$lib/components/manager/unit-card.svelte";
-  import { api } from "$lib/services/api";
   import { onMount } from "svelte";
   import { unitsStore } from "$lib/stores/units-store";
 
-  let isModalOpen: boolean = false;
-  let units: any[] = [];
-  let filteredUnits: any[] = [];
   let error: string | null = null;
-  let selectedFloor: string = "all"; // default (all floors)
-  let searchQuery: string = ""; // search query state
-  let sortAscending: boolean = true; // sort state: true = ascending, false = descending
+  let selectedFloor: string = "all";
+  let searchQuery: string = "";
+  let filterStatus: "all" | "occupied" | "vacant" | "expired" = "all";
+  let sortAscending: boolean = true;
+  let searchTimeout: NodeJS.Timeout;
 
-  // Subscribe to the store
+  // Subscribe to store
   $: units = $unitsStore;
 
+  // Stats calculations
+  $: totalUnits = units.length;
+  $: occupiedUnits = units.filter((u) => u.status === "occupied").length;
+  $: vacantUnits = units.filter((u) => u.status === "vacant").length;
+  $: expiredLeases = units.filter((u) => u.lease_status === "expired").length;
+
+  // Debounced search and filter
   $: {
-    if (units) {
-      filterUnits();
-    }
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(async () => {
+      try {
+        await unitsStore.loadUnits({
+          search: searchQuery || undefined,
+          status: filterStatus !== "all" ? filterStatus : undefined,
+          floor: selectedFloor !== "all" ? selectedFloor : undefined,
+        });
+      } catch (err: any) {
+        error = err.message;
+      }
+    }, 300);
   }
 
-  onMount(async () => {
-    try {
-      await unitsStore.loadUnits();
-    } catch (err: any) {
-      error = err.message;
-    }
+  onMount(() => {
+    unitsStore.loadUnits();
   });
-
-  // unit modal
-  const toggleModal = () => {
-    isModalOpen = !isModalOpen;
-  };
-
-  // filter units based on floor and search query
-  const filterUnits = () => {
-    let filtered = units;
-
-    // filter by floor
-    if (selectedFloor !== "all") {
-      filtered = filtered.filter(
-        (unit) => unit.floor === parseInt(selectedFloor),
-      );
-    }
-
-    // filter by search query (unit number or tenant names)
-    if (searchQuery.trim() !== "") {
-      const searchLower = searchQuery.toLowerCase();
-
-      filtered = filtered.filter((unit) => {
-        // check if the unit number matches
-        const matchesUnitNumber = unit.unit_number
-          .toString()
-          .toLowerCase()
-          .includes(searchLower);
-
-        // check if any tenant's name matches (if occupied)
-        const matchesTenantName = unit.current_lease?.tenants?.some(
-          (tenant: { first_name: any; last_name: any }): boolean => {
-            const fullName =
-              `${tenant.first_name} ${tenant.last_name}`.toLowerCase();
-            return fullName.includes(searchLower);
-          },
-        );
-
-        return matchesUnitNumber || matchesTenantName;
-      });
-    }
-
-    // apply sorting
-    filtered.sort((a, b) =>
-      sortAscending
-        ? a.unit_number - b.unit_number
-        : b.unit_number - a.unit_number,
-    );
-
-    filteredUnits = filtered;
-  };
-
-  // for floor button functionality
-  const handleFloorClick = (floor: string) => {
-    selectedFloor = floor;
-    filterUnits();
-  };
-
-  // for search bar functionality
-  const handleSearchInput = (event: Event) => {
-    searchQuery = (event.target as HTMLInputElement).value;
-    filterUnits();
-  };
 
   // toggle sort order
   const toggleSortOrder = () => {
     sortAscending = !sortAscending;
-    filterUnits(); // reapply filters and sorting
+    units = units.sort((a, b) =>
+      sortAscending
+        ? a.unit_number - b.unit_number
+        : b.unit_number - a.unit_number,
+    );
   };
 </script>
 
@@ -105,22 +57,22 @@
       <h1 class="text-2xl sm:text-3xl font-bold text-teal">Unit Management</h1>
 
       <!-- Stats Cards -->
-      <div class="grid grid-cols-3 gap-4 w-full sm:w-auto">
+      <div class="grid grid-cols-4 gap-4 w-full sm:w-auto">
         <div class="bg-white rounded-lg p-4 shadow-sm">
           <p class="text-xs text-muted mb-1">Total Units</p>
-          <p class="text-lg font-bold text-teal">{filteredUnits.length}</p>
+          <p class="text-lg font-bold text-teal">{totalUnits}</p>
         </div>
         <div class="bg-white rounded-lg p-4 shadow-sm">
           <p class="text-xs text-muted mb-1">Occupied</p>
-          <p class="text-lg font-bold text-teal">
-            {filteredUnits.filter((u) => u.current_lease).length}
-          </p>
+          <p class="text-lg font-bold text-teal">{occupiedUnits}</p>
         </div>
         <div class="bg-white rounded-lg p-4 shadow-sm">
           <p class="text-xs text-muted mb-1">Vacant</p>
-          <p class="text-lg font-bold text-teal">
-            {filteredUnits.filter((u) => !u.current_lease).length}
-          </p>
+          <p class="text-lg font-bold text-teal">{vacantUnits}</p>
+        </div>
+        <div class="bg-white rounded-lg p-4 shadow-sm">
+          <p class="text-xs text-muted mb-1">Expired Leases</p>
+          <p class="text-lg font-bold text-red">{expiredLeases}</p>
         </div>
       </div>
     </div>
@@ -135,7 +87,7 @@
             class:bg-lightteal={selectedFloor === "all"}
             class:text-teal={selectedFloor === "all"}
             class:text-muted={selectedFloor !== "all"}
-            on:click={() => handleFloorClick("all")}
+            on:click={() => (selectedFloor = "all")}
           >
             All
           </button>
@@ -146,7 +98,7 @@
               class:bg-lightteal={selectedFloor === String(floor)}
               class:text-teal={selectedFloor === String(floor)}
               class:text-muted={selectedFloor !== String(floor)}
-              on:click={() => handleFloorClick(String(floor))}
+              on:click={() => (selectedFloor = String(floor))}
             >
               {floor}
             </button>
@@ -176,10 +128,21 @@
           <input
             type="text"
             placeholder="Search by unit or tenant name"
+            bind:value={searchQuery}
             class="w-full sm:w-72 pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
-            on:input={handleSearchInput}
           />
         </div>
+
+        <!-- Status Filter -->
+        <select
+          bind:value={filterStatus}
+          class="bg-back rounded-2xl px-4 py-2 text-xs text-slate"
+        >
+          <option value="all">All Units</option>
+          <option value="occupied">Occupied Only</option>
+          <option value="vacant">Vacant Only</option>
+          <option value="expired">Expired Leases</option>
+        </select>
 
         <!-- Action Buttons -->
         <div class="flex gap-2 justify-end sm:justify-start">
@@ -206,27 +169,6 @@
               <path d="M7 4v16" />
             </svg>
           </button>
-
-          <button
-            class="bg-back p-3 rounded-2xl hover:bg-slate/5 transition-colors group"
-            aria-label="Filter units"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#989898"
-              class="group-hover:stroke-teal transition-colors"
-              stroke-width="1"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="9" cy="9" r="7" />
-              <circle cx="15" cy="15" r="7" />
-            </svg>
-          </button>
         </div>
       </div>
     </div>
@@ -237,7 +179,7 @@
         <div class="bg-red20 text-red p-4 rounded-xl">
           <p class="text-sm">{error}</p>
         </div>
-      {:else if filteredUnits.length === 0}
+      {:else if units.length === 0}
         <div class="bg-back rounded-xl p-8 text-center">
           <p class="text-sm text-muted font-medium">
             No units found matching your criteria.
@@ -247,12 +189,11 @@
         <div
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto max-h-[calc(100vh-280px)] scrollbar-thin scrollbar-thumb-slate/20 scrollbar-track-transparent p-1"
         >
-          {#each filteredUnits as unit}
+          {#each units as unit}
             <UnitCard
               unitNumber={unit.unit_number}
               current_lease={unit.current_lease}
-              isOverdue={unit.current_lease?.end_date <
-                new Date().toISOString().split("T")[0]}
+              isOverdue={unit.lease_status === "expired"}
             />
           {/each}
         </div>

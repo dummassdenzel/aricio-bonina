@@ -7,13 +7,27 @@
   let units: any[] = [];
   let error: string | null = null;
   let selectedTenant: any = null;
+  let searchQuery = "";
+  let filterStatus: "all" | "active" | "expired" = "all";
+  let searchTimeout: NodeJS.Timeout;
 
-  onMount(async () => {
-    try {
-      await tenantsStore.loadTenants();
-    } catch (err: any) {
-      error = err.message;
-    }
+  // Debounced search
+  $: {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(async () => {
+      try {
+        await tenantsStore.loadTenants({
+          search: searchQuery || undefined,
+          status: filterStatus !== "all" ? filterStatus : undefined,
+        });
+      } catch (err: any) {
+        error = err.message;
+      }
+    }, 300);
+  }
+
+  onMount(() => {
+    tenantsStore.loadTenants();
   });
 
   // STORE SUBSCRIPTION
@@ -64,17 +78,19 @@
             {tenants.filter(
               (t) =>
                 !t.current_lease?.end_date ||
-                new Date(t.current_lease.end_date) > new Date(),
+                new Date(t.current_lease.end_date).setHours(0, 0, 0, 0) >=
+                  new Date().setHours(0, 0, 0, 0),
             ).length}
           </p>
         </div>
         <div class="bg-white rounded-lg p-4 shadow-sm">
           <p class="text-xs text-muted mb-1">Expired</p>
-          <p class="text-lg font-bold text-teal">
+          <p class="text-lg font-bold text-red">
             {tenants.filter(
               (t) =>
                 t.current_lease?.end_date &&
-                new Date(t.current_lease.end_date) <= new Date(),
+                new Date(t.current_lease.end_date).setHours(0, 0, 0, 0) <
+                  new Date().setHours(0, 0, 0, 0),
             ).length}
           </p>
         </div>
@@ -105,35 +121,22 @@
             </svg>
             <input
               type="text"
-              placeholder="Search by name or unit number"
+              placeholder="Search by name, unit, email or contact"
+              bind:value={searchQuery}
               class="w-full pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
             />
           </div>
 
           <!-- Action Buttons -->
           <div class="flex gap-2 justify-end sm:justify-start">
-            <button
-              class="bg-back p-3 rounded-2xl hover:bg-slate/5 transition-colors group"
-              aria-label="Sort tenants"
+            <select
+              bind:value={filterStatus}
+              class="bg-back rounded-2xl px-4 py-2 text-xs text-slate"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#989898"
-                class="group-hover:stroke-teal transition-colors"
-                stroke-width="1"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m21 16-4 4-4-4" />
-                <path d="M17 20V4" />
-                <path d="m3 8 4-4 4 4" />
-                <path d="M7 4v16" />
-              </svg>
-            </button>
+              <option value="all">All Tenants</option>
+              <option value="active">Active Only</option>
+              <option value="expired">Expired Only</option>
+            </select>
 
             <button
               class="bg-back p-3 rounded-2xl hover:bg-slate/5 transition-colors group"
@@ -190,7 +193,7 @@
                   </div>
                   <div class="flex items-center gap-2">
                     {#if tenant.current_lease}
-                      {#if new Date(tenant.current_lease.end_date) <= new Date()}
+                      {#if new Date(tenant.current_lease.end_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)}
                         <span
                           class="text-xs text-red bg-red20 px-2 py-1 rounded-full"
                           >Expired</span
@@ -230,7 +233,7 @@
                   Tenant Information
                 </h2>
                 <div class="flex items-center gap-2">
-                  {#if selectedTenant.current_lease?.end_date && new Date(selectedTenant.current_lease.end_date) <= new Date()}
+                  {#if selectedTenant.current_lease?.end_date && new Date(selectedTenant.current_lease.end_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)}
                     <span
                       class="text-xs text-red bg-red20 px-3 py-1.5 rounded-full"
                       >Expired</span

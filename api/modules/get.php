@@ -96,7 +96,11 @@ class Get extends GlobalMethods
 
     public function get_units($id = null)
     {
-        // First, get all units with their basic information
+        $search = $_GET['search'] ?? null;
+        $status = $_GET['status'] ?? null;
+        $floor = $_GET['floor'] ?? null;
+        $today = date('Y-m-d');
+
         $sql = "SELECT 
                 u.*,
                 CASE 
@@ -106,17 +110,76 @@ class Get extends GlobalMethods
                         AND l.status = 'active'
                     ) THEN 'occupied'
                     ELSE 'vacant'
-                END as status
+                END as status,
+                CASE 
+                    WHEN EXISTS (
+                        SELECT 1 FROM leases l 
+                        WHERE l.unit_id = u.id 
+                        AND l.status = 'active'
+                        AND l.end_date < ?
+                    ) THEN 'expired'
+                    ELSE 'current'
+                END as lease_status
                 FROM units u";
 
+        $params = [$today];
+        $conditions = [];
+
         if ($id !== null) {
-            $sql .= " WHERE u.unit_number = :id";
-            $params = ['id' => $id];
-        } else {
-            $params = [];
+            $conditions[] = "u.unit_number = ?";
+            $params[] = $id;
         }
 
-        $sql .= " ORDER BY u.id";
+        if ($search !== null) {
+            $conditions[] = "(
+                u.unit_number LIKE ? OR
+                EXISTS (
+                    SELECT 1 FROM leases l 
+                    JOIN tenants t ON l.id = t.lease_id 
+                    WHERE l.unit_id = u.id AND (
+                        t.first_name LIKE ? OR 
+                        t.last_name LIKE ?
+                    )
+                )
+            )";
+            $searchTerm = "%$search%";
+            $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
+        }
+
+        if ($status !== null) {
+            if ($status === 'occupied') {
+                $conditions[] = "EXISTS (
+                    SELECT 1 FROM leases l 
+                    WHERE l.unit_id = u.id 
+                    AND l.status = 'active'
+                )";
+            } else if ($status === 'vacant') {
+                $conditions[] = "NOT EXISTS (
+                    SELECT 1 FROM leases l 
+                    WHERE l.unit_id = u.id 
+                    AND l.status = 'active'
+                )";
+            } else if ($status === 'expired') {
+                $conditions[] = "EXISTS (
+                    SELECT 1 FROM leases l 
+                    WHERE l.unit_id = u.id 
+                    AND l.status = 'active'
+                    AND l.end_date < ?
+                )";
+                $params[] = $today;
+            }
+        }
+
+        if ($floor !== null && $floor !== 'all') {
+            $conditions[] = "u.floor = ?";
+            $params[] = $floor;
+        }
+
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(" AND ", $conditions);
+        }
+
+        $sql .= " ORDER BY u.unit_number";
 
         $result = $this->executeQuery($sql, $params);
 
@@ -179,6 +242,10 @@ class Get extends GlobalMethods
     //NOTE TO SELF, INCLUDE LEASE INFO OF EACH TENANT WITH JOIN QUERY
     public function get_tenants($id = null)
     {
+        $search = $_GET['search'] ?? null;
+        $status = $_GET['status'] ?? null;
+        $today = date('Y-m-d');
+
         $sql = "SELECT 
                     t.*, 
                     u.unit_number,
@@ -196,12 +263,36 @@ class Get extends GlobalMethods
                 LEFT JOIN units u ON l.unit_id = u.id
                 WHERE t.status = 'active'";
 
-        if ($id !== null) {
-            $sql .= " AND t.id = :id";
-            $params = ['id' => $id];
-        } else {
-            $params = [];
+        $params = [];
+
+        if ($search !== null) {
+            $sql .= " AND (
+                t.first_name LIKE ? 
+                OR t.last_name LIKE ?
+                OR u.unit_number LIKE ?
+                OR t.email LIKE ?
+                OR t.contact_number LIKE ?
+            )";
+            $searchTerm = "%$search%";
+            $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm]);
         }
+
+        if ($status !== null) {
+            if ($status === 'active') {
+                $sql .= " AND (l.end_date >= ? OR l.end_date IS NULL)";
+                $params[] = $today;
+            } else if ($status === 'expired') {
+                $sql .= " AND l.end_date < ?";
+                $params[] = $today;
+            }
+        }
+
+        if ($id !== null) {
+            $sql .= " AND t.id = ?";
+            $params[] = $id;
+        }
+
+        $sql .= " ORDER BY t.first_name, t.last_name";
 
         $result = $this->executeQuery($sql, $params);
 
@@ -215,7 +306,6 @@ class Get extends GlobalMethods
                     'status' => $tenant['lease_status']
                 ];
             }
-
             return $this->sendPayload($tenants, 'success', "Successfully retrieved tenants data.", 200);
         }
 

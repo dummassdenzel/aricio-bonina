@@ -12,7 +12,7 @@ html {
 
 @media (min-width: 640px) {
   html {
-    padding: 40px 100px 40px 100px;
+    padding: 2rem 4rem 2rem 4rem;
   }
 }
 @media not all and (min-width: 640px) {

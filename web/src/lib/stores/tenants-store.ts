@@ -6,9 +6,16 @@ function createTenantsStore() {
 
     return {
         subscribe,
-        loadTenants: async () => {
+        loadTenants: async (params?: { search?: string, status?: string }) => {
             try {
-                const response = await api.get("tenants");
+                let endpoint = "tenants";
+                if (params) {
+                    const queryParams = new URLSearchParams();
+                    if (params.search) queryParams.append('search', params.search);
+                    if (params.status) queryParams.append('status', params.status);
+                    endpoint += `?${queryParams.toString()}`;
+                }
+                const response = await api.get(endpoint);
                 set(response.payload);
             } catch (err: any) {
                 console.error('Error loading tenants:', err);

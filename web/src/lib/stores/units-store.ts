@@ -6,10 +6,17 @@ function createUnitsStore() {
 
     return {
         subscribe,
-        loadUnits: async () => {
+        loadUnits: async (params?: { search?: string, status?: string, floor?: string }) => {
             try {
-                const response = await api.get("units");
-                console.log("Loaded units from store!");
+                let endpoint = "units";
+                if (params) {
+                    const queryParams = new URLSearchParams();
+                    if (params.search) queryParams.append('search', params.search);
+                    if (params.status) queryParams.append('status', params.status);
+                    if (params.floor) queryParams.append('floor', params.floor);
+                    endpoint += `?${queryParams.toString()}`;
+                }
+                const response = await api.get(endpoint);
                 set(response.payload);
             } catch (err: any) {
                 console.error('Error loading units:', err);

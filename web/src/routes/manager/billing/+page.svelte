@@ -310,11 +310,24 @@
                                                             </p>
                                                         {/if}
                                                     </div>
-                                                    <p
-                                                        class="font-bold text-slate/80"
+                                                    <div
+                                                        class="flex flex-col items-end"
                                                     >
-                                                        ₱{lease.rent_amount.toLocaleString()}
-                                                    </p>
+                                                        <p
+                                                            class="font-bold text-teal"
+                                                        >
+                                                            ₱{leases[0].rent_amount.toLocaleString()}
+                                                        </p>
+                                                        <p
+                                                            class="text-xs text-gray-500"
+                                                        >
+                                                            Created At: {formatDate(
+                                                                new Date(
+                                                                    leases[0].created_at,
+                                                                ).toLocaleDateString(),
+                                                            )}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         {/each}
