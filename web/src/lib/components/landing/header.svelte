@@ -35,12 +35,12 @@
       >
         Features
       </a>
-      <a
+      <!-- <a
         href="#contact"
         class="font-semibold text-slate text-xs hover:text-midnight transition-colors"
       >
         Contact
-      </a>
+      </a> -->
     </nav>
 
     <!-- login button -->

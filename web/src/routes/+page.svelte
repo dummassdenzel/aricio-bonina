@@ -7,7 +7,7 @@
   import Footer from "$lib/components/landing/footer.svelte";
 </script>
 
-<div class="min-h-screen w-full bg-white sm:p-4">
+<div class="min-h-screen w-full bg-white">
   <Header />
   <main class="max-w-7xl mx-auto">
     <Hero />

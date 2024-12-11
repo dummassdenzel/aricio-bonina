@@ -24,7 +24,7 @@
 
       <!-- location -->
       <p class="text-teal leading-relaxed font-semibold">
-        Sea Pearl Residences
+        ADB Real Estate Leasing
       </p>
       <p class="text-slate leading-relaxed text-sm">
         69 Gallagher Street, East Tapinac, Olongapo City
