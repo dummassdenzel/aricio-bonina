@@ -1,48 +1,48 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { api } from "$lib/services/api";
+    import { leaseHistoryStore } from "$lib/stores/lease-history-store";
     import { formatDate } from "$lib/pipes/date-pipe";
 
-    let leaseHistory: Record<
-        string,
-        Array<{
-            id: number;
-            start_date: string;
-            end_date: string;
-            date_renewed: string | null;
-            date_terminated: string | null;
-            rent_amount: number;
-            tenants: string;
-            latest_date: string;
-            created_at: string;
-        }>
-    > = {};
-
     let error: string | null = null;
-
-    // Add state for expanded units
     let expandedUnits: Set<string> = new Set();
+    let searchQuery: string = "";
+    let sortBy: "latest" | "unit" = "latest";
+    let filterStatus: "all" | "active" | "terminated" = "all";
 
-    async function loadLeaseHistory() {
-        try {
-            const response = await api.get("lease-history");
-            leaseHistory = response.payload;
-        } catch (err: any) {
-            error = err.message;
-        }
+    $: leaseHistory = $leaseHistoryStore;
+
+    // Debounce search
+    let searchTimeout: NodeJS.Timeout;
+    $: {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(async () => {
+            try {
+                await leaseHistoryStore.loadLeaseHistory({
+                    search: searchQuery,
+                    status: filterStatus !== "all" ? filterStatus : undefined,
+                });
+            } catch (err: any) {
+                error = err.message;
+            }
+        }, 300);
     }
 
-    onMount(loadLeaseHistory);
+    onMount(() => {
+        leaseHistoryStore.loadLeaseHistory();
+    });
 
     function getSortedUnits(history: typeof leaseHistory) {
         return Object.entries(history).sort((a, b) => {
-            const aLatestDate = a[1][0]?.latest_date || "";
-            const bLatestDate = b[1][0]?.latest_date || "";
-            return bLatestDate.localeCompare(aLatestDate);
+            if (sortBy === "latest") {
+                const aLatestDate = a[1][0]?.latest_date || "";
+                const bLatestDate = b[1][0]?.latest_date || "";
+                return bLatestDate.localeCompare(aLatestDate);
+            } else {
+                return parseInt(a[0]) - parseInt(b[0]);
+            }
         });
     }
 
-    // TOGGLE FUNCTION
     function toggleUnitHistory(unitNumber: string) {
         if (expandedUnits.has(unitNumber)) {
             expandedUnits.delete(unitNumber);
@@ -53,154 +53,278 @@
     }
 </script>
 
-<h1 class="text-3xl font-bold text-teal">Billing History</h1>
-<section class="mt-8">
-    <div class="bg-back rounded-lg p-5 border">
-        {#if error}
-            <p class="text-red-500">{error}</p>
-        {:else if Object.keys(leaseHistory).length === 0}
-            <p class="text-sm text-muted">No lease history found.</p>
-        {:else}
-            {#each getSortedUnits(leaseHistory) as [unitNumber, leases]}
-                <div class="mb-8">
-                    <div class="flex items-center gap-2 mb-4">
-                        <h2 class="text-xl font-bold">Unit {unitNumber}</h2>
-                    </div>
-                    <div class="space-y-4">
-                        <!-- SHOW LATEST LEASE ONLY -->
-                        {#if leases[0]}
-                            <div class="p-4 bg-white rounded-lg shadow">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="font-semibold">
-                                            {formatDate(
-                                                new Date(
-                                                    leases[0].start_date,
-                                                ).toLocaleDateString(),
-                                            )} -
-                                            {formatDate(
-                                                new Date(
-                                                    leases[0].end_date,
-                                                ).toLocaleDateString(),
-                                            )}
-                                        </p>
-                                        {#if leases[0].date_renewed}
-                                            <p class="text-sm text-gray-500">
-                                                {leases[0].date_renewed
-                                                    ? `Renewed on: ${new Date(leases[0].date_renewed).toLocaleDateString()}`
-                                                    : ""}
-                                            </p>
-                                        {/if}
-                                        {#if leases[0].date_terminated}
-                                            <p class="text-sm text-gray-500">
-                                                {leases[0].date_terminated
-                                                    ? `Terminated on: ${new Date(leases[0].date_terminated).toLocaleDateString()}`
-                                                    : ""}
-                                            </p>
-                                        {/if}
-                                        {#if !leases[0].date_terminated && !leases[0].date_renewed}
-                                            <p class="text-sm text-gray-500">
-                                                Current Lease Term
-                                            </p>
-                                        {/if}
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-bold">
-                                            ₱{leases[0].rent_amount}
-                                        </p>
-                                        <p class="text-xs text-gray-500">
-                                            Created At: {formatDate(
-                                                new Date(
-                                                    leases[0].created_at,
-                                                ).toLocaleDateString(),
-                                            )}
-                                        </p>
-                                    </div>
+<div class="">
+    <div class="flex flex-col gap-6">
+        <!-- Header Section -->
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl sm:text-3xl font-bold text-teal">
+                Lease History
+            </h1>
+
+            <!-- Stats Summary -->
+            <div class="grid grid-cols-3 gap-4">
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <p class="text-xs text-muted mb-1">Total Units</p>
+                    <p class="text-lg font-bold text-teal">
+                        {Object.keys(leaseHistory).length}
+                    </p>
+                </div>
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <p class="text-xs text-muted mb-1">Total Leases</p>
+                    <p class="text-lg font-bold text-teal">
+                        {Object.values(leaseHistory).reduce(
+                            (acc, leases) => acc + leases.length,
+                            0,
+                        )}
+                    </p>
+                </div>
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <p class="text-xs text-muted mb-1">Active Leases</p>
+                    <p class="text-lg font-bold text-teal">
+                        {Object.values(leaseHistory).reduce(
+                            (acc, leases) =>
+                                acc +
+                                leases.filter((lease) => !lease.date_terminated)
+                                    .length,
+                            0,
+                        )}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-between">
+            <!-- Search -->
+            <div class="relative flex-grow sm:flex-grow-0">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#989898"
+                    stroke-width="1"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="absolute left-3 top-1/2 transform -translate-y-1/2"
+                >
+                    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+                </svg>
+                <input
+                    type="text"
+                    placeholder="Search by unit or tenant name"
+                    bind:value={searchQuery}
+                    class="w-full sm:w-72 pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
+                />
+            </div>
+
+            <!-- Filters -->
+            <div class="flex gap-3">
+                <select
+                    bind:value={filterStatus}
+                    class="bg-back rounded-2xl px-4 py-2 text-xs text-slate"
+                >
+                    <option value="all">All Leases</option>
+                    <option value="active">Active Only</option>
+                    <option value="terminated">Terminated Only</option>
+                </select>
+
+                <select
+                    bind:value={sortBy}
+                    class="bg-back rounded-2xl px-4 py-2 text-xs text-slate"
+                >
+                    <option value="latest">Sort by Latest</option>
+                    <option value="unit">Sort by Unit</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Lease History List -->
+        <div class="bg-back rounded-lg p-5 border">
+            {#if error}
+                <div class="bg-red20 text-red p-4 rounded-xl">
+                    <p class="text-sm">{error}</p>
+                </div>
+            {:else if Object.keys(leaseHistory).length === 0}
+                <div class="text-center py-8">
+                    <p class="text-sm text-muted">No lease history found.</p>
+                </div>
+            {:else}
+                <div class="space-y-6">
+                    {#each getSortedUnits(leaseHistory) as [unitNumber, leases]}
+                        <div class="bg-white rounded-xl p-6 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <h2 class="text-xl font-bold text-teal">
+                                        Unit {unitNumber}:
+                                    </h2>
+                                    <h3 class="text-sm text-slate">
+                                        {leases[0].tenants}
+                                    </h3>
                                 </div>
+
+                                <span
+                                    class="text-xs px-2 py-1 rounded-full {leases[0]
+                                        .date_terminated
+                                        ? 'bg-red20 text-red'
+                                        : 'bg-green20 text-green'}"
+                                >
+                                    {leases[0].date_terminated
+                                        ? "Terminated"
+                                        : "Active"}
+                                </span>
                             </div>
-                        {/if}
 
-                        <!-- SHOW TOGGLE BUTTON IF THERE ARE MORE THAN ONE LEASES -->
-                        {#if leases.length > 1}
-                            <button
-                                class="text-sm text-teal hover:text-teal-600 mt-2"
-                                on:click={() => toggleUnitHistory(unitNumber)}
-                            >
-                                {expandedUnits.has(unitNumber)
-                                    ? "Show Less"
-                                    : `+ ${leases.length - 1} more`}
-                            </button>
-
-                            <!-- SHOW OLDER LEASES IF EXPANDED -->
-                            {#if expandedUnits.has(unitNumber)}
-                                {#each leases.slice(1) as lease}
+                            <!-- Latest Lease -->
+                            {#if leases[0]}
+                                <div class="border-l-4 border-teal pl-4 py-2">
                                     <div
-                                        class="p-4 bg-white rounded-lg shadow opacity-75"
+                                        class="flex justify-between items-start"
                                     >
-                                        <div
-                                            class="flex justify-between items-start"
-                                        >
-                                            <div>
-                                                <p class="font-semibold">
-                                                    {formatDate(
-                                                        new Date(
-                                                            lease.start_date,
-                                                        ).toLocaleDateString(),
-                                                    )} -
-                                                    {formatDate(
-                                                        new Date(
-                                                            lease.end_date,
-                                                        ).toLocaleDateString(),
-                                                    )}
-                                                </p>
-                                                {#if lease.date_renewed}
-                                                    <p
-                                                        class="text-sm text-gray-500"
-                                                    >
-                                                        {lease.date_renewed
-                                                            ? `Renewed on: ${new Date(lease.date_renewed).toLocaleDateString()}`
-                                                            : ""}
-                                                    </p>
-                                                {/if}
-                                                {#if lease.date_terminated}
-                                                    <p
-                                                        class="text-sm text-gray-500"
-                                                    >
-                                                        {lease.date_terminated
-                                                            ? `Terminated on: ${new Date(lease.date_terminated).toLocaleDateString()}`
-                                                            : ""}
-                                                    </p>
-                                                {/if}
-                                                {#if !lease.date_terminated && !lease.date_renewed}
-                                                    <p
-                                                        class="text-sm text-gray-500"
-                                                    >
-                                                        Current Lease Term
-                                                    </p>
-                                                {/if}
-                                            </div>
-                                            <div class="text-right">
-                                                <p class="font-bold">
-                                                    ₱{lease.rent_amount}
-                                                </p>
+                                        <div>
+                                            <p class="font-semibold text-slate">
+                                                {formatDate(
+                                                    new Date(
+                                                        leases[0].start_date,
+                                                    ).toLocaleDateString(),
+                                                )} -
+                                                {formatDate(
+                                                    new Date(
+                                                        leases[0].end_date,
+                                                    ).toLocaleDateString(),
+                                                )}
+                                            </p>
+                                            {#if leases[0].date_renewed}
                                                 <p
-                                                    class="text-xs text-gray-500"
+                                                    class="text-xs text-green mt-1"
                                                 >
-                                                    Created At: {formatDate(
+                                                    Renewed: {formatDate(
                                                         new Date(
-                                                            lease.created_at,
+                                                            leases[0].date_renewed,
                                                         ).toLocaleDateString(),
                                                     )}
                                                 </p>
-                                            </div>
+                                            {/if}
+                                            {#if leases[0].date_terminated}
+                                                <p
+                                                    class="text-xs text-red mt-1"
+                                                >
+                                                    Terminated: {formatDate(
+                                                        new Date(
+                                                            leases[0].date_terminated,
+                                                        ).toLocaleDateString(),
+                                                    )}
+                                                </p>
+                                            {/if}
+                                        </div>
+                                        <div class="flex flex-col items-end">
+                                            <p class="font-bold text-teal">
+                                                ₱{leases[0].rent_amount.toLocaleString()}
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                Created At: {formatDate(
+                                                    new Date(
+                                                        leases[0].created_at,
+                                                    ).toLocaleDateString(),
+                                                )}
+                                            </p>
                                         </div>
                                     </div>
-                                {/each}
+                                </div>
                             {/if}
-                        {/if}
-                    </div>
+
+                            <!-- History Toggle -->
+                            {#if leases.length > 1}
+                                <button
+                                    class="mt-4 text-sm text-teal hover:text-teal/80 transition-colors flex items-center gap-2"
+                                    on:click={() =>
+                                        toggleUnitHistory(unitNumber)}
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        {#if expandedUnits.has(unitNumber)}
+                                            <path d="m18 15-6-6-6 6" />
+                                        {:else}
+                                            <path d="m6 9 6 6 6-6" />
+                                        {/if}
+                                    </svg>
+                                    {expandedUnits.has(unitNumber)
+                                        ? "Hide History"
+                                        : `Show History (${leases.length - 1} more)`}
+                                </button>
+
+                                {#if expandedUnits.has(unitNumber)}
+                                    <div class="mt-4 space-y-4 pl-4">
+                                        {#each leases.slice(1) as lease}
+                                            <div
+                                                class="border-l-4 border-slate/20 pl-4 py-2"
+                                            >
+                                                <div
+                                                    class="flex justify-between items-start"
+                                                >
+                                                    <div>
+                                                        <p
+                                                            class="font-semibold text-slate/80"
+                                                        >
+                                                            {formatDate(
+                                                                new Date(
+                                                                    lease.start_date,
+                                                                ).toLocaleDateString(),
+                                                            )} -
+                                                            {formatDate(
+                                                                new Date(
+                                                                    lease.end_date,
+                                                                ).toLocaleDateString(),
+                                                            )}
+                                                        </p>
+                                                        {#if lease.date_renewed}
+                                                            <p
+                                                                class="text-xs text-green mt-1"
+                                                            >
+                                                                Renewed: {formatDate(
+                                                                    new Date(
+                                                                        lease.date_renewed,
+                                                                    ).toLocaleDateString(),
+                                                                )}
+                                                            </p>
+                                                        {/if}
+                                                        {#if lease.date_terminated}
+                                                            <p
+                                                                class="text-xs text-red mt-1"
+                                                            >
+                                                                Terminated: {formatDate(
+                                                                    new Date(
+                                                                        lease.date_terminated,
+                                                                    ).toLocaleDateString(),
+                                                                )}
+                                                            </p>
+                                                        {/if}
+                                                    </div>
+                                                    <p
+                                                        class="font-bold text-slate/80"
+                                                    >
+                                                        ₱{lease.rent_amount.toLocaleString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        {/each}
+                                    </div>
+                                {/if}
+                            {/if}
+                        </div>
+                    {/each}
                 </div>
-            {/each}
-        {/if}
+            {/if}
+        </div>
     </div>
-</section>
+</div>

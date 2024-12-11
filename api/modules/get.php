@@ -388,6 +388,9 @@ class Get extends GlobalMethods
 
     public function getLeaseHistory($unit_id = null)
     {
+        $search = $_GET['search'] ?? null;
+        $status = $_GET['status'] ?? null;
+
         $sql = "SELECT 
                     l.*,
                     u.unit_number,
@@ -400,9 +403,28 @@ class Get extends GlobalMethods
                 WHERE 1=1 ";
 
         $params = [];
+
         if ($unit_id !== null) {
             $sql .= "AND l.unit_id = ? ";
             $params[] = $unit_id;
+        }
+
+        if ($search !== null) {
+            $sql .= "AND (
+                u.unit_number LIKE ? 
+                OR CONCAT(t.first_name, ' ', t.last_name) LIKE ?
+            ) ";
+            $searchTerm = "%$search%";
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+
+        if ($status !== null) {
+            if ($status === 'active') {
+                $sql .= "AND l.date_terminated IS NULL ";
+            } else if ($status === 'terminated') {
+                $sql .= "AND l.date_terminated IS NOT NULL ";
+            }
         }
 
         $sql .= "GROUP BY l.id, u.unit_number 
@@ -411,7 +433,7 @@ class Get extends GlobalMethods
         $result = $this->executeQuery($sql, $params);
 
         if ($result['code'] == 200) {
-            // ORGANIZE LEASES BY UNIT
+            // Organize leases by unit
             $organizedLeases = [];
             foreach ($result['data'] as $lease) {
                 $unitNumber = $lease['unit_number'];
