@@ -182,6 +182,10 @@ class Get extends GlobalMethods
         $sql = "SELECT 
                     t.*, 
                     u.unit_number,
+                    l.start_date as lease_start_date,
+                    l.end_date as lease_end_date,
+                    l.rent_amount,
+                    l.status as lease_status,
                     CASE 
                         WHEN t.valid_id_path IS NOT NULL 
                         THEN CONCAT('http://localhost/aricio-bonina/api/', t.valid_id_path)
@@ -192,7 +196,30 @@ class Get extends GlobalMethods
                 LEFT JOIN units u ON l.unit_id = u.id
                 WHERE t.status = 'active'";
 
-        return $this->get_records(null, null, null, $sql, null);
+        if ($id !== null) {
+            $sql .= " AND t.id = :id";
+            $params = ['id' => $id];
+        } else {
+            $params = [];
+        }
+
+        $result = $this->executeQuery($sql, $params);
+
+        if ($result['code'] == 200) {
+            $tenants = $result['data'];
+            foreach ($tenants as &$tenant) {
+                $tenant['current_lease'] = [
+                    'start_date' => $tenant['lease_start_date'],
+                    'end_date' => $tenant['lease_end_date'],
+                    'rent_amount' => $tenant['rent_amount'],
+                    'status' => $tenant['lease_status']
+                ];
+            }
+
+            return $this->sendPayload($tenants, 'success', "Successfully retrieved tenants data.", 200);
+        }
+
+        return $this->sendPayload(null, 'failed', "Failed to retrieve tenants data.", $result['code']);
     }
 
     public function get_billings($id = null)

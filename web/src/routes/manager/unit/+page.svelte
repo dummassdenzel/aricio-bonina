@@ -99,19 +99,42 @@
 </script>
 
 <div class="">
-  <h1 class="text-2xl sm:text-3xl font-bold text-teal">Unit Management</h1>
+  <div class="flex flex-col gap-6">
+    <!-- Header Section -->
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl sm:text-3xl font-bold text-teal">Unit Management</h1>
 
-  <section class="mt-6">
-    <div
-      class="flex flex-col sm:flex-row justify-between gap-4 sm:items-center"
-    >
-      <!-- floor navigation -->
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-3 gap-4 w-full sm:w-auto">
+        <div class="bg-white rounded-lg p-4 shadow-sm">
+          <p class="text-xs text-muted mb-1">Total Units</p>
+          <p class="text-lg font-bold text-teal">{filteredUnits.length}</p>
+        </div>
+        <div class="bg-white rounded-lg p-4 shadow-sm">
+          <p class="text-xs text-muted mb-1">Occupied</p>
+          <p class="text-lg font-bold text-teal">
+            {filteredUnits.filter((u) => u.current_lease).length}
+          </p>
+        </div>
+        <div class="bg-white rounded-lg p-4 shadow-sm">
+          <p class="text-xs text-muted mb-1">Vacant</p>
+          <p class="text-lg font-bold text-teal">
+            {filteredUnits.filter((u) => !u.current_lease).length}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls Section -->
+    <div class="flex flex-col sm:flex-row justify-between gap-4">
+      <!-- Floor Navigation -->
       <div class="bg-back p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
         <div class="flex min-w-max">
           <button
-            class="p-2 py-3 w-16 text-xs font-semibold text-muted rounded-lg transition"
+            class="p-2 py-3 w-16 text-xs font-semibold rounded-lg transition-colors"
             class:bg-lightteal={selectedFloor === "all"}
             class:text-teal={selectedFloor === "all"}
+            class:text-muted={selectedFloor !== "all"}
             on:click={() => handleFloorClick("all")}
           >
             All
@@ -119,9 +142,10 @@
 
           {#each [1, 2, 3, 4, 5] as floor}
             <button
-              class="p-2 w-16 text-xs font-semibold text-muted rounded-lg transition"
+              class="p-2 w-16 text-xs font-semibold rounded-lg transition-colors"
               class:bg-lightteal={selectedFloor === String(floor)}
               class:text-teal={selectedFloor === String(floor)}
+              class:text-muted={selectedFloor !== String(floor)}
               on:click={() => handleFloorClick(String(floor))}
             >
               {floor}
@@ -130,9 +154,9 @@
         </div>
       </div>
 
-      <!-- functionality -->
-      <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-        <!-- search bar -->
+      <!-- Search and Actions -->
+      <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+        <!-- Search -->
         <div class="relative flex-grow sm:flex-grow-0">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -157,34 +181,12 @@
           />
         </div>
 
-        <!-- buttons -->
+        <!-- Action Buttons -->
         <div class="flex gap-2 justify-end sm:justify-start">
-          <!-- filter button -->
           <button
-            class="bg-back p-3 rounded-2xl hover:bg-slate/5 transition-colors"
-            aria-label="Filter"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#989898"
-              stroke-width="1"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="9" cy="9" r="7" />
-              <circle cx="15" cy="15" r="7" />
-            </svg>
-          </button>
-
-          <!-- sort button -->
-          <button
-            class="bg-back p-3 rounded-2xl hover:bg-slate/5 transition-colors"
-            on:click={toggleSortOrder}
+            class="bg-back p-3 rounded-2xl hover:bg-slate/5 transition-colors group"
             aria-label="Sort units"
+            on:click={toggleSortOrder}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -193,6 +195,7 @@
               viewBox="0 0 24 24"
               fill="none"
               stroke="#989898"
+              class="group-hover:stroke-teal transition-colors"
               stroke-width="1"
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -203,18 +206,41 @@
               <path d="M7 4v16" />
             </svg>
           </button>
+
+          <button
+            class="bg-back p-3 rounded-2xl hover:bg-slate/5 transition-colors group"
+            aria-label="Filter units"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#989898"
+              class="group-hover:stroke-teal transition-colors"
+              stroke-width="1"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="9" cy="9" r="7" />
+              <circle cx="15" cy="15" r="7" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- unit cards -->
-    <div class="mt-6">
+    <!-- Units Grid -->
+    <div class="mt-2">
       {#if error}
-        <p class="text-red-500 p-4 bg-red-50 rounded-xl">{error}</p>
+        <div class="bg-red20 text-red p-4 rounded-xl">
+          <p class="text-sm">{error}</p>
+        </div>
       {:else if filteredUnits.length === 0}
         <div class="bg-back rounded-xl p-8 text-center">
           <p class="text-sm text-muted font-medium">
-            No units or tenants found.
+            No units found matching your criteria.
           </p>
         </div>
       {:else}
@@ -232,5 +258,5 @@
         </div>
       {/if}
     </div>
-  </section>
+  </div>
 </div>
