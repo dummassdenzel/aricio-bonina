@@ -98,65 +98,42 @@
   };
 </script>
 
-<!-- F R O N T E N D -->
-<h1 class="text-3xl font-bold text-teal">Unit Management</h1>
+<div class="">
+  <h1 class="text-2xl sm:text-3xl font-bold text-teal">Unit Management</h1>
 
-<section class="mt-6">
-  <div class="flex justify-between align-middle items-center">
-    <!-- floor navigation -->
-    <div class="bg-back p-1 rounded-xl w-max flex">
-      <button
-        class="p-2 py-3 w-16 text-xs font-semibold text-muted rounded-lg transition"
-        class:bg-lightteal={selectedFloor === "all"}
-        class:text-teal={selectedFloor === "all"}
-        on:click={() => handleFloorClick("all")}
-      >
-        All
-      </button>
+  <section class="mt-6">
+    <div
+      class="flex flex-col sm:flex-row justify-between gap-4 sm:items-center"
+    >
+      <!-- floor navigation -->
+      <div class="bg-back p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
+        <div class="flex min-w-max">
+          <button
+            class="p-2 py-3 w-16 text-xs font-semibold text-muted rounded-lg transition"
+            class:bg-lightteal={selectedFloor === "all"}
+            class:text-teal={selectedFloor === "all"}
+            on:click={() => handleFloorClick("all")}
+          >
+            All
+          </button>
 
-      {#each [1, 2, 3, 4, 5] as floor}
-        <button
-          class="p-2 w-16 text-xs font-semibold text-muted rounded-lg transition"
-          class:bg-lightteal={selectedFloor === String(floor)}
-          class:text-teal={selectedFloor === String(floor)}
-          on:click={() => handleFloorClick(String(floor))}
-        >
-          {floor}
-        </button>
-      {/each}
-    </div>
-
-    <!-- functionality -->
-    <div class="flex gap-2">
-      <!-- search bar -->
-      <div class="relative">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#989898"
-          stroke-width="1"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="absolute left-3 top-1/2 transform -translate-y-1/2"
-          ><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg
-        >
-        <input
-          type="text"
-          placeholder="Search by unit or tenant name"
-          class="pl-10 text-xs text-dmSans w-72 text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
-          on:input={handleSearchInput}
-        />
-        <!-- search bar functionality -->
+          {#each [1, 2, 3, 4, 5] as floor}
+            <button
+              class="p-2 w-16 text-xs font-semibold text-muted rounded-lg transition"
+              class:bg-lightteal={selectedFloor === String(floor)}
+              class:text-teal={selectedFloor === String(floor)}
+              on:click={() => handleFloorClick(String(floor))}
+            >
+              {floor}
+            </button>
+          {/each}
+        </div>
       </div>
 
-      <!-- buttons -->
-      <div class="flex gap-2">
-        <!-- svelte-ignore a11y_consider_explicit_label -->
-        <!-- filter button -->
-        <button class="bg-back p-3 rounded-2xl">
+      <!-- functionality -->
+      <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <!-- search bar -->
+        <div class="relative flex-grow sm:flex-grow-0">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -167,51 +144,93 @@
             stroke-width="1"
             stroke-linecap="round"
             stroke-linejoin="round"
-            class="lucide lucide-blend"
-            ><circle cx="9" cy="9" r="7" /><circle cx="15" cy="15" r="7" /></svg
+            class="absolute left-3 top-1/2 transform -translate-y-1/2"
           >
-        </button>
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search by unit or tenant name"
+            class="w-full sm:w-72 pl-10 text-xs text-dmSans text-muted rounded-2xl p-3.5 bg-back focus:text-teal focus:outline-backdrop"
+            on:input={handleSearchInput}
+          />
+        </div>
 
-        <!-- svelte-ignore a11y_consider_explicit_label -->
-        <!-- sort button -->
-        <button class="bg-back p-3 rounded-2xl" on:click={toggleSortOrder}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#989898"
-            stroke-width="1"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-arrow-up-down"
-            ><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path
-              d="m3 8 4-4 4 4"
-            /><path d="M7 4v16" /></svg
+        <!-- buttons -->
+        <div class="flex gap-2 justify-end sm:justify-start">
+          <!-- filter button -->
+          <button
+            class="bg-back p-3 rounded-2xl hover:bg-slate/5 transition-colors"
+            aria-label="Filter"
           >
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#989898"
+              stroke-width="1"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="9" cy="9" r="7" />
+              <circle cx="15" cy="15" r="7" />
+            </svg>
+          </button>
+
+          <!-- sort button -->
+          <button
+            class="bg-back p-3 rounded-2xl hover:bg-slate/5 transition-colors"
+            on:click={toggleSortOrder}
+            aria-label="Sort units"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#989898"
+              stroke-width="1"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m21 16-4 4-4-4" />
+              <path d="M17 20V4" />
+              <path d="m3 8 4-4 4 4" />
+              <path d="M7 4v16" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- unit cards -->
-  <div
-    class="mt-6 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 overflow-auto max-h-[520px] scrollbar-none"
-  >
-    {#if error}
-      <p class="text-red-500">{error}</p>
-    {:else if filteredUnits.length === 0}
-      <p class="text-sm text-muted font-medium">No units or tenants found.</p>
-    {:else}
-      {#each filteredUnits as unit}
-        <UnitCard
-          unitNumber={unit.unit_number}
-          current_lease={unit.current_lease}
-          isOverdue={unit.current_lease?.end_date <
-            new Date().toISOString().split("T")[0]}
-        />
-      {/each}
-    {/if}
-  </div>
-</section>
+    <!-- unit cards -->
+    <div class="mt-6">
+      {#if error}
+        <p class="text-red-500 p-4 bg-red-50 rounded-xl">{error}</p>
+      {:else if filteredUnits.length === 0}
+        <div class="bg-back rounded-xl p-8 text-center">
+          <p class="text-sm text-muted font-medium">
+            No units or tenants found.
+          </p>
+        </div>
+      {:else}
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto max-h-[calc(100vh-280px)] scrollbar-thin scrollbar-thumb-slate/20 scrollbar-track-transparent p-1"
+        >
+          {#each filteredUnits as unit}
+            <UnitCard
+              unitNumber={unit.unit_number}
+              current_lease={unit.current_lease}
+              isOverdue={unit.current_lease?.end_date <
+                new Date().toISOString().split("T")[0]}
+            />
+          {/each}
+        </div>
+      {/if}
+    </div>
+  </section>
+</div>

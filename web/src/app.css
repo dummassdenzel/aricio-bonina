@@ -6,9 +6,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 html {
-  margin: 40px 100px 40px 100px;
   font-family: "DM Sans";
   height: auto;
+}
+
+@media (min-width: 640px) {
+  html {
+    padding: 40px 100px 40px 100px;
+  }
+}
+@media not all and (min-width: 640px) {
+  html {
+      padding: 1rem /* 16px */;
+  }
 }
 
 /* scrollbar */

@@ -23,7 +23,7 @@
       if (response.status.remarks === "success" && response.payload) {
         const { token, user } = response.payload;
         await auth.login(token, user);
-        goto("/web/manager/dashboard");
+        goto("/manager/dashboard");
       } else {
         error = response.status.message || "Login failed";
       }
@@ -67,7 +67,7 @@
     <form class="flex flex-col w-full p-12" on:submit={handleSubmit}>
       <!-- login title -->
       <h1 class="font-black text-3xl font-inter text-teal mb-6 text-center">
-        access account
+        Login
       </h1>
 
       <!-- input fields -->

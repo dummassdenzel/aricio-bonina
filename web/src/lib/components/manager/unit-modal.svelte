@@ -217,185 +217,209 @@
 
 {#if isOpen}
     <div class="fixed inset-0 z-50">
+        <!-- svelte-ignore element_invalid_self_closing_tag -->
         <button
-            class="absolute inset-0 w-full h-full bg-black bg-opacity-60"
+            class="absolute inset-0 w-full h-full bg-black/60 backdrop-blur-sm"
             aria-label="close modal"
             on:click={onClose}
-        >
-        </button>
+        />
 
         {#if loading}
-            <div class="text-center p-4">Loading...</div>
+            <div
+                class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white"
+            >
+                Loading...
+            </div>
         {:else if error}
-            <div class="text-red text-center p-4">{error}</div>
+            <div
+                class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-red p-4 bg-red20 rounded-lg"
+            >
+                {error}
+            </div>
         {:else if unit}
             <!-- unit modal -->
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-title"
-                class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white backdrop-blur-xs max-h-[90vh] overflow-y-auto rounded-xl p-6 w-full max-w-xl mx-4"
+                class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white w-[95%] sm:w-[90%] md:w-[85%] max-w-xl mx-auto rounded-xl shadow-lg overflow-y-auto max-h-[90vh]"
             >
-                <!-- unit number and floor number, close button -->
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <p class="font-semibold text-sm text-slate font-inter">
-                            F{unit.floor}
-                        </p>
-                        <h2
-                            id="modal-title"
-                            class="text-2xl font-bold font-inter text-teal"
-                        >
-                            Unit {unit.unit_number}
-                        </h2>
-                    </div>
-                    <button
-                        type="button"
-                        class="hover:bg-drop p-2 rounded-full"
-                        aria-label="close modal"
-                        on:click={onClose}
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#686868"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg
-                        >
-                    </button>
-                </div>
-
-                <hr class="mb-6" />
-                <!-- lease information -->
-                {#if unit.current_lease}
-                    <div class="mb-6">
-                        {#if new Date(unit.current_lease.end_date) < new Date()}
-                            <div
-                                class="flex justify-center flex-col text-center bg-red20 rounded-md p-2 mb-6"
+                <div class="p-4 sm:p-6">
+                    <!-- header section -->
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <p
+                                class="font-semibold text-xs sm:text-sm text-slate font-inter"
                             >
-                                <p class="text-red text-sm">
-                                    Notice: This lease is expired!
-                                </p>
-                            </div>
-                        {/if}
-                        <h3
-                            class="text-xl font-inter font-bold mb-6 text-center text-slate"
-                        >
-                            Lease Information
-                        </h3>
-                        <div
-                            class="grid grid-cols-3 gap-10 bg-back p-4 rounded-lg"
-                        >
-                            <div>
-                                <p class="text-xs text-muted font-medium">
-                                    Start Date
-                                </p>
-                                <p
-                                    class="text-sm text-teal font-semibold font-inter"
-                                >
-                                    {formatDate(unit.current_lease.start_date)}
-                                </p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-muted font-medium">
-                                    End Date
-                                </p>
-                                <p
-                                    class="text-sm text-teal font-semibold font-inter"
-                                >
-                                    {formatDate(unit.current_lease.end_date)}
-                                </p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-muted font-medium">
-                                    Monthly Rent
-                                </p>
-                                <p
-                                    class="text-sm text-teal font-semibold font-inter"
-                                >
-                                    {unit.current_lease.rent_amount
-                                        ? `₱${unit.current_lease.rent_amount.toLocaleString()}`
-                                        : "Not specified"}
-                                </p>
-                            </div>
+                                F{unit.floor}
+                            </p>
+                            <h2
+                                id="modal-title"
+                                class="text-xl sm:text-2xl font-bold font-inter text-teal"
+                            >
+                                Unit {unit.unit_number}
+                            </h2>
                         </div>
-                    </div>
-                    <!-- tenant information -->
-                    <div class="border-t">
-                        <h3
-                            class="text-xl font-inter font-bold mb-6 mt-6 text-slate text-center"
+                        <button
+                            type="button"
+                            class="p-2 hover:bg-drop rounded-full transition-colors"
+                            aria-label="close modal"
+                            on:click={onClose}
                         >
-                            Tenants
-                        </h3>
-                        <div class="space-y-2">
-                            {#each unit.current_lease.tenants as tenant}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="#686868"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M18 6 6 18" />
+                                <path d="m6 6 12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <hr class="mb-6" />
+
+                    <!-- lease information -->
+                    {#if unit.current_lease}
+                        <div class="mb-6">
+                            {#if new Date(unit.current_lease.end_date) < new Date()}
                                 <div
-                                    class="bg-back p-4 rounded-lg grid grid-cols-2 gap-4"
+                                    class="flex justify-center flex-col text-center bg-red20 rounded-md p-2 mb-6"
                                 >
-                                    <div>
-                                        <p
-                                            class="text-xs text-muted font-medium"
-                                        >
-                                            Name
-                                        </p>
-                                        <p
-                                            class="text-sm text-teal font-semibold font-inter"
-                                        >
-                                            {tenant.first_name}
-                                            {tenant.last_name}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p
-                                            class="text-xs text-muted font-medium"
-                                        >
-                                            Tenant Since
-                                        </p>
-                                        <p
-                                            class="text-sm text-teal font-semibold font-inter"
-                                        >
-                                            {formatDate(tenant.move_in_date)}
-                                        </p>
-                                    </div>
+                                    <p class="text-red text-xs sm:text-sm">
+                                        Notice: This lease is expired!
+                                    </p>
                                 </div>
-                            {/each}
+                            {/if}
+                            <h3
+                                class="text-lg sm:text-xl font-inter font-bold mb-6 text-center text-slate"
+                            >
+                                Lease Information
+                            </h3>
+                            <div
+                                class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-10 bg-back p-4 rounded-lg"
+                            >
+                                <div>
+                                    <p class="text-xs text-muted font-medium">
+                                        Start Date
+                                    </p>
+                                    <p
+                                        class="text-sm text-teal font-semibold font-inter"
+                                    >
+                                        {formatDate(
+                                            unit.current_lease.start_date,
+                                        )}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-muted font-medium">
+                                        End Date
+                                    </p>
+                                    <p
+                                        class="text-sm text-teal font-semibold font-inter"
+                                    >
+                                        {formatDate(
+                                            unit.current_lease.end_date,
+                                        )}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-muted font-medium">
+                                        Monthly Rent
+                                    </p>
+                                    <p
+                                        class="text-sm text-teal font-semibold font-inter"
+                                    >
+                                        {unit.current_lease.rent_amount
+                                            ? `₱${unit.current_lease.rent_amount.toLocaleString()}`
+                                            : "Not specified"}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div
-                            class="flex justify-between gap-2 mt-6 items-center border-t"
-                        >
-                            <button
-                                class="mt-8 text-xs font-medium bg-green20 text-green p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal"
-                                on:click={openRenewLeaseModal}
+                        <!-- tenant information -->
+                        <div class="border-t pt-6">
+                            <h3
+                                class="text-lg sm:text-xl font-inter font-bold mb-6 text-slate text-center"
                             >
-                                Renew Lease
-                            </button>
+                                Tenants
+                            </h3>
+                            <div class="space-y-3">
+                                {#each unit.current_lease.tenants as tenant}
+                                    <div
+                                        class="bg-back p-4 rounded-lg grid grid-cols-1 sm:grid-cols-2 gap-3"
+                                    >
+                                        <div>
+                                            <p
+                                                class="text-xs text-muted font-medium"
+                                            >
+                                                Name
+                                            </p>
+                                            <p
+                                                class="text-sm text-teal font-semibold font-inter"
+                                            >
+                                                {tenant.first_name}
+                                                {tenant.last_name}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p
+                                                class="text-xs text-muted font-medium"
+                                            >
+                                                Tenant Since
+                                            </p>
+                                            <p
+                                                class="text-sm text-teal font-semibold font-inter"
+                                            >
+                                                {formatDate(
+                                                    tenant.move_in_date,
+                                                )}
+                                            </p>
+                                        </div>
+                                    </div>
+                                {/each}
+                            </div>
 
-                            <button
-                                class="mt-8 text-xs font-medium bg-red20 text-red p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal"
-                                on:click={endLease}
+                            <!-- action buttons -->
+                            <div
+                                class="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t"
                             >
-                                End Lease
+                                <button
+                                    class="text-xs font-medium bg-green20 text-green p-3 sm:p-4 font-inter w-full sm:w-72 rounded-lg hover:bg-lightteal hover:text-teal transition-colors"
+                                    on:click={openRenewLeaseModal}
+                                >
+                                    Renew Lease
+                                </button>
+
+                                <button
+                                    class="text-xs font-medium bg-red20 text-red p-3 sm:p-4 font-inter w-full sm:w-72 rounded-lg hover:bg-lightteal hover:text-teal transition-colors"
+                                    on:click={endLease}
+                                >
+                                    End Lease
+                                </button>
+                            </div>
+                        </div>
+                    {:else}
+                        <div class="text-center">
+                            <p class="text-muted font-medium text-sm mb-4">
+                                This unit is currently vacant.
+                            </p>
+                            <button
+                                class="text-xs font-medium bg-green20 text-green p-3 sm:p-4 font-inter w-full max-w-sm rounded-lg hover:bg-lightteal hover:text-teal transition-colors"
+                                on:click={openTenantForm}
+                            >
+                                Add Tenant
                             </button>
                         </div>
-                    </div>
-                {:else}
-                    <p class="text-muted font-medium text-center">
-                        This unit is currently vacant.
-                    </p>
-                    <button
-                        class="mt-4 text-xs font-medium bg-green20 text-green p-4 font-inter w-full rounded-lg hover:bg-lightteal hover:text-teal"
-                        on:click={openTenantForm}
-                    >
-                        Add Tenant
-                    </button>
-                {/if}
+                    {/if}
+                </div>
             </div>
         {/if}
     </div>
@@ -404,65 +428,77 @@
 <!-- renew lease modal -->
 {#if isRenewLeaseOpen}
     <div class="fixed inset-0 z-50">
+        <!-- svelte-ignore element_invalid_self_closing_tag -->
         <button
-            class="absolute inset-0 w-full h-full bg-black bg-opacity-50"
+            class="absolute inset-0 w-full h-full bg-black/60 backdrop-blur-sm"
             aria-label="close modal"
             on:click={closeRenewLeaseModal}
             disabled={isSubmitting}
-        >
-        </button>
+        />
 
         <div
             role="dialog"
             aria-modal="true"
-            class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-md mx-4"
+            class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white w-[95%] sm:w-[90%] max-w-md mx-auto rounded-xl shadow-lg p-4 sm:p-6"
         >
             <h2
-                class="text-2xl font-inter font-bold mb-6 mt-6 text-slate text-center"
+                class="text-xl sm:text-2xl font-inter font-bold mb-6 text-slate text-center"
             >
                 Renew Lease
             </h2>
 
-            <form on:submit|preventDefault={renewLease}>
-                <p class="text-xs text-muted font-medium mb-2">Start Date</p>
-                <input
-                    type="date"
-                    bind:value={formData.start_date}
-                    min={new Date().toISOString().split("T")[0]}
-                    disabled={isSubmitting}
-                    class="border p-2 mb-4 w-full rounded-lg text-sm font-medium text-teal font-inter"
-                />
+            <form on:submit|preventDefault={renewLease} class="space-y-4">
+                <div>
+                    <p class="text-xs text-muted font-medium mb-2">
+                        Start Date
+                    </p>
+                    <input
+                        type="date"
+                        bind:value={formData.start_date}
+                        min={new Date().toISOString().split("T")[0]}
+                        disabled={isSubmitting}
+                        class="w-full border p-2 rounded-lg text-sm font-medium text-teal font-inter"
+                    />
+                </div>
 
-                <p class="text-xs text-muted font-medium mb-2">End Date</p>
-                <input
-                    type="date"
-                    bind:value={formData.end_date}
-                    min={formData.start_date}
-                    disabled={isSubmitting}
-                    class="border p-2 mb-4 w-full rounded-lg text-sm font-medium text-teal font-inter"
-                />
+                <div>
+                    <p class="text-xs text-muted font-medium mb-2">End Date</p>
+                    <input
+                        type="date"
+                        bind:value={formData.end_date}
+                        min={formData.start_date}
+                        disabled={isSubmitting}
+                        class="w-full border p-2 rounded-lg text-sm font-medium text-teal font-inter"
+                    />
+                </div>
 
-                <p class="text-xs text-muted font-medium mb-2">Rent Amount</p>
-                <input
-                    type="number"
-                    bind:value={formData.rent_amount}
-                    min="0"
-                    step="0.01"
-                    disabled={isSubmitting}
-                    class="border p-2 mb-4 w-full rounded-lg text-sm font-medium text-teal font-inter"
-                />
+                <div>
+                    <p class="text-xs text-muted font-medium mb-2">
+                        Rent Amount
+                    </p>
+                    <input
+                        type="number"
+                        bind:value={formData.rent_amount}
+                        min="0"
+                        step="0.01"
+                        disabled={isSubmitting}
+                        class="w-full border p-2 rounded-lg text-sm font-medium text-teal font-inter"
+                    />
+                </div>
 
-                <div class="flex justify-between gap-2 items-center">
+                <div
+                    class="flex flex-col sm:flex-row justify-between gap-3 pt-4"
+                >
                     <button
                         type="submit"
-                        class="mt-8 text-xs font-medium bg-green20 text-green p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="text-xs font-medium bg-green20 text-green p-3 sm:p-4 font-inter w-full sm:w-72 rounded-lg hover:bg-lightteal hover:text-teal transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? "Renewing..." : "Renew Lease"}
                     </button>
                     <button
                         type="button"
-                        class="mt-8 text-xs font-medium bg-red20 text-red p-4 font-inter w-72 rounded-lg hover:bg-lightteal hover:text-teal disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="text-xs font-medium bg-red20 text-red p-3 sm:p-4 font-inter w-full sm:w-72 rounded-lg hover:bg-lightteal hover:text-teal transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         on:click={closeRenewLeaseModal}
                         disabled={isSubmitting}
                     >

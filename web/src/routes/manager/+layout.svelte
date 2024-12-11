@@ -8,7 +8,7 @@
     auth.initialize();
 
     if (!$auth.isAuthenticated) {
-      goto("/web/login");
+      goto("/login");
     }
   });
 </script>

@@ -7,13 +7,13 @@
   import Footer from "$lib/components/landing/footer.svelte";
 </script>
 
-<section>
-  <div class="flex flex-col gap-20 justify-center">
-    <Header />
+<div class="min-h-screen w-full bg-white sm:p-4">
+  <Header />
+  <main class="max-w-7xl mx-auto">
     <Hero />
     <About />
     <Features />
-    <Contact />
-    <Footer />
-  </div>
-</section>
+    <!-- <Contact /> -->
+  </main>
+  <Footer />
+</div>

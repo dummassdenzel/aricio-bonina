@@ -297,258 +297,283 @@
 </script>
 
 {#if isOpen}
-    <form
-        class="fixed inset-0 bg-muted bg-opacity-40 flex items-center justify-center z-[60]"
-        on:submit|preventDefault={handleSubmit}
+    <div
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60]"
     >
-        <div class="bg-white p-6 rounded-lg w-1/3 max-h-[80vh] overflow-y-auto">
-            <!-- tenant form -->
-            <div class="flex justify-between items-center border-b mb-6">
-                <h1 class="font-inter text-midnight font-semibold text-xl mb-4">
-                    Tenant Form
-                </h1>
-                <!-- close button -->
-                <button
-                    type="button"
-                    class="hover:bg-drop p-2 rounded-full mb-4"
-                    aria-label="close modal"
-                    on:click={handleClose}
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#686868"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        ><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg
+        <div
+            class="bg-white rounded-xl w-[95%] sm:w-[90%] md:w-[85%] lg:w-[75%] xl:w-2/3 max-h-[90vh] overflow-y-auto mx-4"
+        >
+            <div class="p-4 sm:p-6">
+                <!-- header -->
+                <div class="flex justify-between items-center border-b mb-6">
+                    <h1
+                        class="font-inter text-midnight font-semibold text-lg sm:text-xl mb-4"
                     >
-                </button>
-            </div>
-
-            <!-- unit information -->
-            {#if !preselectedUnit}
-                <div>
-                    <h1 class="font-inter text-midnight font-semibold text-sm">
-                        Unit Information
+                        Tenant Form
                     </h1>
-                    <p class="text-xs text-muted font-medium mt-2 mb-2">
-                        Unit Number
-                    </p>
-                    <select
-                        class="mb-4 appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
-                        id="unit_number"
-                        bind:value={formData.unit_number}
-                    >
-                        <option value="">Select Unit</option>
-                        {#each units as unit}
-                            <option
-                                value={unit.unit_number}
-                                disabled={unit.status === "occupied"}
-                                selected={unit.unit_number.toString() ===
-                                    preselectedUnit}
-                            >
-                                Unit {unit.unit_number}
-                                {unit.status === "occupied" ? "(occupied)" : ""}
-                            </option>
-                        {/each}
-                    </select>
-                </div>
-            {/if}
-
-            <div class="mb-2">
-                <p class="text-xs text-muted font-medium mb-2">Move In Date</p>
-                <input
-                    class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
-                    type="date"
-                    bind:value={formData.move_in_date}
-                />
-            </div>
-
-            <!-- tenant information -->
-            <div class="mt-6">
-                <div class="flex justify-between">
-                    <h1 class="font-inter text-midnight font-semibold text-sm">
-                        Tenant Information
-                    </h1>
+                    <!-- close button -->
                     <button
-                        class="text-slate font-semibold text-xs"
                         type="button"
-                        on:click={addTenant}
+                        class="hover:bg-drop p-2 rounded-full mb-4 transition-colors"
+                        aria-label="close modal"
+                        on:click={handleClose}
                     >
-                        + add more
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#686868"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                        </svg>
                     </button>
                 </div>
 
-                <div class=" mt-2 flex flex-col gap-2">
-                    {#each formData.tenants as tenant, index}
-                        <div class="bg-back p-4 rounded-lg">
-                            <!-- tenant count -->
-                            <div class="flex justify-between items-center">
-                                <h4
-                                    class="text-xs text-slate font-inter font-semibold mb-2"
+                <form on:submit|preventDefault={handleSubmit} class="space-y-6">
+                    <!-- unit information -->
+                    {#if !preselectedUnit}
+                        <div>
+                            <h2
+                                class="font-inter text-midnight font-semibold text-sm sm:text-base mb-4"
+                            >
+                                Unit Information
+                            </h2>
+                            <div class="space-y-2">
+                                <p class="text-xs text-muted font-medium">
+                                    Unit Number
+                                </p>
+                                <select
+                                    class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                    bind:value={formData.unit_number}
                                 >
-                                    Tenant {index + 1}
-                                </h4>
-                                {#if formData.tenants.length > 1}
-                                    <button
-                                        class="text-xs text-slate font-semibold"
-                                        type="button"
-                                        on:click={() => removeTenant(index)}
-                                    >
-                                        - Remove
-                                    </button>
-                                {/if}
+                                    <option value="">Select Unit</option>
+                                    {#each units as unit}
+                                        <option
+                                            value={unit.unit_number}
+                                            disabled={unit.status ===
+                                                "occupied"}
+                                            selected={unit.unit_number.toString() ===
+                                                preselectedUnit}
+                                        >
+                                            Unit {unit.unit_number}
+                                            {unit.status === "occupied"
+                                                ? "(occupied)"
+                                                : ""}
+                                        </option>
+                                    {/each}
+                                </select>
                             </div>
-                            <!-- end of tenant count -->
-
-                            <!-- tenant details  -->
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <p
-                                        class="text-xs text-muted font-medium mb-2"
-                                    >
-                                        First Name
-                                    </p>
-                                    <input
-                                        class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
-                                        type="text"
-                                        bind:value={tenant.first_name}
-                                    />
-                                </div>
-
-                                <div>
-                                    <p
-                                        class="text-xs text-muted font-medium mb-2"
-                                    >
-                                        Last Name
-                                    </p>
-                                    <input
-                                        class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
-                                        type="text"
-                                        bind:value={tenant.last_name}
-                                    />
-                                </div>
-
-                                <div class="mt-2">
-                                    <p
-                                        class="text-xs text-muted font-medium mb-2"
-                                    >
-                                        Contact Number
-                                    </p>
-                                    <input
-                                        class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
-                                        type="text"
-                                        bind:value={tenant.phone_number}
-                                    />
-                                </div>
-
-                                <div class="mt-2">
-                                    <p
-                                        class="text-xs text-muted font-medium mb-2"
-                                    >
-                                        Email
-                                    </p>
-                                    <input
-                                        class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
-                                        type="text"
-                                        bind:value={tenant.email}
-                                    />
-                                </div>
-
-                                <div class="col-span-2 mt-2">
-                                    <p
-                                        class="text-xs text-muted font-medium mb-2"
-                                    >
-                                        Valid ID (JPG, PNG, WebP, or PDF, max
-                                        5MB)
-                                    </p>
-                                    <input
-                                        class="appearance-none border rounded-lg text-xs flex items-center w-full p-3 text-slate font-medium leading-tight focus:outline-backdrop"
-                                        type="file"
-                                        accept=".jpg,.jpeg,.png,.webp,.pdf"
-                                        on:change={(e) =>
-                                            handleFileUpload(e, index)}
-                                    />
-                                    {#if formData.tenants[index].valid_id}
-                                        <p class="text-xs text-green mt-1">
-                                            File selected: {formData.tenants[
-                                                index
-                                            ].valid_id.name}
-                                        </p>
-                                    {/if}
-                                </div>
-                            </div>
-                            <!-- end of tenant details -->
                         </div>
-                    {/each}
-                </div>
-            </div>
-
-            <!-- lease information -->
-            <div class="mt-6">
-                <h1 class="font-inter text-midnight font-semibold text-sm">
-                    Lease Information
-                </h1>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <p class="text-xs text-muted font-medium mt-2 mb-2">
-                            Start of Lease
-                        </p>
-                        <input
-                            class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
-                            type="date"
-                            bind:value={formData.start_date}
-                        />
-                    </div>
+                    {/if}
 
                     <div>
-                        <p class="text-xs text-muted font-medium mt-2 mb-2">
-                            End of Lease
+                        <p class="text-xs text-muted font-medium mb-2">
+                            Move In Date
                         </p>
                         <input
-                            class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
                             type="date"
-                            bind:value={formData.end_date}
+                            bind:value={formData.move_in_date}
+                            class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
                         />
                     </div>
 
-                    <div class="mb-4 col-span-2">
-                        <p class="text-xs text-muted font-medium mt-2 mb-2">
-                            Rent Amount
-                        </p>
-                        <input
-                            class="font-medium appearance-none border rounded-lg text-xs w-full p-3 text-slate leading-tight focus:outline-backdrop"
-                            placeholder="PHP"
-                            type="number"
-                            step="0.01"
-                            bind:value={formData.rent_amount}
-                        />
+                    <!-- tenant information -->
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2
+                                class="font-inter text-midnight font-semibold text-sm sm:text-base"
+                            >
+                                Tenant Information
+                            </h2>
+                            <button
+                                type="button"
+                                class="text-slate font-semibold text-xs hover:text-teal transition-colors"
+                                on:click={addTenant}
+                            >
+                                + add more
+                            </button>
+                        </div>
+
+                        <div class="space-y-4">
+                            {#each formData.tenants as tenant, index}
+                                <div class="bg-back p-4 rounded-lg">
+                                    <div
+                                        class="flex justify-between items-center mb-4"
+                                    >
+                                        <h3
+                                            class="text-xs text-slate font-inter font-semibold"
+                                        >
+                                            Tenant {index + 1}
+                                        </h3>
+                                        {#if formData.tenants.length > 1}
+                                            <button
+                                                type="button"
+                                                class="text-xs text-red font-semibold hover:text-red/80 transition-colors"
+                                                on:click={() =>
+                                                    removeTenant(index)}
+                                            >
+                                                Remove
+                                            </button>
+                                        {/if}
+                                    </div>
+
+                                    <div
+                                        class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                                    >
+                                        <div>
+                                            <p
+                                                class="text-xs text-muted font-medium mb-2"
+                                            >
+                                                First Name
+                                            </p>
+                                            <input
+                                                type="text"
+                                                bind:value={tenant.first_name}
+                                                class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <p
+                                                class="text-xs text-muted font-medium mb-2"
+                                            >
+                                                Last Name
+                                            </p>
+                                            <input
+                                                type="text"
+                                                bind:value={tenant.last_name}
+                                                class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <p
+                                                class="text-xs text-muted font-medium mb-2"
+                                            >
+                                                Contact Number
+                                            </p>
+                                            <input
+                                                type="text"
+                                                bind:value={tenant.phone_number}
+                                                class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <p
+                                                class="text-xs text-muted font-medium mb-2"
+                                            >
+                                                Email
+                                            </p>
+                                            <input
+                                                type="email"
+                                                bind:value={tenant.email}
+                                                class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                            />
+                                        </div>
+
+                                        <div class="sm:col-span-2">
+                                            <p
+                                                class="text-xs text-muted font-medium mb-2"
+                                            >
+                                                Valid ID (JPG, PNG, WebP, or
+                                                PDF, max 5MB)
+                                            </p>
+                                            <input
+                                                type="file"
+                                                accept=".jpg,.jpeg,.png,.webp,.pdf"
+                                                on:change={(e) =>
+                                                    handleFileUpload(e, index)}
+                                                class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                            />
+                                            {#if formData.tenants[index].valid_id}
+                                                <p
+                                                    class="text-xs text-green mt-1"
+                                                >
+                                                    File selected: {formData
+                                                        .tenants[index].valid_id
+                                                        .name}
+                                                </p>
+                                            {/if}
+                                        </div>
+                                    </div>
+                                </div>
+                            {/each}
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- buttons -->
-            <div class="flex justify-between gap-2 mt-6">
-                <button
-                    class="p-4 w-full text-xs font-inter text-red bg-red20 border border-red rounded-lg"
-                    type="button"
-                    on:click={handleClose}
-                >
-                    Cancel
-                </button>
+                    <!-- lease information -->
+                    <div>
+                        <h2
+                            class="font-inter text-midnight font-semibold text-sm sm:text-base mb-4"
+                        >
+                            Lease Information
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-muted font-medium mb-2">
+                                    Start of Lease
+                                </p>
+                                <input
+                                    type="date"
+                                    bind:value={formData.start_date}
+                                    class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                />
+                            </div>
 
-                <button
-                    class="p-4 w-full text-xs font-inter text-green bg-green20 border border-green rounded-lg"
-                    type="submit"
-                >
-                    Save
-                </button>
+                            <div>
+                                <p class="text-xs text-muted font-medium mb-2">
+                                    End of Lease
+                                </p>
+                                <input
+                                    type="date"
+                                    bind:value={formData.end_date}
+                                    class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                />
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <p class="text-xs text-muted font-medium mb-2">
+                                    Rent Amount
+                                </p>
+                                <input
+                                    type="number"
+                                    placeholder="PHP"
+                                    step="0.01"
+                                    bind:value={formData.rent_amount}
+                                    class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- action buttons -->
+                    <div
+                        class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t"
+                    >
+                        <button
+                            type="button"
+                            class="w-full sm:w-auto px-8 py-3 text-xs font-inter text-red bg-red20 border border-red rounded-lg hover:bg-red10 transition-colors"
+                            on:click={handleClose}
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="w-full sm:w-auto px-8 py-3 text-xs font-inter text-green bg-green20 border border-green rounded-lg hover:bg-green10 transition-colors"
+                        >
+                            Save
+                        </button>
+                    </div>
+                </form>
             </div>
-            <!-- end of buttons -->
         </div>
-    </form>
+    </div>
 {/if}
