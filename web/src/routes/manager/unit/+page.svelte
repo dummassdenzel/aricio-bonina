@@ -53,26 +53,30 @@
 <div class="">
   <div class="flex flex-col gap-6">
     <!-- Header Section -->
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between flex-col sm:flex-row gap-4">
       <h1 class="text-2xl sm:text-3xl font-bold text-teal">Unit Management</h1>
 
       <!-- Stats Cards -->
-      <div class="grid grid-cols-4 gap-4 w-full sm:w-auto">
-        <div class="bg-white rounded-lg p-4 shadow-sm">
-          <p class="text-xs text-muted mb-1">Total Units</p>
-          <p class="text-lg font-bold text-teal">{totalUnits}</p>
+      <div
+        class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 w-full sm:w-auto"
+      >
+        <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+          <p class="text-[10px] sm:text-xs text-muted mb-1">Total Units</p>
+          <p class="text-base sm:text-lg font-bold text-teal">{totalUnits}</p>
         </div>
-        <div class="bg-white rounded-lg p-4 shadow-sm">
-          <p class="text-xs text-muted mb-1">Occupied</p>
-          <p class="text-lg font-bold text-teal">{occupiedUnits}</p>
+        <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+          <p class="text-[10px] sm:text-xs text-muted mb-1">Occupied</p>
+          <p class="text-base sm:text-lg font-bold text-teal">
+            {occupiedUnits}
+          </p>
         </div>
-        <div class="bg-white rounded-lg p-4 shadow-sm">
-          <p class="text-xs text-muted mb-1">Vacant</p>
-          <p class="text-lg font-bold text-teal">{vacantUnits}</p>
+        <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+          <p class="text-[10px] sm:text-xs text-muted mb-1">Vacant</p>
+          <p class="text-base sm:text-lg font-bold text-teal">{vacantUnits}</p>
         </div>
-        <div class="bg-white rounded-lg p-4 shadow-sm">
-          <p class="text-xs text-muted mb-1">Expired Leases</p>
-          <p class="text-lg font-bold text-red">{expiredLeases}</p>
+        <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+          <p class="text-[10px] sm:text-xs text-muted mb-1">Expired Leases</p>
+          <p class="text-base sm:text-lg font-bold text-red">{expiredLeases}</p>
         </div>
       </div>
     </div>

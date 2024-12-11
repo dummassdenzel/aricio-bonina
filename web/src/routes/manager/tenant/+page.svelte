@@ -61,20 +61,24 @@
 <div class="">
   <div class="flex flex-col gap-6">
     <!-- Header Section -->
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between flex-col sm:flex-row gap-4">
       <h1 class="text-2xl sm:text-3xl font-bold text-teal">
         Tenant Management
       </h1>
 
-      <!-- Stats Summary -->
-      <div class="grid grid-cols-3 gap-4">
-        <div class="bg-white rounded-lg p-4 shadow-sm">
-          <p class="text-xs text-muted mb-1">Total Tenants</p>
-          <p class="text-lg font-bold text-teal">{tenants.length}</p>
+      <!-- Stats Cards -->
+      <div
+        class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 w-full sm:w-auto"
+      >
+        <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+          <p class="text-[10px] sm:text-xs text-muted mb-1">Total Tenants</p>
+          <p class="text-base sm:text-lg font-bold text-teal">
+            {tenants.length}
+          </p>
         </div>
-        <div class="bg-white rounded-lg p-4 shadow-sm">
-          <p class="text-xs text-muted mb-1">Active</p>
-          <p class="text-lg font-bold text-teal">
+        <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+          <p class="text-[10px] sm:text-xs text-muted mb-1">Active</p>
+          <p class="text-base sm:text-lg font-bold text-teal">
             {tenants.filter(
               (t) =>
                 !t.current_lease?.end_date ||
@@ -83,9 +87,9 @@
             ).length}
           </p>
         </div>
-        <div class="bg-white rounded-lg p-4 shadow-sm">
-          <p class="text-xs text-muted mb-1">Expired</p>
-          <p class="text-lg font-bold text-red">
+        <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+          <p class="text-[10px] sm:text-xs text-muted mb-1">Expired</p>
+          <p class="text-base sm:text-lg font-bold text-red">
             {tenants.filter(
               (t) =>
                 t.current_lease?.end_date &&
