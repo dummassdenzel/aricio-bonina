@@ -232,7 +232,9 @@
                                             <p class="font-bold text-teal">
                                                 ₱{leases[0].rent_amount.toLocaleString()}
                                             </p>
-                                            <p class="text-xs text-gray-500">
+                                            <p
+                                                class="text-end text-xs text-gray-500"
+                                            >
                                                 Created At: {formatDate(
                                                     new Date(
                                                         leases[0].created_at,
@@ -329,7 +331,7 @@
                                                             ₱{leases[0].rent_amount.toLocaleString()}
                                                         </p>
                                                         <p
-                                                            class="text-xs text-gray-500"
+                                                            class="text-xs text-end text-gray-500"
                                                         >
                                                             Created At: {formatDate(
                                                                 new Date(

@@ -8,13 +8,12 @@
 
       <!-- descriptions -->
       <p class="text-slate leading-relaxed mb-4">
-        Welcome to Aricio Real Estate. We provide comfortable and affordable
-        apartment units in Olongapo City.
+        Aricio D. Bonina Real Estate Leasing, formerly known as "<i
+          >Sea Pearl Residences</i
+        >", provide comfortable and affordable apartment units in Olongapo City.
       </p>
       <p class="text-slate leading-relaxed mb-4">
-        Owned by <span class="font-medium">Aricio D. Bonina</span>, we offer
-        cozy living spaces designed for individuals and families. Our apartment
-        complex is conveniently located near key destinations like
+        Our apartment complex is conveniently located near key destinations like
         <span class="font-medium">Magsaysay Business District</span>,
         <span class="font-medium">SM City Olongapo Downtown</span>,
         <span class="font-medium">SM City Central</span>, and the
@@ -32,10 +31,16 @@
     </div>
 
     <!-- image -->
-    <div
-      class="w-full md:w-1/2 bg-drop rounded-2xl h-80 flex items-center justify-center"
-    >
-      <!-- add image or map api here -->
+    <div class="w-full md:w-1/2 bg-drop rounded-2xl h-80 overflow-hidden">
+      <iframe
+        title="Location Map"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d241.05638266860735!2d120.28397331782651!3d120.28397331782651!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f20.5!3m3!1m2!1s0x33967120be6e70b3%3A0xdd8a172075841df9!2sSea%20Pearl%20Residences!5e0!3m2!1sen!2sph!4v1710170433044!5m2!1sen!2sph"
+        width="100%"
+        height="100%"
+        style="border:0;"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+      ></iframe>
     </div>
   </div>
 </section>

@@ -83,6 +83,8 @@
     : 0;
 
   $: vacantUnits = dashboardStats.totalUnits - dashboardStats.occupiedUnits;
+
+  const currentYear = new Date().getFullYear();
 </script>
 
 <div class="">
@@ -146,7 +148,7 @@
           class="border rounded-xl p-4 sm:p-6 bg-white hover:shadow-sm transition-shadow"
         >
           <p class="text-xs sm:text-sm text-teal font-medium">
-            Total Revenue (This Year)
+            Total Revenue ({currentYear})
           </p>
           <p
             class="text-xl sm:text-2xl text-brightgreen font-bold text-end font-inter mt-2"
@@ -159,131 +161,141 @@
 
     <!-- Lease Overview Section -->
     <div class="mt-4">
-      <h2 class="text-xl sm:text-2xl font-bold text-teal mb-6">
+      <h2 class="text-xl sm:text-2xl font-bold text-teal mb-4 sm:mb-6">
         Lease Overview
       </h2>
 
-      <div
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
-      >
-        <!-- Total Overdue -->
-        <div
-          class="border rounded-xl p-6 bg-white hover:shadow-sm transition-shadow"
-        >
-          <p class="text-base sm:text-lg text-teal font-bold text-center mb-4">
-            Total of Expired Leases
-          </p>
-          <p
-            class="text-4xl sm:text-5xl lg:text-6xl text-slate font-bold text-center"
+      <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
+        <!-- Total Overdue Card -->
+        <div class="w-full lg:w-1/4">
+          <div
+            class="border rounded-xl p-4 sm:p-6 bg-white hover:shadow-sm transition-shadow h-full"
           >
-            {dashboardStats.overdueLease.length}
-          </p>
+            <p
+              class="text-sm sm:text-base lg:text-lg text-teal font-bold text-center mb-2 sm:mb-4"
+            >
+              Total of Expired Leases
+            </p>
+            <p
+              class="text-3xl sm:text-4xl lg:text-5xl text-slate font-bold text-center"
+            >
+              {dashboardStats.overdueLease.length}
+            </p>
+          </div>
         </div>
 
         <!-- Lists Section -->
-        <div
-          class="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6"
-        >
-          <!-- Overdue List -->
+        <div class="w-full lg:w-3/4">
           <div
-            class="border rounded-xl p-4 sm:p-6 bg-white hover:shadow-sm transition-shadow"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 h-full"
           >
-            <p class="text-base sm:text-lg text-teal font-bold mb-4">
-              Expired ({dashboardStats.overdueLease.length})
-            </p>
-            {#if dashboardStats.overdueLease.length > 0}
-              <div
-                class="max-h-[200px] overflow-y-auto flex flex-col gap-2 pr-2"
+            <!-- Overdue List -->
+            <div
+              class="border rounded-xl p-4 sm:p-6 bg-white hover:shadow-sm transition-shadow"
+            >
+              <p
+                class="text-sm sm:text-base lg:text-lg text-teal font-bold mb-4"
               >
-                {#each dashboardStats.overdueLease as lease}
-                  <button
-                    class="w-full bg-red20 p-3 rounded-lg hover:bg-red10 transition-colors"
-                    on:click={() => handleUnitClick(lease.unit)}
-                  >
-                    <div class="flex justify-between items-center">
-                      <p class="text-teal font-medium text-sm">
-                        Unit {lease.unit}
-                      </p>
-                      <span class="text-xs text-red"
-                        >{lease.daysOverdue} days ago</span
-                      >
-                    </div>
-                  </button>
-                {/each}
-              </div>
-            {:else}
-              <p class="text-xs text-muted bg-back p-3 rounded-lg">
-                No overdue leases.
+                Expired ({dashboardStats.overdueLease.length})
               </p>
-            {/if}
-          </div>
+              {#if dashboardStats.overdueLease.length > 0}
+                <div
+                  class="max-h-[150px] sm:max-h-[200px] overflow-y-auto flex flex-col gap-2 pr-2"
+                >
+                  {#each dashboardStats.overdueLease as lease}
+                    <button
+                      class="w-full bg-red20 p-2 sm:p-3 rounded-lg hover:bg-red10 transition-colors"
+                      on:click={() => handleUnitClick(lease.unit)}
+                    >
+                      <div class="flex justify-between items-center">
+                        <p class="text-xs sm:text-sm text-teal font-medium">
+                          Unit {lease.unit}
+                        </p>
+                        <span class="text-[10px] sm:text-xs text-red"
+                          >{lease.daysOverdue} days ago</span
+                        >
+                      </div>
+                    </button>
+                  {/each}
+                </div>
+              {:else}
+                <p class="text-xs sm:text-sm text-muted bg-back p-3 rounded-lg">
+                  No overdue leases.
+                </p>
+              {/if}
+            </div>
 
-          <!-- Expiring Soon -->
-          <div
-            class="border rounded-xl p-4 sm:p-6 bg-white hover:shadow-sm transition-shadow"
-          >
-            <p class="text-base sm:text-lg text-teal font-bold mb-4">
-              Expiring Soon ({dashboardStats.expiringSoon.length})
-            </p>
-            {#if dashboardStats.expiringSoon.length > 0}
-              <div
-                class="max-h-[200px] overflow-y-auto flex flex-col gap-2 pr-2"
+            <!-- Expiring Soon -->
+            <div
+              class="border rounded-xl p-4 sm:p-6 bg-white hover:shadow-sm transition-shadow"
+            >
+              <p
+                class="text-sm sm:text-base lg:text-lg text-teal font-bold mb-4"
               >
-                {#each dashboardStats.expiringSoon as lease}
-                  <button
-                    class="w-full bg-orange20 p-3 rounded-lg hover:bg-orange10 transition-colors"
-                    on:click={() => handleUnitClick(lease.unit)}
-                  >
-                    <div class="flex justify-between items-center">
-                      <p class="text-teal font-medium text-sm">
-                        Unit {lease.unit}
-                      </p>
-                      <span class="text-xs text-orange"
-                        >{formatDate(lease.date)}</span
-                      >
-                    </div>
-                  </button>
-                {/each}
-              </div>
-            {:else}
-              <p class="text-xs text-muted bg-back p-3 rounded-lg">
-                No lease expiring soon.
+                Expiring Soon ({dashboardStats.expiringSoon.length})
               </p>
-            {/if}
-          </div>
+              {#if dashboardStats.expiringSoon.length > 0}
+                <div
+                  class="max-h-[150px] sm:max-h-[200px] overflow-y-auto flex flex-col gap-2 pr-2"
+                >
+                  {#each dashboardStats.expiringSoon as lease}
+                    <button
+                      class="w-full bg-orange20 p-2 sm:p-3 rounded-lg hover:bg-orange10 transition-colors"
+                      on:click={() => handleUnitClick(lease.unit)}
+                    >
+                      <div class="flex justify-between items-center">
+                        <p class="text-xs sm:text-sm text-teal font-medium">
+                          Unit {lease.unit}
+                        </p>
+                        <span class="text-[10px] sm:text-xs text-orange"
+                          >{formatDate(lease.date)}</span
+                        >
+                      </div>
+                    </button>
+                  {/each}
+                </div>
+              {:else}
+                <p class="text-xs sm:text-sm text-muted bg-back p-3 rounded-lg">
+                  No lease expiring soon.
+                </p>
+              {/if}
+            </div>
 
-          <!-- Recent Renewals -->
-          <div
-            class="border rounded-xl p-4 sm:p-6 bg-white hover:shadow-sm transition-shadow"
-          >
-            <p class="text-base sm:text-lg text-teal font-bold mb-4">
-              Recent Renewals
-            </p>
-            {#if dashboardStats.recentPayments.length > 0}
-              <div
-                class="max-h-[200px] overflow-y-auto flex flex-col gap-2 pr-2"
+            <!-- Recent Renewals -->
+            <div
+              class="border rounded-xl p-4 sm:p-6 bg-white hover:shadow-sm transition-shadow"
+            >
+              <p
+                class="text-sm sm:text-base lg:text-lg text-teal font-bold mb-4"
               >
-                {#each dashboardStats.recentPayments as payment}
-                  <button
-                    class="w-full bg-green20 p-3 rounded-lg hover:bg-green10 transition-colors"
-                    on:click={() => handleUnitClick(payment.unit)}
-                  >
-                    <div class="flex justify-between items-center">
-                      <p class="text-teal font-medium text-sm">
-                        Unit {payment.unit}
-                      </p>
-                      <span class="text-xs text-green"
-                        >{formatDate(payment.date)}</span
-                      >
-                    </div>
-                  </button>
-                {/each}
-              </div>
-            {:else}
-              <p class="text-xs text-muted bg-back p-3 rounded-lg">
-                No recent renewals.
+                Recent Renewals
               </p>
-            {/if}
+              {#if dashboardStats.recentPayments.length > 0}
+                <div
+                  class="max-h-[150px] sm:max-h-[200px] overflow-y-auto flex flex-col gap-2 pr-2"
+                >
+                  {#each dashboardStats.recentPayments as payment}
+                    <button
+                      class="w-full bg-green20 p-2 sm:p-3 rounded-lg hover:bg-green10 transition-colors"
+                      on:click={() => handleUnitClick(payment.unit)}
+                    >
+                      <div class="flex justify-between items-center">
+                        <p class="text-xs sm:text-sm text-teal font-medium">
+                          Unit {payment.unit}
+                        </p>
+                        <span class="text-[10px] sm:text-xs text-green"
+                          >{formatDate(payment.date)}</span
+                        >
+                      </div>
+                    </button>
+                  {/each}
+                </div>
+              {:else}
+                <p class="text-xs sm:text-sm text-muted bg-back p-3 rounded-lg">
+                  No recent renewals.
+                </p>
+              {/if}
+            </div>
           </div>
         </div>
       </div>
