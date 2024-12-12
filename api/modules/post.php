@@ -13,6 +13,28 @@ class Post extends GlobalMethods
         $this->pdo = $pdo;
     }
 
+    private function ensureUploadDirectory()
+    {
+        $uploadDir = "uploads";
+        $tenantIdsDir = "uploads/tenant_ids";
+
+        // Create base uploads directory with full permissions
+        if (!file_exists($uploadDir)) {
+            if (!mkdir($uploadDir, 0777, true)) {
+                throw new Exception("Failed to create uploads directory");
+            }
+            chmod($uploadDir, 0777);
+        }
+
+        // Create tenant_ids subdirectory with full permissions
+        if (!file_exists($tenantIdsDir)) {
+            if (!mkdir($tenantIdsDir, 0777, true)) {
+                throw new Exception("Failed to create tenant_ids directory");
+            }
+            chmod($tenantIdsDir, 0777);
+        }
+    }
+
     public function userLogin($data)
     {
         try {
@@ -76,6 +98,9 @@ class Post extends GlobalMethods
     {
         try {
             $this->pdo->beginTransaction();
+
+            // Ensure upload directories exist before processing any files
+            $this->ensureUploadDirectory();
 
             // Convert form data to object if needed
             if (is_array($data)) {
@@ -141,14 +166,15 @@ class Post extends GlobalMethods
                     $fileName = uniqid() . '_' . $tenant->first_name . '.' . $fileType;
                     $uploadPath = "uploads/tenant_ids/" . $fileName;
 
-                    if (!file_exists("uploads/tenant_ids")) {
-                        mkdir("uploads/tenant_ids", 0777, true);
+                    if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
+                        throw new Exception("Failed to upload file: " . $file['name']);
                     }
 
-                    if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
-                        $validIdPath = $uploadPath;
-                        $validIdType = $fileType;
-                    }
+                    // Set proper permissions on the uploaded file
+                    chmod($uploadPath, 0644);
+
+                    $validIdPath = $uploadPath;
+                    $validIdType = $fileType;
                 }
 
                 $sql = "INSERT INTO tenants (
@@ -172,7 +198,7 @@ class Post extends GlobalMethods
 
             $this->pdo->commit();
             return $this->sendPayload(null, "success", "Successfully added tenant", 200);
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             $this->pdo->rollBack();
             return $this->sendPayload(null, "failed", $e->getMessage(), 400);
         }
