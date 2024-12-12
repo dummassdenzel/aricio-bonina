@@ -72,10 +72,30 @@ class Post extends GlobalMethods
         }
     }
 
-    public function addTenant($data)
+    public function addTenant($data, $files = null)
     {
         try {
             $this->pdo->beginTransaction();
+
+            // Convert form data to object if needed
+            if (is_array($data)) {
+                $formData = new stdClass();
+                $formData->unit_number = $data['unit_number'];
+                $formData->move_in_date = $data['move_in_date'];
+                $formData->start_date = $data['start_date'];
+                $formData->end_date = $data['end_date'];
+                $formData->rent_amount = $data['rent_amount'];
+                $formData->tenants = [];
+
+                $tenant = new stdClass();
+                $tenant->first_name = $data['tenants'][0]['first_name'];
+                $tenant->last_name = $data['tenants'][0]['last_name'];
+                $tenant->phone_number = $data['tenants'][0]['phone_number'];
+                $tenant->email = $data['tenants'][0]['email'];
+                $formData->tenants[] = $tenant;
+
+                $data = $formData;
+            }
 
             // GET UNIT ID AND CHECK FOR EXISTING ACTIVE LEASE
             $sql = "SELECT u.id, 
@@ -114,20 +134,17 @@ class Post extends GlobalMethods
                 $validIdPath = null;
                 $validIdType = null;
 
-                if (isset($_FILES["valid_id_" . $tenant->first_name])) {
-                    $file = $_FILES["valid_id_" . $tenant->first_name];
+                // Handle file upload if files are present
+                if ($files && isset($files["valid_id_" . $tenant->first_name])) {
+                    $file = $files["valid_id_" . $tenant->first_name];
                     $fileType = pathinfo($file['name'], PATHINFO_EXTENSION);
-
-                    // GENERATE UNIQUE FILENAME
                     $fileName = uniqid() . '_' . $tenant->first_name . '.' . $fileType;
                     $uploadPath = "uploads/tenant_ids/" . $fileName;
 
-                    // ENSURE UPLOAD DIRECTORY EXISTS
                     if (!file_exists("uploads/tenant_ids")) {
                         mkdir("uploads/tenant_ids", 0777, true);
                     }
 
-                    // MOVE UPLOADED FILE
                     if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
                         $validIdPath = $uploadPath;
                         $validIdType = $fileType;
@@ -220,7 +237,7 @@ class Post extends GlobalMethods
             // Update lease status and set terminated_at
             $sql = "UPDATE leases 
                     SET status = 'inactive',
-                        terminated_at = CURRENT_TIMESTAMP
+                        date_terminated = CURRENT_TIMESTAMP
                     WHERE id = ? AND status = 'active'";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$data->lease_id]);

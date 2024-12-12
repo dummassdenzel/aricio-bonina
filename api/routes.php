@@ -145,8 +145,22 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
 
     case 'POST':
-        // RETRIEVE AND DECODE DATA FROM THE BODY
-        $data = json_decode(file_get_contents("php://input"));
+        // CHECK THE CONTENT TYPE HEADER
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+        if (strpos($contentType, 'application/json') !== false) {
+            // Handle JSON data
+            $data = json_decode(file_get_contents("php://input"));
+
+        } elseif (strpos($contentType, 'multipart/form-data') !== false) {
+            // Handle form data
+            $data = $_POST;
+            $files = $_FILES;
+        } else {
+            echo "Unsupported Content Type";
+            http_response_code(415);
+            exit();
+        }
         switch ($request[0]) {
 
             case 'adduser':
@@ -158,26 +172,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 break;
 
             case 'addtenant':
-                // FOR MULTIPART FORM DATA, USE $_POST INSTEAD OF JSON_DECODE
-                $data = new stdClass();
-                $data->unit_number = $_POST['unit_number'];
-                $data->move_in_date = $_POST['move_in_date'];
-                $data->start_date = $_POST['start_date'];
-                $data->end_date = $_POST['end_date'];
-                $data->rent_amount = $_POST['rent_amount'];
-
-                $tenant = new stdClass();
-                $tenant->first_name = $_POST['tenants'][0]['first_name'];
-                $tenant->last_name = $_POST['tenants'][0]['last_name'];
-                $tenant->phone_number = $_POST['tenants'][0]['phone_number'];
-                $tenant->email = $_POST['tenants'][0]['email'];
-                $data->tenants[] = $tenant;
-
-                if (isset($_FILES["valid_id_" . $tenant->first_name])) {
-                    $tenant->valid_id = $_FILES["valid_id_" . $tenant->first_name];
-                }
-
-                echo json_encode($post->addTenant($data));
+                // ENDPOINT PROTECTION
+                // $user = $auth->authenticateRequest();
+                echo json_encode($post->addTenant($data, $files ?? null));
                 break;
 
             case 'renewlease':
