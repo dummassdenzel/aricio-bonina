@@ -24,7 +24,7 @@
     updateChart();
   }
 
-  let activeChart: "revenue" | "tenants" = "revenue";
+  let activeChart: "revenue" | "tenants" | "units" = "revenue";
 
   // Watch for chart type changes
   $: if (activeChart) {
@@ -52,6 +52,13 @@
         data: dashboardStats.monthlyTenants.counts,
         borderColor: "#6366F1",
         yAxisLabel: "Number of Tenants",
+        formatter: (value: number) => value.toString(),
+      },
+      units: {
+        label: "Occupied Units",
+        data: dashboardStats.monthlyOccupiedUnits.counts,
+        borderColor: "#F59E0B",
+        yAxisLabel: "Number of Units",
         formatter: (value: number) => value.toString(),
       },
     };
@@ -142,7 +149,9 @@
             <h2 class="text-lg sm:text-xl font-bold text-teal">
               {activeChart === "revenue"
                 ? "Monthly Revenue"
-                : "Monthly Tenants"}
+                : activeChart === "tenants"
+                  ? "Monthly Tenants"
+                  : "Occupied Units"}
             </h2>
             <div class="flex gap-2">
               <button
@@ -164,6 +173,16 @@
                 on:click={() => (activeChart = "tenants")}
               >
                 Tenants
+              </button>
+              <button
+                class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                class:bg-teal={activeChart === "units"}
+                class:text-white={activeChart === "units"}
+                class:bg-back={activeChart !== "units"}
+                class:text-slate={activeChart !== "units"}
+                on:click={() => (activeChart = "units")}
+              >
+                Units
               </button>
             </div>
           </div>

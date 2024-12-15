@@ -519,6 +519,60 @@ class Get extends GlobalMethods
                 }
             }
 
+            $monthlyOccupiedUnitsSQL = "
+                WITH RECURSIVE months AS (
+                    SELECT 1 as month_num, 'January' as month_name
+                    UNION ALL
+                    SELECT 
+                        month_num + 1,
+                        CASE month_num + 1
+                            WHEN 1 THEN 'January'
+                            WHEN 2 THEN 'February'
+                            WHEN 3 THEN 'March'
+                            WHEN 4 THEN 'April'
+                            WHEN 5 THEN 'May'
+                            WHEN 6 THEN 'June'
+                            WHEN 7 THEN 'July'
+                            WHEN 8 THEN 'August'
+                            WHEN 9 THEN 'September'
+                            WHEN 10 THEN 'October'
+                            WHEN 11 THEN 'November'
+                            WHEN 12 THEN 'December'
+                        END
+                    FROM months
+                    WHERE month_num < 12
+                )
+                SELECT 
+                    m.month_name as month,
+                    COUNT(DISTINCT CASE 
+                        WHEN l.status = 'active'
+                        AND (
+                            (YEAR(l.start_date) < YEAR(CURRENT_DATE) AND l.end_date >= STR_TO_DATE(CONCAT(YEAR(CURRENT_DATE), '-', m.month_num, '-01'), '%Y-%m-%d'))
+                            OR 
+                            (YEAR(l.start_date) = YEAR(CURRENT_DATE) AND MONTH(l.start_date) <= m.month_num)
+                        )
+                        THEN u.id 
+                    END) as occupied_units
+                FROM months m
+                LEFT JOIN leases l ON l.status = 'active'
+                LEFT JOIN units u ON l.unit_id = u.id
+                GROUP BY m.month_num, m.month_name
+                ORDER BY m.month_num;
+            ";
+
+            $occupiedUnitsResult = $this->executeQuery($monthlyOccupiedUnitsSQL);
+
+            if ($occupiedUnitsResult['code'] == 200) {
+                $stats['monthlyOccupiedUnits'] = [
+                    'labels' => [],
+                    'counts' => []
+                ];
+                foreach ($occupiedUnitsResult['data'] as $data) {
+                    $stats['monthlyOccupiedUnits']['labels'][] = $data['month'];
+                    $stats['monthlyOccupiedUnits']['counts'][] = (int) $data['occupied_units'];
+                }
+            }
+
             return $this->sendPayload($stats, 'success', "Successfully retrieved dashboard stats.", 200);
         }
 

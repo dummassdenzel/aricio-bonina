@@ -29,6 +29,10 @@ interface DashboardStats {
         labels: string[];
         counts: number[];
     };
+    monthlyOccupiedUnits: {
+        labels: string[];
+        counts: number[];
+    };
 }
 
 function createDashboardStore() {
@@ -45,6 +49,10 @@ function createDashboardStore() {
         },
         yearlyRevenue: 0,
         monthlyTenants: {
+            labels: [],
+            counts: []
+        },
+        monthlyOccupiedUnits: {
             labels: [],
             counts: []
         }
@@ -74,6 +82,10 @@ function createDashboardStore() {
             },
             yearlyRevenue: 0,
             monthlyTenants: {
+                labels: [],
+                counts: []
+            },
+            monthlyOccupiedUnits: {
                 labels: [],
                 counts: []
             }
