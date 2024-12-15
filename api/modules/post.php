@@ -280,6 +280,56 @@ class Post extends GlobalMethods
         }
     }
 
+    public function updateValidId($tenantId, $file)
+    {
+        try {
+            $this->pdo->beginTransaction();
+
+            // Ensure upload directories exist
+            $this->ensureUploadDirectory();
+
+            // Process the new file
+            $fileType = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $fileName = uniqid() . '.' . $fileType;
+            $uploadPath = "uploads/tenant_ids/" . $fileName;
+
+            // Get current valid_id_path to delete old file
+            $sql = "SELECT valid_id_path FROM tenants WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$tenantId]);
+            $oldPath = $stmt->fetchColumn();
+
+            // Delete old file if exists
+            if ($oldPath && file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+
+            // Upload new file
+            if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
+                throw new Exception("Failed to upload file");
+            }
+
+            // Update database
+            $sql = "UPDATE tenants 
+                    SET valid_id_path = ?, 
+                        valid_id_type = ? 
+                    WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$uploadPath, $fileType, $tenantId]);
+
+            $this->pdo->commit();
+            return $this->sendPayload(
+                ['valid_id_url' => 'http://localhost/aricio-bonina/api/' . $uploadPath],
+                "success",
+                "Successfully updated valid ID",
+                200
+            );
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            return $this->sendPayload(null, "failed", $e->getMessage(), 400);
+        }
+    }
+
 }
 
 

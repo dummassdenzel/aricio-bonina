@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import TenantFormModal from "$lib/components/manager/tenant-form-modal.svelte";
   import { tenantsStore } from "$lib/stores/tenants-store";
+  import Swal from "sweetalert2";
 
   let units: any[] = [];
   let error: string | null = null;
@@ -55,6 +56,69 @@
   // SELECT TENANT FUNCTION
   function selectTenant(tenant: any) {
     selectedTenant = tenant;
+  }
+
+  async function handleValidIdUpload(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file || !selectedTenant) return;
+
+    // Validate file type
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "application/pdf",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      await Swal.fire({
+        title: "Invalid File Type",
+        text: "Please upload a JPG, PNG, WebP image or PDF file",
+        icon: "error",
+      });
+      input.value = "";
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      await Swal.fire({
+        title: "File Too Large",
+        text: "File size should be less than 5MB",
+        icon: "error",
+      });
+      input.value = "";
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("tenant_id", selectedTenant.id);
+      formData.append("valid_id", file);
+
+      const response = await api.postFormData("updateValidId", formData);
+
+      if (response.status.remarks === "success") {
+        // Update the tenant's valid_id_url in the UI
+        selectedTenant.valid_id_url = response.payload.valid_id_url;
+        selectedTenant.valid_id_type = file.type;
+
+        await Swal.fire({
+          title: "Success!",
+          text: "Valid ID updated successfully",
+          icon: "success",
+        });
+      }
+    } catch (err: any) {
+      await Swal.fire({
+        title: "Error",
+        text: err.message || "Failed to update valid ID",
+        icon: "error",
+      });
+    } finally {
+      input.value = ""; // Reset input
+    }
   }
 </script>
 
@@ -285,9 +349,25 @@
                 </div>
               </div>
 
-              {#if selectedTenant?.valid_id_url}
-                <div class="border-t pt-6">
-                  <p class="text-xs text-muted mb-3">Valid ID</p>
+              <div class="border-t pt-6">
+                <div class="flex justify-between items-center mb-3">
+                  <p class="text-xs text-muted">Valid ID</p>
+                  <label
+                    class="text-xs text-teal hover:text-teal/80 cursor-pointer transition-colors"
+                    for="validIdUpload"
+                  >
+                    {selectedTenant?.valid_id_url ? "Update ID" : "Upload ID"}
+                  </label>
+                  <input
+                    type="file"
+                    id="validIdUpload"
+                    accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    class="hidden"
+                    on:change={handleValidIdUpload}
+                  />
+                </div>
+
+                {#if selectedTenant?.valid_id_url}
                   {#if selectedTenant.valid_id_type
                     ?.toLowerCase()
                     .includes("pdf")}
@@ -330,8 +410,12 @@
                         window.open(selectedTenant.valid_id_url, "_blank")}
                     />
                   {/if}
-                </div>
-              {/if}
+                {:else}
+                  <p class="text-xs text-muted bg-back p-3 rounded-lg">
+                    No valid ID uploaded.
+                  </p>
+                {/if}
+              </div>
 
               {#if selectedTenant.current_lease}
                 <div class="border-t pt-6">

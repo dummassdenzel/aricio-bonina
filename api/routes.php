@@ -187,6 +187,17 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 echo json_encode($post->endLease($data));
                 break;
 
+            case 'updateValidId':
+                // ENDPOINT PROTECTION
+                // $user = $auth->authenticateRequest();
+                if (strpos($contentType, 'multipart/form-data') !== false) {
+                    echo json_encode($post->updateValidId($_POST['tenant_id'], $_FILES['valid_id']));
+                } else {
+                    echo "Invalid content type";
+                    http_response_code(415);
+                }
+                break;
+
             default:
                 // RESPONSE FOR UNSUPPORTED REQUESTS
                 echo "No Such Request";
