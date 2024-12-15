@@ -333,7 +333,7 @@ class Get extends GlobalMethods
             leases.start_date,
             leases.end_date,
             GROUP_CONCAT(CONCAT(tenants.first_name, ' ', tenants.last_name) SEPARATOR ', ') as tenant_names,
-            COUNT(tenants.id) as tenant_count,
+            SUM(CASE WHEN tenants.status = 'active' THEN 1 ELSE 0 END) as tenant_count,
             DATEDIFF(:today, leases.end_date) as days_overdue
         FROM units 
         LEFT JOIN leases ON units.id = leases.unit_id AND leases.status = 'active'
@@ -467,6 +467,56 @@ class Get extends GlobalMethods
 
             if ($yearlyResult['code'] == 200) {
                 $stats['yearlyRevenue'] = (float) $yearlyResult['data'][0]['total_yearly_revenue'] ?? 0;
+            }
+
+            $monthlyTenantsSQL = "
+                WITH RECURSIVE months AS (
+                    SELECT 1 as month_num, 'January' as month_name
+                    UNION ALL
+                    SELECT 
+                        month_num + 1,
+                        CASE month_num + 1
+                            WHEN 1 THEN 'January'
+                            WHEN 2 THEN 'February'
+                            WHEN 3 THEN 'March'
+                            WHEN 4 THEN 'April'
+                            WHEN 5 THEN 'May'
+                            WHEN 6 THEN 'June'
+                            WHEN 7 THEN 'July'
+                            WHEN 8 THEN 'August'
+                            WHEN 9 THEN 'September'
+                            WHEN 10 THEN 'October'
+                            WHEN 11 THEN 'November'
+                            WHEN 12 THEN 'December'
+                        END
+                    FROM months
+                    WHERE month_num < 12
+                )
+                SELECT 
+                    m.month_name as month,
+                    COUNT(DISTINCT CASE 
+                        WHEN MONTH(t.move_in_date) <= m.month_num 
+                        AND t.status = 'active'
+                        AND YEAR(t.move_in_date) = YEAR(CURRENT_DATE)
+                        THEN t.id 
+                        END) as tenant_count
+                FROM months m
+                LEFT JOIN tenants t ON YEAR(t.move_in_date) = YEAR(CURRENT_DATE)
+                GROUP BY m.month_num, m.month_name
+                ORDER BY m.month_num;
+            ";
+
+            $tenantsResult = $this->executeQuery($monthlyTenantsSQL);
+
+            if ($tenantsResult['code'] == 200) {
+                $stats['monthlyTenants'] = [
+                    'labels' => [],
+                    'counts' => []
+                ];
+                foreach ($tenantsResult['data'] as $data) {
+                    $stats['monthlyTenants']['labels'][] = $data['month'];
+                    $stats['monthlyTenants']['counts'][] = (int) $data['tenant_count'];
+                }
             }
 
             return $this->sendPayload($stats, 'success', "Successfully retrieved dashboard stats.", 200);

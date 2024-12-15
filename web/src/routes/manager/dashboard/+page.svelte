@@ -24,6 +24,13 @@
     updateChart();
   }
 
+  let activeChart: "revenue" | "tenants" = "revenue";
+
+  // Watch for chart type changes
+  $: if (activeChart) {
+    updateChart();
+  }
+
   function updateChart() {
     if (financialChart) {
       financialChart.destroy();
@@ -32,15 +39,34 @@
     const ctx = document.getElementById("financialChart") as HTMLCanvasElement;
     if (!ctx) return;
 
+    const chartConfig = {
+      revenue: {
+        label: "Monthly Revenue",
+        data: dashboardStats.monthlyRevenue.revenue,
+        borderColor: "#14B8A6",
+        yAxisLabel: "Revenue (₱)",
+        formatter: (value: number) => "₱" + value.toLocaleString(),
+      },
+      tenants: {
+        label: "Total Tenants",
+        data: dashboardStats.monthlyTenants.counts,
+        borderColor: "#6366F1",
+        yAxisLabel: "Number of Tenants",
+        formatter: (value: number) => value.toString(),
+      },
+    };
+
+    const currentConfig = chartConfig[activeChart];
+
     financialChart = new Chart(ctx, {
       type: "line",
       data: {
         labels: dashboardStats.monthlyRevenue.labels,
         datasets: [
           {
-            label: "Monthly Revenue",
-            data: dashboardStats.monthlyRevenue.revenue,
-            borderColor: "#14B8A6",
+            label: currentConfig.label,
+            data: currentConfig.data,
+            borderColor: currentConfig.borderColor,
             tension: 0.4,
             fill: false,
           },
@@ -53,16 +79,31 @@
           legend: {
             display: false,
           },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                return currentConfig.formatter(context.parsed.y);
+              },
+            },
+          },
         },
         scales: {
           y: {
             beginAtZero: true,
+            title: {
+              display: true,
+              text: currentConfig.yAxisLabel,
+            },
             ticks: {
               callback: function (value) {
-                return "₱" + value.toLocaleString();
+                return currentConfig.formatter(value as number);
               },
             },
           },
+        },
+        animation: {
+          duration: 750,
+          easing: "easeInOutQuart",
         },
       },
     });
@@ -96,10 +137,38 @@
       <!-- Chart -->
       <div class="w-full lg:w-2/3">
         <div class="bg-back border rounded-xl p-4 sm:p-6">
-          <!-- Chart Title -->
-          <h2 class="text-lg sm:text-xl font-bold text-teal mb-4">
-            Monthly Revenue
-          </h2>
+          <!-- Chart Controls -->
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg sm:text-xl font-bold text-teal">
+              {activeChart === "revenue"
+                ? "Monthly Revenue"
+                : "Monthly Tenants"}
+            </h2>
+            <div class="flex gap-2">
+              <button
+                class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                class:bg-teal={activeChart === "revenue"}
+                class:text-white={activeChart === "revenue"}
+                class:bg-back={activeChart !== "revenue"}
+                class:text-slate={activeChart !== "revenue"}
+                on:click={() => (activeChart = "revenue")}
+              >
+                Revenue
+              </button>
+              <button
+                class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                class:bg-teal={activeChart === "tenants"}
+                class:text-white={activeChart === "tenants"}
+                class:bg-back={activeChart !== "tenants"}
+                class:text-slate={activeChart !== "tenants"}
+                on:click={() => (activeChart = "tenants")}
+              >
+                Tenants
+              </button>
+            </div>
+          </div>
+
+          <!-- Chart Container -->
           <div class="h-[300px] sm:h-[400px]">
             <canvas id="financialChart"></canvas>
           </div>
