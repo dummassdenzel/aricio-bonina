@@ -145,15 +145,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
 
     case 'POST':
-        // CHECK THE CONTENT TYPE HEADER
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
 
         if (strpos($contentType, 'application/json') !== false) {
-            // Handle JSON data
-            $data = json_decode(file_get_contents("php://input"));
-
+            $data = $post->getRequestData();
         } elseif (strpos($contentType, 'multipart/form-data') !== false) {
-            // Handle form data
             $data = $_POST;
             $files = $_FILES;
         } else {

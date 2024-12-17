@@ -11,6 +11,14 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
     ...options.headers,
   };
 
+  // Encrypt request body if present
+  if (options.body && typeof options.body === 'string') {
+    const data = JSON.parse(options.body);
+    options.body = JSON.stringify({
+      encrypted: EncryptionService.encrypt(data)
+    });
+  }
+
   const response = await fetch(`${BASE_URL}/${endpoint}`, {
     ...options,
     headers,
@@ -22,13 +30,10 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
   }
 
   const jsonResponse = await response.json();
-  // console.log('Raw API response:', jsonResponse);
 
-  // DECRYPT PAYLOAD GIVEN THAT ITS CONVERTED TO STRING
+  // Decrypt payload if it's encrypted
   if (jsonResponse.payload && typeof jsonResponse.payload === 'string') {
-      jsonResponse.payload = EncryptionService.decrypt(jsonResponse.payload);
-      // console.log('Decrypted payload:', jsonResponse.payload);
-    
+    jsonResponse.payload = EncryptionService.decrypt(jsonResponse.payload);
   }
 
   return jsonResponse;
@@ -43,20 +48,26 @@ export const api = {
     }),
   postFormData: async (endpoint: string, formData: FormData) => {
     try {
-        const response = await fetch(`${BASE_URL}/${endpoint}`, {
-            method: 'POST',
-            body: formData,
-        });
+      const response = await fetch(`${BASE_URL}/${endpoint}`, {
+        method: 'POST',
+        body: formData,
+      });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        const data = await response.json();
-        return data;
+      const data = await response.json();
+      
+      // Decrypt payload if it's encrypted
+      if (data.payload && typeof data.payload === 'string') {
+        data.payload = EncryptionService.decrypt(data.payload);
+      }
+      
+      return data;
     } catch (error) {
-        console.error('API Error:', error);
-        throw error;
+      console.error('API Error:', error);
+      throw error;
     }
   },
 };

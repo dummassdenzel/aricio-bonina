@@ -4,13 +4,17 @@ require_once 'global.php';
 
 class Post extends GlobalMethods
 {
-
     private $pdo;
 
     public function __construct(\PDO $pdo)
     {
         parent::__construct();
         $this->pdo = $pdo;
+    }
+
+    public function getRequestData()
+    {
+        return $this->encryption->processRequestData();
     }
 
     private function ensureUploadDirectory()
