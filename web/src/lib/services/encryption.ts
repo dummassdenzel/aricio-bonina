@@ -5,13 +5,13 @@ class EncryptionService {
 
     static encrypt(data: any): string {
         try {
-            // Generate random IV
+            // Generation of Random IV
             const iv = CryptoJS.lib.WordArray.random(16);
             
-            // Convert data to string if it's an object
+            // Conversion of payload into a string
             const dataStr = typeof data === 'object' ? JSON.stringify(data) : String(data);
             
-            // Convert hex to WordArray
+            // Conversion of hex to WordArray
             const keyHex = CryptoJS.enc.Hex.parse(this.key);
 
             // Encrypt using AES

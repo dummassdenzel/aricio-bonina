@@ -178,7 +178,7 @@
     </div>
 
     <!-- Units Grid -->
-    <div class="mt-2">
+    <div class="">
       {#if error}
         <div class="bg-red20 text-red p-4 rounded-xl">
           <p class="text-sm">{error}</p>

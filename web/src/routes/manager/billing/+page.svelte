@@ -9,7 +9,7 @@
     let sortBy: "latest" | "unit" = "latest";
     let filterStatus: "all" | "active" | "terminated" = "all";
 
-    $: leaseHistory = $leaseHistoryStore;
+    $: leaseHistory = $leaseHistoryStore.leases;
 
     // Debounce search
     let searchTimeout: NodeJS.Timeout;
@@ -31,7 +31,7 @@
         leaseHistoryStore.loadLeaseHistory();
     });
 
-    function getSortedUnits(history: typeof leaseHistory) {
+    function getSortedUnits(history: Record<string, any[]>) {
         return Object.entries(history).sort((a, b) => {
             if (sortBy === "latest") {
                 const aLatestDate = a[1][0]?.latest_date || "";
@@ -350,6 +350,94 @@
                     {/each}
                 </div>
             {/if}
+        </div>
+
+        <!-- Add this after the lease history list -->
+        <div class="flex justify-between items-center mt-6 border-t pt-6">
+            <p class="text-xs text-muted">
+                Showing {($leaseHistoryStore.pagination.currentPage - 1) *
+                    $leaseHistoryStore.pagination.itemsPerPage +
+                    1}
+                to {Math.min(
+                    $leaseHistoryStore.pagination.currentPage *
+                        $leaseHistoryStore.pagination.itemsPerPage,
+                    $leaseHistoryStore.pagination.totalItems,
+                )}
+                of {$leaseHistoryStore.pagination.totalItems} entries
+            </p>
+
+            <div class="flex gap-2">
+                <button
+                    class="p-2 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                    class:text-teal={$leaseHistoryStore.pagination.currentPage >
+                        1}
+                    class:text-muted={$leaseHistoryStore.pagination
+                        .currentPage === 1}
+                    disabled={$leaseHistoryStore.pagination.currentPage === 1}
+                    on:click={() => {
+                        leaseHistoryStore.loadLeaseHistory({
+                            search: searchQuery,
+                            status:
+                                filterStatus !== "all"
+                                    ? filterStatus
+                                    : undefined,
+                            page: $leaseHistoryStore.pagination.currentPage - 1,
+                        });
+                    }}
+                >
+                    Previous
+                </button>
+
+                {#each Array($leaseHistoryStore.pagination.totalPages) as _, i}
+                    <button
+                        class="w-8 h-8 rounded-lg text-xs font-medium transition-colors"
+                        class:bg-lightteal={$leaseHistoryStore.pagination
+                            .currentPage ===
+                            i + 1}
+                        class:text-teal={$leaseHistoryStore.pagination
+                            .currentPage ===
+                            i + 1}
+                        class:text-muted={$leaseHistoryStore.pagination
+                            .currentPage !==
+                            i + 1}
+                        on:click={() => {
+                            leaseHistoryStore.loadLeaseHistory({
+                                search: searchQuery,
+                                status:
+                                    filterStatus !== "all"
+                                        ? filterStatus
+                                        : undefined,
+                                page: i + 1,
+                            });
+                        }}
+                    >
+                        {i + 1}
+                    </button>
+                {/each}
+
+                <button
+                    class="p-2 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                    class:text-teal={$leaseHistoryStore.pagination.currentPage <
+                        $leaseHistoryStore.pagination.totalPages}
+                    class:text-muted={$leaseHistoryStore.pagination
+                        .currentPage ===
+                        $leaseHistoryStore.pagination.totalPages}
+                    disabled={$leaseHistoryStore.pagination.currentPage ===
+                        $leaseHistoryStore.pagination.totalPages}
+                    on:click={() => {
+                        leaseHistoryStore.loadLeaseHistory({
+                            search: searchQuery,
+                            status:
+                                filterStatus !== "all"
+                                    ? filterStatus
+                                    : undefined,
+                            page: $leaseHistoryStore.pagination.currentPage + 1,
+                        });
+                    }}
+                >
+                    Next
+                </button>
+            </div>
         </div>
     </div>
 </div>

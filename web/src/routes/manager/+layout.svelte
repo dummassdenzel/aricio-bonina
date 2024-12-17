@@ -3,6 +3,7 @@
   import { goto } from "$app/navigation";
   import { auth } from "$lib/stores/auth";
   import ManagerHeader from "$lib/components/manager/manager-header.svelte";
+  import ScrollToTop from "$lib/components/manager/scroll-to-top.svelte";
 
   onMount(() => {
     auth.initialize();
@@ -18,4 +19,5 @@
   <div class="mt-10">
     <slot />
   </div>
+  <ScrollToTop />
 {/if}

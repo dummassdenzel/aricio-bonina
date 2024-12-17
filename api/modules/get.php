@@ -584,7 +584,82 @@ class Get extends GlobalMethods
     {
         $search = $_GET['search'] ?? null;
         $status = $_GET['status'] ?? null;
+        $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+        $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
+        $offset = ($page - 1) * $limit;
 
+        // Build base params array
+        $params = [];
+        $conditions = [];
+
+        // Build WHERE conditions
+        if ($unit_id !== null) {
+            $conditions[] = "l.unit_id = ?";
+            $params[] = $unit_id;
+        }
+
+        if ($search !== null) {
+            $conditions[] = "(u.unit_number LIKE ? OR CONCAT(t.first_name, ' ', t.last_name) LIKE ?)";
+            $searchTerm = "%$search%";
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+
+        if ($status !== null) {
+            if ($status === 'active') {
+                $conditions[] = "l.date_terminated IS NULL";
+            } else if ($status === 'terminated') {
+                $conditions[] = "l.date_terminated IS NOT NULL";
+            }
+        }
+
+        $whereClause = count($conditions) > 0 ? "WHERE " . implode(" AND ", $conditions) : "";
+
+        // Count query
+        $countSql = "SELECT COUNT(DISTINCT u.unit_number) as total 
+                     FROM leases l
+                     JOIN units u ON l.unit_id = u.id
+                     LEFT JOIN tenants t ON l.id = t.lease_id
+                     $whereClause";
+
+        $stmt = $this->pdo->prepare($countSql);
+        $stmt->execute($params);
+        $totalCount = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+        $totalPages = ceil($totalCount / $limit);
+
+        // Get paginated unit numbers
+        $unitParams = $params;
+        $unitParams[] = $limit;
+        $unitParams[] = $offset;
+
+        $unitSql = "SELECT DISTINCT u.unit_number
+                    FROM leases l
+                    JOIN units u ON l.unit_id = u.id
+                    LEFT JOIN tenants t ON l.id = t.lease_id
+                    $whereClause
+                    ORDER BY u.unit_number 
+                    LIMIT ? OFFSET ?";
+
+        $stmt = $this->pdo->prepare($unitSql);
+        $stmt->execute($unitParams);
+        $paginatedUnits = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($paginatedUnits)) {
+            return $this->sendPayload([
+                'leases' => [],
+                'pagination' => [
+                    'currentPage' => $page,
+                    'totalPages' => $totalPages,
+                    'totalItems' => $totalCount,
+                    'itemsPerPage' => $limit
+                ]
+            ], 'success', "No lease history found.", 200);
+        }
+
+        // Prepare IN clause and parameters for final query
+        $placeholders = str_repeat('?,', count($paginatedUnits) - 1) . '?';
+
+        // Main query to get all leases for the paginated units
         $sql = "SELECT 
                     l.*,
                     u.unit_number,
@@ -594,37 +669,11 @@ class Get extends GlobalMethods
                 FROM leases l
                 JOIN units u ON l.unit_id = u.id
                 LEFT JOIN tenants t ON l.id = t.lease_id
-                WHERE 1=1 ";
+                WHERE u.unit_number IN ($placeholders)
+                GROUP BY l.id, u.unit_number 
+                ORDER BY latest_date DESC, u.unit_number, l.start_date DESC";
 
-        $params = [];
-
-        if ($unit_id !== null) {
-            $sql .= "AND l.unit_id = ? ";
-            $params[] = $unit_id;
-        }
-
-        if ($search !== null) {
-            $sql .= "AND (
-                u.unit_number LIKE ? 
-                OR CONCAT(t.first_name, ' ', t.last_name) LIKE ?
-            ) ";
-            $searchTerm = "%$search%";
-            $params[] = $searchTerm;
-            $params[] = $searchTerm;
-        }
-
-        if ($status !== null) {
-            if ($status === 'active') {
-                $sql .= "AND l.date_terminated IS NULL ";
-            } else if ($status === 'terminated') {
-                $sql .= "AND l.date_terminated IS NOT NULL ";
-            }
-        }
-
-        $sql .= "GROUP BY l.id, u.unit_number 
-                 ORDER BY latest_date DESC, u.unit_number, l.start_date DESC";
-
-        $result = $this->executeQuery($sql, $params);
+        $result = $this->executeQuery($sql, $paginatedUnits);
 
         if ($result['code'] == 200) {
             // Organize leases by unit
@@ -647,7 +696,15 @@ class Get extends GlobalMethods
                 ];
             }
 
-            return $this->sendPayload($organizedLeases, 'success', "Successfully retrieved lease history.", 200);
+            return $this->sendPayload([
+                'leases' => $organizedLeases,
+                'pagination' => [
+                    'currentPage' => $page,
+                    'totalPages' => $totalPages,
+                    'totalItems' => $totalCount,
+                    'itemsPerPage' => $limit
+                ]
+            ], 'success', "Successfully retrieved lease history.", 200);
         }
 
         return $this->sendPayload(null, 'failed', "Failed to retrieve lease history.", $result['code']);
