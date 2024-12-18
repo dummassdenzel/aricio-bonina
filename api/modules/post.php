@@ -1,6 +1,7 @@
 <?php
 
 require_once 'global.php';
+require_once __DIR__ . '/../src/Mailer.php';
 
 class Post extends GlobalMethods
 {
@@ -330,6 +331,99 @@ class Post extends GlobalMethods
             );
         } catch (Exception $e) {
             $this->pdo->rollBack();
+            return $this->sendPayload(null, "failed", $e->getMessage(), 400);
+        }
+    }
+
+    public function forgotPassword($data)
+    {
+        try {
+            // Check if email exists
+            $sql = "SELECT id, email, first_name FROM users WHERE email = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$data->email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$user) {
+                return $this->sendPayload(null, "failed", "Email not found", 404);
+            }
+
+            // Generate reset token
+            $reset_token = bin2hex(random_bytes(32));
+            $reset_token_hash = password_hash($reset_token, PASSWORD_DEFAULT);
+            $reset_token_expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+            // Begin transaction
+            $this->pdo->beginTransaction();
+
+            try {
+                // Update user with reset token
+                $sql = "UPDATE users 
+                        SET reset_token_hash = ?, 
+                            reset_token_expires_at = ? 
+                        WHERE id = ?";
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute([
+                    $reset_token_hash,
+                    $reset_token_expires_at,
+                    $user['id']
+                ]);
+
+                // Send email
+                $mailer = Mailer::getInstance();
+                $mailer->sendPasswordReset($user['email'], $user['first_name'], $reset_token);
+
+                $this->pdo->commit();
+                return $this->sendPayload(null, "success", "Password reset instructions sent to your email", 200);
+            } catch (Exception $e) {
+                $this->pdo->rollBack();
+                throw $e;
+            }
+        } catch (Exception $e) {
+            return $this->sendPayload(null, "failed", $e->getMessage(), 400);
+        }
+    }
+
+    public function resetPassword($data)
+    {
+        try {
+            if (!isset($data->token) || !isset($data->password)) {
+                return $this->sendPayload(null, "failed", "Missing required fields", 400);
+            }
+
+            // Find user with valid reset token
+            $sql = "SELECT id FROM users 
+                    WHERE reset_token_expires_at > NOW()";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$user) {
+                return $this->sendPayload(null, "failed", "Invalid or expired reset token", 400);
+            }
+
+            // Verify the token matches
+            $sql = "SELECT reset_token_hash FROM users WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$user['id']]);
+            $storedHash = $stmt->fetchColumn();
+
+            if (!password_verify($data->token, $storedHash)) {
+                return $this->sendPayload(null, "failed", "Invalid reset token", 400);
+            }
+
+            // Update password and clear reset token
+            $password_hash = password_hash($data->password, PASSWORD_DEFAULT);
+            $sql = "UPDATE users 
+                    SET password_hash = ?,
+                        reset_token_hash = NULL,
+                        reset_token_expires_at = NULL
+                    WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$password_hash, $user['id']]);
+
+            return $this->sendPayload(null, "success", "Password successfully reset", 200);
+        } catch (Exception $e) {
             return $this->sendPayload(null, "failed", $e->getMessage(), 400);
         }
     }

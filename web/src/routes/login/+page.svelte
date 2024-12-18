@@ -88,6 +88,14 @@
           placeholder="password"
           class="rounded-xl text-xs border-2 px-4 py-3 placeholder:text-sm focus:outline-none focus:ring-0 focus:border-slate"
         />
+        <div class="flex justify-end mt-2">
+          <a
+            href="/forgot-password"
+            class="text-xs text-slate hover:text-teal transition-colors"
+          >
+            Forgot Password?
+          </a>
+        </div>
       </div>
 
       <!-- login button -->

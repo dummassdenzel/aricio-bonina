@@ -14,6 +14,8 @@ class Environment
                 'ENCRYPTION_KEY' => $_ENV['ENCRYPTION_KEY'] ?? null,
                 'JWT_KEY' => $_ENV['JWT_KEY'] ?? null,
                 // NOTE TO SELF: ADD OTHER ENVIRONMENT VARIABLES HERE
+                'GMAIL_USER' => $_ENV['GMAIL_USER'] ?? null,
+                'GMAIL_APP_PASS' => $_ENV['GMAIL_APP_PASS'] ?? null
             ];
         } catch (Exception $e) {
             error_log("Error loading environment variables: " . $e->getMessage());

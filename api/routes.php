@@ -194,6 +194,14 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 }
                 break;
 
+            case 'forgot-password':
+                echo json_encode($post->forgotPassword($data));
+                break;
+
+            case 'reset-password':
+                echo json_encode($post->resetPassword($data));
+                break;
+
             default:
                 // RESPONSE FOR UNSUPPORTED REQUESTS
                 echo "No Such Request";
