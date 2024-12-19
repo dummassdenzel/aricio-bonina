@@ -1,16 +1,44 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { api } from "$lib/services/api";
-    import { page } from "$app/stores";
+    import { onMount } from "svelte";
     import Swal from "sweetalert2";
 
     let password = "";
     let confirmPassword = "";
     let isSubmitting = false;
-    let token = $page.url.searchParams.get("token");
+    let token: string | null = null;
+
+    onMount(() => {
+        // Get token from URL after component mounts
+        const url = new URL(window.location.href);
+        token = url.searchParams.get("token");
+
+        if (!token) {
+            Swal.fire({
+                title: "Error",
+                text: "Invalid reset link",
+                icon: "error",
+                confirmButtonText: "OK",
+            }).then(() => {
+                goto("/login");
+            });
+        }
+    });
 
     async function handleSubmit(event: SubmitEvent) {
         event.preventDefault();
+
+        if (!token) {
+            await Swal.fire({
+                title: "Error",
+                text: "Invalid reset link",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            goto("/login");
+            return;
+        }
 
         if (password !== confirmPassword) {
             await Swal.fire({
