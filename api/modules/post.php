@@ -159,6 +159,17 @@ class Post extends GlobalMethods
 
             $leaseId = $this->pdo->lastInsertId();
 
+            // Create deposit record (2 months advance)
+            $this->createDeposit($leaseId, $data->rent_amount);
+
+            // Calculate duration in months for payment record
+            $startDate = new DateTime($data->start_date);
+            $endDate = new DateTime($data->end_date);
+            $durationInMonths = ($endDate->diff($startDate)->days + 1) / 30;
+
+            // Create payment record
+            $this->createPaymentRecord($leaseId, $data->rent_amount, $durationInMonths);
+
             // CREATE TENANTS
             foreach ($data->tenants as $tenant) {
                 $validIdPath = null;
@@ -209,27 +220,99 @@ class Post extends GlobalMethods
         }
     }
 
+    private function createPaymentRecord($leaseId, $monthlyRent, $durationInMonths)
+    {
+        try {
+            $totalAmount = $monthlyRent * $durationInMonths;
+
+            $sql = "INSERT INTO payments (lease_id, total_amount) VALUES (?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$leaseId, $totalAmount]);
+
+            return true;
+        } catch (Exception $e) {
+            error_log("Failed to create payment record: " . $e->getMessage());
+            throw new Exception("Failed to create payment record");
+        }
+    }
+
+    private function createLease($data)
+    {
+        try {
+            $this->pdo->beginTransaction();
+
+            // Get duration in months
+            $startDate = new DateTime($data->start_date);
+            $endDate = new DateTime($data->end_date);
+            $durationInMonths = ($endDate->diff($startDate)->days + 1) / 30;
+
+            // Insert lease record
+            $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount, status) 
+                    VALUES (?, ?, ?, ?, 'active')";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                $data->unit_id,
+                $data->start_date,
+                $data->end_date,
+                $data->rent_amount
+            ]);
+
+            $leaseId = $this->pdo->lastInsertId();
+
+            // Create payment record
+            $this->createPaymentRecord($leaseId, $data->rent_amount, $durationInMonths);
+
+            // Insert tenants
+            foreach ($data->tenants as $tenant) {
+                $sql = "INSERT INTO tenants (lease_id, first_name, last_name, email, phone_number, move_in_date) 
+                        VALUES (?, ?, ?, ?, ?, ?)";
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute([
+                    $leaseId,
+                    $tenant->first_name,
+                    $tenant->last_name,
+                    $tenant->email,
+                    $tenant->phone_number,
+                    $data->move_in_date
+                ]);
+            }
+
+            // Update unit status
+            $sql = "UPDATE units SET status = 'occupied' WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$data->unit_id]);
+
+            $this->pdo->commit();
+            return $leaseId;
+
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
 
     public function renewLease($data)
     {
         try {
             $this->pdo->beginTransaction();
 
-            // UPDATE EXISTING LEASE
-            $sql = "UPDATE leases SET date_renewed = CURRENT_TIMESTAMP, status = 'inactive' WHERE id = ? AND status = 'active'";
+            // Calculate duration in months
+            $startDate = new DateTime($data->start_date);
+            $endDate = new DateTime($data->end_date);
+            $durationInMonths = ($endDate->diff($startDate)->days + 1) / 30;
+
+            // Update old lease
+            $sql = "UPDATE leases SET status = 'inactive', date_renewed = NOW() 
+                    WHERE id = ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$data->lease_id]);
 
-            if ($stmt->rowCount() === 0) {
-                throw new Exception("Lease not found or already renewed.");
-            }
-
-            $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount, previous_lease_id, status) 
-                    SELECT unit_id, ?, ?, ?, id, 'active' 
-                    FROM leases 
-                    WHERE id = ?";
+            // Create new lease
+            $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount, status, previous_lease_id) 
+                    VALUES (?, ?, ?, ?, 'active', ?)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
+                $data->unit_id,
                 $data->start_date,
                 $data->end_date,
                 $data->rent_amount,
@@ -238,15 +321,17 @@ class Post extends GlobalMethods
 
             $newLeaseId = $this->pdo->lastInsertId();
 
+            // Create payment record for new lease
+            $this->createPaymentRecord($newLeaseId, $data->rent_amount, $durationInMonths);
+
+            // Transfer tenants to new lease
             $sql = "UPDATE tenants SET lease_id = ? WHERE lease_id = ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$newLeaseId, $data->lease_id]);
 
             $this->pdo->commit();
-            return $this->sendPayload(null, "success", "Successfully renewed lease", 200);
-        } catch (PDOException $e) {
-            $this->pdo->rollBack();
-            return $this->sendPayload(null, "failed", $e->getMessage(), 400);
+            return $this->sendPayload(null, "success", "Lease renewed successfully", 200);
+
         } catch (Exception $e) {
             $this->pdo->rollBack();
             return $this->sendPayload(null, "failed", $e->getMessage(), 400);
@@ -424,6 +509,62 @@ class Post extends GlobalMethods
 
             return $this->sendPayload(null, "success", "Password successfully reset", 200);
         } catch (Exception $e) {
+            return $this->sendPayload(null, "failed", $e->getMessage(), 400);
+        }
+    }
+
+    private function createDeposit($leaseId, $monthlyRent)
+    {
+        try {
+            // Create 2 months advance deposit
+            $depositAmount = $monthlyRent * 2;
+
+            $sql = "INSERT INTO deposits (lease_id, amount) VALUES (?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$leaseId, $depositAmount]);
+
+            return true;
+        } catch (Exception $e) {
+            error_log("Failed to create deposit record: " . $e->getMessage());
+            throw new Exception("Failed to create deposit record");
+        }
+    }
+
+    public function updateDeposit($data)
+    {
+        try {
+            $this->pdo->beginTransaction();
+
+            $sql = "SELECT amount FROM deposits WHERE lease_id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$data->lease_id]);
+            $currentAmount = $stmt->fetchColumn();
+
+            $newAmount = $data->action === 'deduct'
+                ? $currentAmount - $data->amount
+                : $currentAmount + $data->amount;
+
+            if ($newAmount < 0) {
+                throw new Exception("Deduction amount exceeds current deposit");
+            }
+
+            $sql = "UPDATE deposits 
+                    SET amount = ?,
+                        remarks = CONCAT(COALESCE(remarks, ''), '\n', ?)
+                    WHERE lease_id = ?";
+
+            $remark = date('Y-m-d H:i:s') . " - " .
+                ($data->action === 'deduct' ? "Deducted" : "Added") .
+                " ₱" . number_format($data->amount, 2);
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$newAmount, $remark, $data->lease_id]);
+
+            $this->pdo->commit();
+            return $this->sendPayload(null, "success", "Deposit updated successfully", 200);
+
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
             return $this->sendPayload(null, "failed", $e->getMessage(), 400);
         }
     }

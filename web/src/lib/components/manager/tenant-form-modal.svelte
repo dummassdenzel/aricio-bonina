@@ -18,13 +18,20 @@
         return new Date().toISOString().split("T")[0];
     }
 
+    const rentOptions = [9000, 10000, 11000, 12000];
+    let selectedMonthlyRent: number | "other" = 10000;
+    let showCustomRentInput = false;
+    let totalAmount = 0;
+    let leaseDuration = 1;
+    let durationType: "months" | "years" = "months";
+
     // Initial form state
     const initialFormData = {
         unit_number: preselectedUnit || "",
         move_in_date: getTodayDate(),
         start_date: getTodayDate(),
         end_date: "",
-        rent_amount: "",
+        rent_amount: "10000",
         tenants: [
             {
                 first_name: "",
@@ -60,6 +67,13 @@
             move_in_date: getTodayDate(),
             start_date: getTodayDate(),
         };
+        selectedMonthlyRent = 10000;
+        showCustomRentInput = false;
+        leaseDuration = 1;
+        durationType = "months";
+        totalAmount = 10000;
+        calculateEndDate();
+        calculateTotalAmount();
     }
 
     // Modified close handler
@@ -70,11 +84,8 @@
 
     // Watch for modal open/close
     $: if (isOpen) {
+        resetForm();
         loadUnits();
-        // Set preselected unit if provided
-        if (preselectedUnit) {
-            formData.unit_number = preselectedUnit;
-        }
     }
 
     function addTenant() {
@@ -89,9 +100,6 @@
             },
         ];
     }
-
-    let leaseDuration = 1;
-    let durationType: "months" | "years" = "months";
 
     function calculateEndDate() {
         const startDate = new Date(formData.start_date);
@@ -313,6 +321,35 @@
 
         // Update the tenants array
         formData.tenants[index] = updatedTenant;
+    }
+
+    // Calculate total amount for display only
+    function calculateTotalAmount() {
+        const monthlyAmount =
+            selectedMonthlyRent === "other"
+                ? parseFloat(formData.rent_amount) || 0
+                : selectedMonthlyRent;
+
+        const months =
+            durationType === "months" ? leaseDuration : leaseDuration * 12;
+
+        totalAmount = monthlyAmount * months;
+    }
+
+    // Watch for changes in rent option
+    $: {
+        if (selectedMonthlyRent === "other") {
+            showCustomRentInput = true;
+        } else {
+            showCustomRentInput = false;
+            formData.rent_amount = selectedMonthlyRent.toString();
+            calculateTotalAmount();
+        }
+    }
+
+    // Recalculate total amount when duration changes
+    $: if (leaseDuration || durationType) {
+        calculateTotalAmount();
     }
 </script>
 
@@ -576,15 +613,53 @@
 
                             <div class="sm:col-span-2">
                                 <p class="text-xs text-muted font-medium mb-2">
-                                    Rent Amount
+                                    Monthly Rent
                                 </p>
-                                <input
-                                    type="number"
-                                    placeholder="PHP"
-                                    step="0.01"
-                                    bind:value={formData.rent_amount}
-                                    class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
-                                />
+                                <div class="flex flex-col gap-2">
+                                    <select
+                                        bind:value={selectedMonthlyRent}
+                                        class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                    >
+                                        {#each rentOptions as amount}
+                                            <option value={amount}
+                                                >₱{amount.toLocaleString()}</option
+                                            >
+                                        {/each}
+                                        <option value="other"
+                                            >Other Amount</option
+                                        >
+                                    </select>
+
+                                    {#if showCustomRentInput}
+                                        <input
+                                            type="number"
+                                            placeholder="Enter monthly rent amount"
+                                            bind:value={formData.rent_amount}
+                                            on:input={calculateTotalAmount}
+                                            min="0"
+                                            step="0.01"
+                                            class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
+                                        />
+                                    {/if}
+
+                                    <p
+                                        class="text-xl text-center text-muted mt-2"
+                                    >
+                                        Total Lease Amount: <span
+                                            class="font-medium text-brightgreen"
+                                            >₱{totalAmount.toLocaleString()}</span
+                                        >
+                                        <br />
+                                        <span class="text-xs text-slate">
+                                            ₱{parseInt(
+                                                formData.rent_amount,
+                                            ).toLocaleString()}
+                                            x {durationType === "months"
+                                                ? leaseDuration
+                                                : leaseDuration * 12} month(s)
+                                        </span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

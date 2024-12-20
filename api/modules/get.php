@@ -194,8 +194,10 @@ class Get extends GlobalMethods
                                 l.start_date,
                                 l.end_date,
                                 l.date_renewed,
-                                l.rent_amount
+                                l.rent_amount,
+                                d.amount as deposit_amount
                             FROM leases l
+                            LEFT JOIN deposits d ON l.id = d.lease_id
                             WHERE l.unit_id = :unit_id
                             AND l.status = 'active'
                             LIMIT 1";
@@ -224,6 +226,7 @@ class Get extends GlobalMethods
                             'end_date' => $lease['end_date'],
                             'date_renewed' => $lease['date_renewed'],
                             'rent_amount' => $lease['rent_amount'],
+                            'deposit_amount' => $lease['deposit_amount'] ?? 0,
                             'tenants' => $tenantResult['data']
                         ];
                     }

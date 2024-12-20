@@ -202,6 +202,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 echo json_encode($post->resetPassword($data));
                 break;
 
+            case 'update-deposit':
+                echo json_encode($post->updateDeposit($data));
+                break;
+
             default:
                 // RESPONSE FOR UNSUPPORTED REQUESTS
                 echo "No Such Request";

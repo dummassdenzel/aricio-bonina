@@ -23,6 +23,7 @@
         end_date: string;
         rent_amount: string;
         tenants: Tenant[];
+        deposit_amount: number;
     };
 
     type Unit = {
@@ -43,6 +44,7 @@
     let error: string | null = null;
     let formData = {
         lease_id: null as number | null,
+        unit_id: null as number | null,
         start_date: new Date().toISOString().split("T")[0],
         end_date: "",
         rent_amount: 0,
@@ -53,6 +55,7 @@
         formData = {
             lease_id: unit.current_lease.id,
             start_date: new Date().toISOString().split("T")[0],
+            unit_id: unit.id,
             end_date: "",
             rent_amount: 0,
         };
@@ -144,22 +147,68 @@
 
     let isRenewLeaseOpen: boolean = false;
 
-    const openRenewLeaseModal = () => {
-        if (unit?.current_lease) {
-            formData = {
-                lease_id: unit.current_lease.id,
-                start_date: new Date().toISOString().split("T")[0],
-                end_date: "",
-                rent_amount: parseFloat(unit.current_lease.rent_amount) || 0,
-            };
-        }
-        isRenewLeaseOpen = true;
+    const rentOptions = [9000, 10000, 11000, 12000];
+    let selectedMonthlyRent: number | "other" = 10000;
+    let showCustomRentInput = false;
+    let totalAmount = 0;
+    let leaseDuration = 1;
+    let durationType: "months" | "years" = "months";
+
+    // Initial form state
+    const initialFormData = {
+        lease_id: null as number | null,
+        unit_id: null as number | null,
+        start_date: new Date().toISOString().split("T")[0],
+        end_date: "",
+        rent_amount: 10000,
     };
+
+    function resetRenewForm() {
+        formData = { ...initialFormData };
+        selectedMonthlyRent = 10000;
+        showCustomRentInput = false;
+        leaseDuration = 1;
+        durationType = "months";
+        totalAmount = 10000;
+        calculateEndDate();
+        calculateTotalAmount();
+    }
 
     const closeRenewLeaseModal = () => {
         isRenewLeaseOpen = false;
         isSubmitting = false;
+        resetRenewForm();
     };
+
+    // When opening the renew lease modal
+    const openRenewLeaseModal = () => {
+        if (unit?.current_lease) {
+            // Use current lease's rent amount or default to 10000
+            const currentRent =
+                parseFloat(unit.current_lease.rent_amount) || 10000;
+            formData.lease_id = unit.current_lease.id;
+            formData.unit_id = unit.id;
+            formData.rent_amount = currentRent;
+
+            // Set the selectedMonthlyRent based on current rent
+            if (rentOptions.includes(currentRent)) {
+                selectedMonthlyRent = currentRent;
+                showCustomRentInput = false;
+            } else {
+                selectedMonthlyRent = "other";
+                showCustomRentInput = true;
+            }
+        } else {
+            resetRenewForm();
+        }
+        isRenewLeaseOpen = true;
+        calculateTotalAmount();
+    };
+
+    // Watch for modal close
+    $: if (!isOpen) {
+        resetRenewForm();
+    }
 
     const endLease = async () => {
         const result = await Swal.fire({
@@ -212,9 +261,6 @@
         showTenantForm = false;
     };
 
-    let leaseDuration = 1;
-    let durationType: "months" | "years" = "months";
-
     function calculateEndDate() {
         const startDate = new Date(formData.start_date);
         const endDate = new Date(startDate);
@@ -225,14 +271,96 @@
             endDate.setFullYear(endDate.getFullYear() + leaseDuration);
         }
 
-        // Subtract one day to get the last day of the lease
-        endDate.setDate(endDate.getDate() - 1);
-
         formData.end_date = endDate.toISOString().split("T")[0];
     }
 
     $: if (formData.start_date && (leaseDuration || durationType)) {
         calculateEndDate();
+    }
+
+    // Calculate total amount for display only
+    function calculateTotalAmount() {
+        const monthlyAmount =
+            selectedMonthlyRent === "other"
+                ? parseFloat(formData.rent_amount.toString()) || 0
+                : selectedMonthlyRent;
+
+        const months =
+            durationType === "months" ? leaseDuration : leaseDuration * 12;
+
+        totalAmount = monthlyAmount * months;
+    }
+
+    // Watch for changes in rent option
+    $: {
+        if (selectedMonthlyRent === "other") {
+            showCustomRentInput = true;
+        } else {
+            showCustomRentInput = false;
+            formData.rent_amount = selectedMonthlyRent;
+            calculateTotalAmount();
+        }
+    }
+
+    // Recalculate total amount when duration changes
+    $: if (leaseDuration || durationType) {
+        calculateTotalAmount();
+    }
+
+    // Add these computed values
+    $: expectedDeposit = unit?.current_lease
+        ? Number(unit.current_lease.rent_amount) * 2
+        : 0;
+    $: currentDeposit = Number(unit?.current_lease?.deposit_amount ?? 0);
+    $: depositStatus =
+        currentDeposit >= expectedDeposit
+            ? "complete"
+            : currentDeposit > 0
+              ? "partial"
+              : "none";
+
+    async function handleDepositAction(action: "deduct" | "replenish") {
+        const { value: amount } = await Swal.fire({
+            title: `${action === "deduct" ? "Deduct from" : "Add to"} Deposit`,
+            input: "number",
+            inputLabel: "Amount",
+            inputPlaceholder: "Enter amount",
+            showCancelButton: true,
+            inputValidator: (value) => {
+                if (!value) {
+                    return "Amount is required";
+                }
+                if (action === "deduct" && parseFloat(value) > currentDeposit) {
+                    return "Amount exceeds current deposit";
+                }
+                return null;
+            },
+        });
+
+        if (amount) {
+            try {
+                const response = await api.post("update-deposit", {
+                    lease_id: unit?.current_lease?.id,
+                    amount: parseFloat(amount),
+                    action,
+                });
+
+                if (response.status.remarks === "success") {
+                    await Swal.fire({
+                        title: "Success",
+                        text: `Deposit ${action === "deduct" ? "deduction" : "replenishment"} successful`,
+                        icon: "success",
+                    });
+                    await loadUnit();
+                }
+            } catch (error: any) {
+                await Swal.fire({
+                    title: "Error",
+                    text: error.message,
+                    icon: "error",
+                });
+            }
+        }
     }
 </script>
 
@@ -363,6 +491,81 @@
                                             ? `₱${unit.current_lease.rent_amount.toLocaleString()}`
                                             : "Not specified"}
                                     </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deposit Information -->
+                        <div class="border-t pt-6">
+                            <h3
+                                class="text-lg sm:text-xl font-inter font-bold mb-6 text-slate text-center"
+                            >
+                                Deposit Information
+                            </h3>
+                            <div class="bg-back p-4 rounded-lg">
+                                <div
+                                    class="flex justify-between items-center mb-4"
+                                >
+                                    <div>
+                                        <p
+                                            class="text-xs text-muted font-medium"
+                                        >
+                                            Current Deposit
+                                        </p>
+                                        <p class="text-lg font-bold text-teal">
+                                            ₱{currentDeposit.toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p
+                                            class="text-xs text-muted font-medium"
+                                        >
+                                            Expected Deposit
+                                        </p>
+                                        <p class="text-lg font-bold text-slate">
+                                            ₱{expectedDeposit.toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p
+                                            class="text-xs text-muted font-medium"
+                                        >
+                                            Status
+                                        </p>
+                                        <span
+                                            class="text-sm font-medium px-2 py-1 rounded-full {depositStatus ===
+                                            'complete'
+                                                ? 'bg-green20 text-green'
+                                                : depositStatus === 'partial'
+                                                  ? 'bg-orange20 text-orange'
+                                                  : 'bg-red20 text-red'}"
+                                        >
+                                            {depositStatus === "complete"
+                                                ? "Complete"
+                                                : depositStatus === "partial"
+                                                  ? "Partial"
+                                                  : "None"}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Deposit Actions -->
+                                <div class="flex gap-2 mt-4">
+                                    <button
+                                        class="flex-1 text-xs font-medium bg-red20 text-red p-2 rounded-lg hover:bg-red10 transition-colors disabled:opacity-50"
+                                        on:click={() =>
+                                            handleDepositAction("deduct")}
+                                        disabled={currentDeposit <= 0}
+                                    >
+                                        Deduct from Deposit
+                                    </button>
+                                    <button
+                                        class="flex-1 text-xs font-medium bg-green20 text-green p-2 rounded-lg hover:bg-green10 transition-colors"
+                                        on:click={() =>
+                                            handleDepositAction("replenish")}
+                                    >
+                                        Add to Deposit
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -512,16 +715,51 @@
 
                 <div>
                     <p class="text-xs text-muted font-medium mb-2">
-                        Rent Amount
+                        Monthly Rent
                     </p>
-                    <input
-                        type="number"
-                        bind:value={formData.rent_amount}
-                        min="0"
-                        step="0.01"
-                        disabled={isSubmitting}
-                        class="w-full border p-2 rounded-lg text-sm font-medium text-teal font-inter"
-                    />
+                    <div class="flex flex-col gap-2">
+                        <select
+                            bind:value={selectedMonthlyRent}
+                            class="w-full border p-2 rounded-lg text-sm font-medium text-teal font-inter"
+                            disabled={isSubmitting}
+                        >
+                            {#each rentOptions as amount}
+                                <option value={amount}
+                                    >₱{amount.toLocaleString()}</option
+                                >
+                            {/each}
+                            <option value="other">Other Amount</option>
+                        </select>
+
+                        {#if showCustomRentInput}
+                            <input
+                                type="number"
+                                placeholder="Enter monthly rent amount"
+                                bind:value={formData.rent_amount}
+                                on:input={calculateTotalAmount}
+                                min="0"
+                                step="0.01"
+                                disabled={isSubmitting}
+                                class="w-full border p-2 rounded-lg text-sm font-medium text-teal font-inter"
+                            />
+                        {/if}
+
+                        <p class="text-xl text-center text-muted mt-2">
+                            Total Lease Amount: <span
+                                class="font-medium text-brightgreen"
+                                >₱{totalAmount.toLocaleString()}</span
+                            >
+                            <br />
+                            <span class="text-xs text-slate">
+                                ₱{parseInt(
+                                    formData.rent_amount.toString(),
+                                ).toLocaleString()}
+                                x {durationType === "months"
+                                    ? leaseDuration
+                                    : leaseDuration * 12} month(s)
+                            </span>
+                        </p>
+                    </div>
                 </div>
 
                 <div
