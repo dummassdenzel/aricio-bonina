@@ -179,7 +179,7 @@
         class="border rounded-xl p-4 sm:p-6 bg-white hover:shadow-sm transition-shadow"
       >
         <p class="text-sm sm:text-base lg:text-lg text-teal font-bold mb-4">
-          Expiring Soon
+          Due Soon
         </p>
         {#if dashboardStats.expiringSoon.length > 0}
           <div class="max-h-[120px] overflow-y-auto flex flex-col gap-2 pr-2">
@@ -201,7 +201,7 @@
           </div>
         {:else}
           <p class="text-xs sm:text-sm text-muted bg-back p-3 rounded-lg">
-            No lease expiring soon.
+            No leases due soon.
           </p>
         {/if}
       </div>

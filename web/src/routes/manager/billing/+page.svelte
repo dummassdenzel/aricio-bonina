@@ -144,7 +144,7 @@
                     bind:value={sortBy}
                     class="bg-back rounded-2xl px-4 py-2 text-xs text-slate"
                 >
-                    <option value="latest">Sort by Latest</option>
+                    <option value="latest">Sort by Latest Date</option>
                     <option value="unit">Sort by Unit</option>
                 </select>
             </div>
