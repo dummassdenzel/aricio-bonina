@@ -75,7 +75,7 @@
           <p class="text-base sm:text-lg font-bold text-teal">{vacantUnits}</p>
         </div>
         <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-          <p class="text-[10px] sm:text-xs text-muted mb-1">Expired Leases</p>
+          <p class="text-[10px] sm:text-xs text-muted mb-1">Overdue Leases</p>
           <p class="text-base sm:text-lg font-bold text-red">{expiredLeases}</p>
         </div>
       </div>
@@ -145,7 +145,7 @@
           <option value="all">All Units</option>
           <option value="occupied">Occupied Only</option>
           <option value="vacant">Vacant Only</option>
-          <option value="expired">Expired Leases</option>
+          <option value="expired">Overdue Leases</option>
         </select>
 
         <!-- Action Buttons -->

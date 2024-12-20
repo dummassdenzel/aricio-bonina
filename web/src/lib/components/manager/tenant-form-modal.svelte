@@ -90,6 +90,26 @@
         ];
     }
 
+    let leaseDuration = 1;
+    let durationType: "months" | "years" = "months";
+
+    function calculateEndDate() {
+        const startDate = new Date(formData.start_date);
+        const endDate = new Date(startDate);
+
+        if (durationType === "months") {
+            endDate.setMonth(endDate.getMonth() + leaseDuration);
+        } else {
+            endDate.setFullYear(endDate.getFullYear() + leaseDuration);
+        }
+
+        formData.end_date = endDate.toISOString().split("T")[0];
+    }
+
+    $: if (formData.start_date && (leaseDuration || durationType)) {
+        calculateEndDate();
+    }
+
     function removeTenant(index: number) {
         formData.tenants = formData.tenants.filter((_, i) => i !== index);
     }
@@ -529,13 +549,29 @@
 
                             <div>
                                 <p class="text-xs text-muted font-medium mb-2">
-                                    End of Lease
+                                    Lease Duration
                                 </p>
-                                <input
-                                    type="date"
-                                    bind:value={formData.end_date}
-                                    class="w-full appearance-none border rounded-lg text-xs p-3 text-slate font-medium leading-tight focus:outline-backdrop"
-                                />
+                                <div class="flex gap-3">
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        bind:value={leaseDuration}
+                                        class="w-24 border p-2 rounded-lg text-sm font-medium text-teal font-inter"
+                                    />
+                                    <select
+                                        bind:value={durationType}
+                                        class="border p-2 rounded-lg text-sm font-medium text-teal font-inter"
+                                    >
+                                        <option value="months">Month(s)</option>
+                                        <option value="years">Year(s)</option>
+                                    </select>
+                                </div>
+                                <p class="text-xs text-muted mt-2">
+                                    Lease will end on: <span
+                                        class="font-medium text-teal"
+                                        >{formData.end_date}</span
+                                    >
+                                </p>
                             </div>
 
                             <div class="sm:col-span-2">

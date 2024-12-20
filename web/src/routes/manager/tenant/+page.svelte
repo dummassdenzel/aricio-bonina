@@ -152,7 +152,7 @@
           </p>
         </div>
         <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-          <p class="text-[10px] sm:text-xs text-muted mb-1">Expired</p>
+          <p class="text-[10px] sm:text-xs text-muted mb-1">Overdue</p>
           <p class="text-base sm:text-lg font-bold text-red">
             {tenants.filter(
               (t) =>
@@ -203,7 +203,7 @@
             >
               <option value="all">All Tenants</option>
               <option value="active">Active Only</option>
-              <option value="expired">Expired Only</option>
+              <option value="expired">Overdue Only</option>
             </select>
 
             <button
@@ -264,7 +264,7 @@
                       {#if new Date(tenant.current_lease.end_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)}
                         <span
                           class="text-xs text-red bg-red20 px-2 py-1 rounded-full"
-                          >Expired</span
+                          >Overdue</span
                         >
                       {:else}
                         <span
@@ -304,7 +304,7 @@
                   {#if selectedTenant.current_lease?.end_date && new Date(selectedTenant.current_lease.end_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)}
                     <span
                       class="text-xs text-red bg-red20 px-3 py-1.5 rounded-full"
-                      >Expired</span
+                      >Overdue</span
                     >
                   {:else}
                     <span
@@ -449,7 +449,7 @@
                       <p class="text-xs text-muted">Status</p>
                       <p class="text-sm font-medium">
                         {#if new Date(selectedTenant.current_lease.end_date) <= new Date()}
-                          <span class="text-red">Expired</span>
+                          <span class="text-red">Overdue</span>
                         {:else}
                           <span class="text-green">Active</span>
                         {/if}

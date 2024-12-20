@@ -211,6 +211,29 @@
     const closeTenantForm = () => {
         showTenantForm = false;
     };
+
+    let leaseDuration = 1;
+    let durationType: "months" | "years" = "months";
+
+    function calculateEndDate() {
+        const startDate = new Date(formData.start_date);
+        const endDate = new Date(startDate);
+
+        if (durationType === "months") {
+            endDate.setMonth(endDate.getMonth() + leaseDuration);
+        } else {
+            endDate.setFullYear(endDate.getFullYear() + leaseDuration);
+        }
+
+        // Subtract one day to get the last day of the lease
+        endDate.setDate(endDate.getDate() - 1);
+
+        formData.end_date = endDate.toISOString().split("T")[0];
+    }
+
+    $: if (formData.start_date && (leaseDuration || durationType)) {
+        calculateEndDate();
+    }
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -293,7 +316,7 @@
                                     class="flex justify-center flex-col text-center bg-red20 rounded-md p-2 mb-6"
                                 >
                                     <p class="text-red text-xs sm:text-sm">
-                                        Notice: This lease is expired!
+                                        Notice: This lease is overdue!
                                     </p>
                                 </div>
                             {/if}
@@ -462,14 +485,29 @@
                 </div>
 
                 <div>
-                    <p class="text-xs text-muted font-medium mb-2">End Date</p>
-                    <input
-                        type="date"
-                        bind:value={formData.end_date}
-                        min={formData.start_date}
-                        disabled={isSubmitting}
-                        class="w-full border p-2 rounded-lg text-sm font-medium text-teal font-inter"
-                    />
+                    <p class="text-xs text-muted font-medium mb-2">
+                        Lease Duration
+                    </p>
+                    <div class="flex gap-3">
+                        <input
+                            type="number"
+                            min="1"
+                            bind:value={leaseDuration}
+                            class="w-24 border p-2 rounded-lg text-sm font-medium text-teal font-inter"
+                        />
+                        <select
+                            bind:value={durationType}
+                            class="border p-2 rounded-lg text-sm font-medium text-teal font-inter"
+                        >
+                            <option value="months">Month(s)</option>
+                            <option value="years">Year(s)</option>
+                        </select>
+                    </div>
+                    <p class="text-xs text-muted mt-2">
+                        Lease will end on: <span class="font-medium text-teal"
+                            >{formData.end_date}</span
+                        >
+                    </p>
                 </div>
 
                 <div>
