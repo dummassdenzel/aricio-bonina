@@ -118,7 +118,12 @@
         isSubmitting = true;
 
         try {
-            const response = await api.post("renewlease", formData);
+            const finalFormData = {
+                ...formData,
+                total_amount: totalAmount,
+            };
+
+            const response = await api.post("renewlease", finalFormData);
 
             await Swal.fire({
                 title: "Success!",

@@ -149,6 +149,7 @@
                 "rent_amount",
                 formData.rent_amount.toString(),
             );
+            formDataToSend.append("total_amount", totalAmount.toString());
 
             // Add tenant data as JSON string to maintain structure
             formData.tenants.forEach((tenant, index) => {
@@ -657,6 +658,22 @@
                                             x {durationType === "months"
                                                 ? leaseDuration
                                                 : leaseDuration * 12} month(s)
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class=" pt-4">
+                                    <p class="text-xl text-center text-muted">
+                                        Advance Deposit: <span
+                                            class="font-medium text-brightgreen"
+                                        >
+                                            ₱{(
+                                                parseInt(formData.rent_amount) *
+                                                2
+                                            ).toLocaleString()}
+                                        </span>
+                                        <br />
+                                        <span class="text-xs text-slate">
+                                            (2 months advance deposit)
                                         </span>
                                     </p>
                                 </div>

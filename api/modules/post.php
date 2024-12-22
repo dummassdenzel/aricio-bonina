@@ -103,29 +103,7 @@ class Post extends GlobalMethods
     {
         try {
             $this->pdo->beginTransaction();
-
-            // Ensure upload directories exist before processing any files
             $this->ensureUploadDirectory();
-
-            // Convert form data to object if needed
-            if (is_array($data)) {
-                $formData = new stdClass();
-                $formData->unit_number = $data['unit_number'];
-                $formData->move_in_date = $data['move_in_date'];
-                $formData->start_date = $data['start_date'];
-                $formData->end_date = $data['end_date'];
-                $formData->rent_amount = $data['rent_amount'];
-                $formData->tenants = [];
-
-                $tenant = new stdClass();
-                $tenant->first_name = $data['tenants'][0]['first_name'];
-                $tenant->last_name = $data['tenants'][0]['last_name'];
-                $tenant->phone_number = $data['tenants'][0]['phone_number'];
-                $tenant->email = $data['tenants'][0]['email'];
-                $formData->tenants[] = $tenant;
-
-                $data = $formData;
-            }
 
             // GET UNIT ID AND CHECK FOR EXISTING ACTIVE LEASE
             $sql = "SELECT u.id, 
@@ -135,7 +113,7 @@ class Post extends GlobalMethods
                     FROM units u 
                     WHERE u.unit_number = ?";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$data->unit_number]);
+            $stmt->execute([$data['unit_number'] ?? $data->unit_number]);
             $unit = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$unit) {
@@ -152,41 +130,36 @@ class Post extends GlobalMethods
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 $unit['id'],
-                $data->start_date,
-                $data->end_date,
-                $data->rent_amount
+                $data['start_date'] ?? $data->start_date,
+                $data['end_date'] ?? $data->end_date,
+                $data['rent_amount'] ?? $data->rent_amount
             ]);
 
             $leaseId = $this->pdo->lastInsertId();
 
-            // Create deposit record (2 months advance)
-            $this->createDeposit($leaseId, $data->rent_amount);
+            // Create deposit and payment records
+            $rentAmount = $data['rent_amount'] ?? $data->rent_amount;
+            $totalAmount = $data['total_amount'] ?? $data->total_amount;
 
-            // Calculate duration in months for payment record
-            $startDate = new DateTime($data->start_date);
-            $endDate = new DateTime($data->end_date);
-            $durationInMonths = ($endDate->diff($startDate)->days + 1) / 30;
-
-            // Create payment record
-            $this->createPaymentRecord($leaseId, $data->rent_amount, $durationInMonths);
+            $this->createDeposit($leaseId, $rentAmount);
+            $this->createPaymentRecord($leaseId, $totalAmount);
 
             // CREATE TENANTS
-            foreach ($data->tenants as $tenant) {
+            $tenants = $data['tenants'] ?? [$data->tenants[0]];
+            foreach ($tenants as $tenant) {
                 $validIdPath = null;
                 $validIdType = null;
 
-                // Handle file upload if files are present
-                if ($files && isset($files["valid_id_" . $tenant->first_name])) {
-                    $file = $files["valid_id_" . $tenant->first_name];
+                // Handle file upload if present
+                if ($files && isset($files["valid_id_" . $tenant['first_name']])) {
+                    $file = $files["valid_id_" . $tenant['first_name']];
                     $fileType = pathinfo($file['name'], PATHINFO_EXTENSION);
-                    $fileName = uniqid() . '_' . $tenant->first_name . '.' . $fileType;
+                    $fileName = uniqid() . '_' . $tenant['first_name'] . '.' . $fileType;
                     $uploadPath = "uploads/tenant_ids/" . $fileName;
 
                     if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
                         throw new Exception("Failed to upload file: " . $file['name']);
                     }
-
-                    // Set proper permissions on the uploaded file
                     chmod($uploadPath, 0644);
 
                     $validIdPath = $uploadPath;
@@ -201,12 +174,12 @@ class Post extends GlobalMethods
 
                 $stmt = $this->pdo->prepare($sql);
                 $stmt->execute([
-                    $tenant->first_name,
-                    $tenant->last_name,
+                    $tenant['first_name'] ?? $tenant->first_name,
+                    $tenant['last_name'] ?? $tenant->last_name,
                     $leaseId,
-                    $data->move_in_date,
-                    $tenant->phone_number,
-                    $tenant->email,
+                    $data['move_in_date'] ?? $data->move_in_date,
+                    $tenant['phone_number'] ?? $tenant->phone_number,
+                    $tenant['email'] ?? $tenant->email,
                     $validIdPath,
                     $validIdType
                 ]);
@@ -220,74 +193,17 @@ class Post extends GlobalMethods
         }
     }
 
-    private function createPaymentRecord($leaseId, $monthlyRent, $durationInMonths)
+    private function createPaymentRecord($leaseId, $totalAmount)
     {
         try {
-            $totalAmount = $monthlyRent * $durationInMonths;
-
-            $sql = "INSERT INTO payments (lease_id, total_amount) VALUES (?, ?)";
+            $sql = "INSERT INTO payments (lease_id, total_amount, amount_paid, payment_status) VALUES (?, ?, ?, 'paid')";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$leaseId, $totalAmount]);
+            $stmt->execute([$leaseId, $totalAmount, $totalAmount]);
 
             return true;
         } catch (Exception $e) {
             error_log("Failed to create payment record: " . $e->getMessage());
             throw new Exception("Failed to create payment record");
-        }
-    }
-
-    private function createLease($data)
-    {
-        try {
-            $this->pdo->beginTransaction();
-
-            // Get duration in months
-            $startDate = new DateTime($data->start_date);
-            $endDate = new DateTime($data->end_date);
-            $durationInMonths = ($endDate->diff($startDate)->days + 1) / 30;
-
-            // Insert lease record
-            $sql = "INSERT INTO leases (unit_id, start_date, end_date, rent_amount, status) 
-                    VALUES (?, ?, ?, ?, 'active')";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                $data->unit_id,
-                $data->start_date,
-                $data->end_date,
-                $data->rent_amount
-            ]);
-
-            $leaseId = $this->pdo->lastInsertId();
-
-            // Create payment record
-            $this->createPaymentRecord($leaseId, $data->rent_amount, $durationInMonths);
-
-            // Insert tenants
-            foreach ($data->tenants as $tenant) {
-                $sql = "INSERT INTO tenants (lease_id, first_name, last_name, email, phone_number, move_in_date) 
-                        VALUES (?, ?, ?, ?, ?, ?)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([
-                    $leaseId,
-                    $tenant->first_name,
-                    $tenant->last_name,
-                    $tenant->email,
-                    $tenant->phone_number,
-                    $data->move_in_date
-                ]);
-            }
-
-            // Update unit status
-            $sql = "UPDATE units SET status = 'occupied' WHERE id = ?";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$data->unit_id]);
-
-            $this->pdo->commit();
-            return $leaseId;
-
-        } catch (Exception $e) {
-            $this->pdo->rollBack();
-            throw $e;
         }
     }
 
@@ -322,7 +238,7 @@ class Post extends GlobalMethods
             $newLeaseId = $this->pdo->lastInsertId();
 
             // Create payment record for new lease
-            $this->createPaymentRecord($newLeaseId, $data->rent_amount, $durationInMonths);
+            $this->createPaymentRecord($newLeaseId, $data->total_amount);
 
             // Transfer tenants to new lease
             $sql = "UPDATE tenants SET lease_id = ? WHERE lease_id = ?";
